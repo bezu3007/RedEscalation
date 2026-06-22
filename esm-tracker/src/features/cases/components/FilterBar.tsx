@@ -107,6 +107,12 @@ export function FilterBar() {
     setVisibleColumns,
   } = useCaseStore();
 
+  const [draftFilters, setDraftFilters] = useState(filters);
+
+  useEffect(() => {
+    setDraftFilters(filters);
+  }, [filters]);
+
   const [visibleFilters, setVisibleFilters] =
     useState<Record<FilterKey, boolean>>(
       () =>
@@ -173,8 +179,15 @@ export function FilterBar() {
             <Input
               placeholder="Search cases..."
               className="pl-8 h-8 text-sm bg-gray-50"
-              value={filters.search}
-              onChange={handleSearch}
+              // value={filters.search}
+              // onChange={handleSearch}
+              value={draftFilters.search}
+                onChange={(e) =>
+                  setDraftFilters({
+                    ...draftFilters,
+                    search: e.target.value,
+                  })
+                }
             />
           </div>
         </div>
@@ -286,9 +299,18 @@ export function FilterBar() {
       <div className="flex flex-wrap gap-2 items-center">
         {visibleFilters.status && (
           <Select
-            value={filters.status || "all"}
+            // value={filters.status || "all"}
+            value={draftFilters.status || "all"}
             onValueChange={(v) =>
-              setFilters({
+              // setFilters({
+              //   status:
+              //     v === "all"
+              //       ? ""
+              //       : (v as CaseStatus),
+              // })
+
+              setDraftFilters({
+                ...draftFilters,
                 status:
                   v === "all"
                     ? ""
@@ -323,12 +345,24 @@ export function FilterBar() {
         )}
 
         {visibleFilters.caseType && (
+          // <Select
+          //   value={
+          //     filters.caseType || "all"
+          //   }
+          //   onValueChange={(v) =>
+          //     setFilters({
+          //       caseType:
+          //         v === "all"
+          //           ? ""
+          //           : (v as CaseType),
+          //     })
+          //   }
+          // >
           <Select
-            value={
-              filters.caseType || "all"
-            }
+            value={draftFilters.caseType || "all"}
             onValueChange={(v) =>
-              setFilters({
+              setDraftFilters({
+                ...draftFilters,
                 caseType:
                   v === "all"
                     ? ""
@@ -363,10 +397,11 @@ export function FilterBar() {
         {visibleFilters.priority && (
           <Select
             value={
-              filters.priority || "all"
+              draftFilters.priority || "all"
             }
             onValueChange={(v) =>
-              setFilters({
+              setDraftFilters({
+                ...draftFilters,
                 priority:
                   v === "all"
                     ? ""
@@ -398,9 +433,10 @@ export function FilterBar() {
         {visibleFilters.fromDate && (
           <DateField
             placeholder="From date"
-            value={filters.dateFrom}
+            value={draftFilters.dateFrom}
             onChange={(v) =>
-              setFilters({
+              setDraftFilters({
+                ...draftFilters,
                 dateFrom: v,
               })
             }
@@ -411,9 +447,10 @@ export function FilterBar() {
         {visibleFilters.toDate && (
           <DateField
             placeholder="To date"
-            value={filters.dateTo}
+            value={draftFilters.dateTo}
             onChange={(v) =>
-              setFilters({
+              setDraftFilters({
+                ...draftFilters,
                 dateTo: v,
               })
             }
@@ -421,12 +458,34 @@ export function FilterBar() {
           />
         )}
         
+        <Button
+          size="sm"
+          onClick={() => setFilters(draftFilters)}
+          className="gap-2 ml-auto"
+        >
+          Show
+        </Button>
           {/* CLEAR */}
           {hasActiveFilters && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={resetFilters}
+              // onClick={resetFilters}
+              onClick={() => {
+                resetFilters();
+
+                setDraftFilters({
+                  search: "",
+                  status: "",
+                  caseType: "",
+                  priority: "",
+                  dateFrom: "",
+                  dateTo: "",
+                  department: "",
+                  projectName: "",
+                  assignedDeveloper: "",
+                });
+              }}
               className="gap-1 text-muted-foreground"
             >
               <X className="h-4 w-4" />

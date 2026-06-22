@@ -25,63 +25,118 @@ export const casesApi = {
           ((): CasesResponse => {
             const statuses = ["Open", "InProgress", "Resolved"] as const;
 
-const caseTypes = [
-  "Bug",
-  "FeatureRequest",
-  "Support",
-  "Other",
-] as const;
+            const caseTypes = [
+              "Bug",
+              "FeatureRequest",
+              "Support",
+              "Other",
+            ] as const;
 
-const priorities = ["Low", "Medium", "High", "Critical"] as const;
+            const priorities = ["Low", "Medium", "High", "Critical"] as const;
 
-const departments = [
-  "Engineering",
-  "Finance",
-  "HR",
-  "Operations",
-] as const;
+            const departments = [
+              "Engineering",
+              "Finance",
+              "HR",
+              "Operations",
+            ] as const;
 
-const developers = ["Alice", "Bob", "John", "Sarah", "Michael"];
+            const developers = ["Alice", "Bob", "John", "Sarah", "Michael"];
 
-const items: CaseItem[] = Array.from({ length: 10000 }, (_, index) => {
-  const id = index + 1;
+            const items: CaseItem[] = Array.from({ length: 10000 }, (_, index) => {
+              const id = index + 1;
 
-  return {
-    id,
-    caseNumber: `C-${1000 + id}`,
-    title: `Sample Case ${id}`,
-    description: `This is a generated dummy case number ${id}`,
-    status: statuses[index % statuses.length],
-    caseType: caseTypes[index % caseTypes.length],
-    priority: priorities[index % priorities.length],
-    projectName: `Project ${(id % 5) + 1}`,
-    moduleName: `Module ${(id % 10) + 1}`,
-    department: departments[index % departments.length],
-    reportedBy: `user${id}@example.com`,
-    assignedDeveloper: developers[index % developers.length],
-    assignedDeveloperId: `dev-${(id % developers.length) + 1}`,
-    voucherNumber: id % 3 === 0 ? `V-${id}` : null,
-    paymentStatus:
-      id % 3 === 0
-        ? id % 2 === 0
-          ? "Paid"
-          : "Pending"
-        : null,
-    paymentAmount: id % 3 === 0 ? Number((Math.random() * 5000).toFixed(2)) : null,
-    attachmentUrl: null,
-    createdAt: new Date(
-      Date.now() - id * 1000 * 60 * 60
-    ).toISOString(),
-    updatedAt: new Date().toISOString(),
-    resolvedAt: id % 5 === 0 ? new Date().toISOString() : null,
-  };
-});
+              return {
+                id,
+                caseNumber: `C-${1000 + id}`,
+                title: `Sample Case ${id}`,
+                description: `This is a generated dummy case number ${id}`,
+                status: statuses[index % statuses.length],
+                caseType: caseTypes[index % caseTypes.length],
+                priority: priorities[index % priorities.length],
+                projectName: `Project ${(id % 5) + 1}`,
+                moduleName: `Module ${(id % 10) + 1}`,
+                department: departments[index % departments.length],
+                reportedBy: `user${id}@example.com`,
+                assignedDeveloper: developers[index % developers.length],
+                assignedDeveloperId: `dev-${(id % developers.length) + 1}`,
+                voucherNumber: id % 3 === 0 ? `V-${id}` : null,
+                paymentStatus:
+                  id % 3 === 0
+                    ? id % 2 === 0
+                      ? "Paid"
+                      : "Pending"
+                    : null,
+                paymentAmount: id % 3 === 0 ? Number((Math.random() * 5000).toFixed(2)) : null,
+                attachmentUrl: null,
+                createdAt: new Date(
+                  Date.now() - id * 1000 * 60 * 60
+                ).toISOString(),
+                updatedAt: new Date().toISOString(),
+                resolvedAt: id % 5 === 0 ? new Date().toISOString() : null,
+              };
+            });
+
+            let filtered = [...items];
+
+            if (params.search) {
+              const search = params.search.toLowerCase();
+
+              filtered = filtered.filter(
+                (item) =>
+                  item.title.toLowerCase().includes(search) ||
+                  item.caseNumber.toLowerCase().includes(search) ||
+                  item.description.toLowerCase().includes(search)
+              );
+            }
+
+            if (params.status) {
+              filtered = filtered.filter(
+                (item) => item.status === params.status
+              );
+            }
+
+            if (params.caseType) {
+              filtered = filtered.filter(
+                (item) => item.caseType === params.caseType
+              );
+            }
+
+            if (params.priority) {
+              filtered = filtered.filter(
+                (item) => item.priority === params.priority
+              );
+            }
+
+            if (params.dateFrom) {
+              filtered = filtered.filter(
+                (item) =>
+                  new Date(item.createdAt) >=
+                  new Date(params.dateFrom!)
+              );
+            }
+
+            if (params.dateTo) {
+              filtered = filtered.filter(
+                (item) =>
+                  new Date(item.createdAt) <=
+                  new Date(params.dateTo!)
+              );
+            }
+
+            const page = params.page ?? 1;
+            const pageSize = params.pageSize ?? 50;
+
+            const start = (page - 1) * pageSize;
+            const end = start + pageSize;
+
+            const pagedItems = filtered.slice(start, end);
 
             return {
-              items,
-              totalCount: items.length,
-              page: params.page ?? 1,
-              pageSize: params.pageSize ?? items.length,
+              items: pagedItems,
+              totalCount: filtered.length,
+              page,
+              pageSize,
             };
           })()
         )
