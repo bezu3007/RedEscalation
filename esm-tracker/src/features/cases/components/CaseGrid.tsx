@@ -2,13 +2,14 @@ import React, { useCallback, useMemo, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, GridReadyEvent, ICellRendererParams } from "ag-grid-community";
 import { useCases } from "../hooks/useCases";
+import { useCaseTransition } from "../hooks/useCaseTransition";
 import { useCaseStore } from "../store/caseStore";
 import { StatusBadge } from "./StatusBadge";
 import { CaseTypeBadge } from "./CaseTypeBadge";
-import type { CaseItem, CasePriority } from "../types";
+import type { CaseItem, CasePriority, CaseStatus } from "../types";
 import { formatDate } from "@/shared/utils/formatDate";
 import { Button } from "@/shared/components/ui/button";
-import { Eye, Pencil, ChevronRight, ChevronDown, MoreVertical, Wrench, LoaderCircle, PlusCircle, X} from "lucide-react";
+import { Eye, Pencil, ChevronRight, ChevronDown, MoreVertical, Wrench, LoaderCircle, PlusCircle, X, CheckCircle2,  RotateCcw, Clock3, Ban, PlayCircle, CheckCheck, Lock} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/shared/lib/utils";
 import "ag-grid-community/styles/ag-grid.css";
@@ -41,6 +42,18 @@ function ExpandCell() {
 }
 
 function RowMenuCell({ data }: ICellRendererParams<CaseItem>) {
+  const { mutate: transitionCase } = useCaseTransition();
+  const handleTransition = ( targetStatus: CaseStatus) => {
+    if (!data) return;
+
+    transitionCase({
+      caseId: data.id,
+      targetStatus,
+    });
+
+    setOpen(false);
+  };
+
   const navigate = useNavigate();
 
   const {
@@ -117,51 +130,163 @@ function RowMenuCell({ data }: ICellRendererParams<CaseItem>) {
               <div className="p-2 space-y-1">
                 {/* VIEW */}
                 <button
-                  onClick={() => {
-                    openViewModal(data);
-                    setOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm"
+                  type="button"
+                  onClick={() =>
+                    navigate(`/cases/${data.id}`)
+                  }
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
                 >
                   <Eye className="h-4 w-4 text-cyan-500" />
-                  View
+
+                  VIEW
                 </button>
 
                 {/* EDIT */}
                 <button
+                  type="button"
                   onClick={() => {
                     openEditModal(data);
+
                     setOpen(false);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm"
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
                 >
                   <Pencil className="h-4 w-4 text-blue-500" />
-                  Edit
+
+                  EDIT
                 </button>
 
-                {/* FIXED (optional future action) */}
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm">
-                  <Wrench className="h-4 w-4 text-indigo-500" />
-                  Mark Fixed
+                <div className="my-2 border-t" />
+
+                {/* APPROVE */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleTransition("Approved")
+                  }
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
+                >
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+
+                  APPROVE
+                </button>
+
+                {/* REJECT */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleTransition("Rejected")
+                  }
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
+                >
+                  <Ban className="h-4 w-4 text-red-500" />
+
+                  REJECT
+                </button>
+
+                {/* RETURN */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleTransition("Returned")
+                  }
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
+                >
+                  <RotateCcw className="h-4 w-4 text-orange-500" />
+
+                  RETURN
+                </button>
+
+                {/* DEADLINE */}
+                <button
+                  type="button"
+                  onClick={() => handleTransition("DeadlineExtension")}
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
+                >
+                  <Clock3 className="h-4 w-4 text-violet-600" />
+
+                  DEADLINE EXTENSION
+                </button>
+
+                <div className="my-2 border-t" />
+
+                {/* OPEN */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleTransition("Open")
+                  }
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
+                >
+                  <RotateCcw className="h-4 w-4 text-slate-500" />
+
+                  OPEN
                 </button>
 
                 {/* IN PROGRESS */}
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm">
-                  <LoaderCircle className="h-4 w-4 text-orange-500" />
-                  In Progress
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleTransition("InProgress")
+                  }
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
+                >
+                  <PlayCircle className="h-4 w-4 text-blue-500" />
+
+                  IN PROGRESS
                 </button>
 
-                {/* CREATE SUBCASE */}
+                {/* PENDING */}
                 <button
-                  onClick={() => {
-                    setSelectedParentCase(data);
-                    openCreateModal();
-                    setOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm"
+                  type="button"
+                  onClick={() =>
+                    handleTransition(
+                      "PendingApproval"
+                    )
+                  }
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
+                >
+                  <LoaderCircle className="h-4 w-4 text-amber-500" />
+
+                  PENDING APPROVAL
+                </button>
+
+                {/* RESOLVED */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleTransition("Resolved")
+                  }
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
+                >
+                  <CheckCheck className="h-4 w-4 text-green-600" />
+
+                  RESOLVED
+                </button>
+
+                {/* CLOSED */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleTransition("Closed")
+                  }
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
+                >
+                  <Lock className="h-4 w-4 text-slate-600" />
+
+                  CLOSED
+                </button>
+
+                <div className="my-2 border-t" />
+
+                {/* SUB CASE */}
+                <button
+                  type="button"
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
                 >
                   <PlusCircle className="h-4 w-4 text-green-600" />
-                  Create Sub Case
+
+                  CREATE SUB CASE
                 </button>
               </div>
             </div>

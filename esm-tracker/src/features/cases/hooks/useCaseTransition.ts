@@ -8,54 +8,50 @@ import type { CaseStatus } from "../types";
 
 
 
+// const VALID_TRANSITIONS: Record<CaseStatus, CaseStatus[]> = {
+
+//   Open: ["InProgress", "Closed"],
+
+//   InProgress: ["PendingApproval", "Open"],
+
+//   PendingApproval: ["Resolved", "InProgress", "Rejected"],
+
+//   Resolved: ["Closed"],
+
+//   Closed: [],
+
+//   Rejected: ["Open"],
+
+// };
 const VALID_TRANSITIONS: Record<CaseStatus, CaseStatus[]> = {
 
-  Open: ["InProgress", "Closed"],
-
-  InProgress: ["PendingApproval", "Open"],
-
-  PendingApproval: ["Resolved", "InProgress", "Rejected"],
-
+  Open: ["InProgress", "Closed", "Returned"],
+  InProgress: ["PendingApproval", "Open", "DeadlineExtension"],
+  PendingApproval: ["Approved", "Rejected", "Returned"],
+  Approved: ["Resolved", "Closed",],
   Resolved: ["Closed"],
-
   Closed: [],
-
   Rejected: ["Open"],
+  Returned: ["Open", "InProgress"],
+  DeadlineExtension: ["InProgress", "PendingApproval",],
 
 };
 
 
-
 export function useCaseTransition() {
-
   const qc = useQueryClient();
 
-
-
   const { mutate, isPending } = useMutation({
-
     mutationFn: casesApi.transition,
-
     onSuccess: (data) => {
-
       qc.invalidateQueries({ queryKey: [CASES_KEY] });
-
       qc.setQueryData([CASES_KEY, data.id], data);
-
     },
-
   });
 
-
-
   return { mutate, isPending, getAllowedTransitions };
-
 }
 
-
-
 export function getAllowedTransitions(current: CaseStatus): CaseStatus[] {
-
   return VALID_TRANSITIONS[current] ?? [];
-
 }

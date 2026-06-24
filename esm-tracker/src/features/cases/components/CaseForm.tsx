@@ -20,7 +20,7 @@ const PRIORITIES: CasePriority[] = ["Low", "Medium", "High", "Critical"];
 interface CaseFormValues extends CreateCaseRequest {}
 
 interface Props {
-  mode: "create" | "edit";
+  mode: "create" | "edit"
   initialData?: CaseItem;
   open: boolean;
   onClose: () => void;
