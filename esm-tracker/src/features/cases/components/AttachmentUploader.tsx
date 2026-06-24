@@ -1,79 +1,133 @@
-import { useRef, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { casesApi } from "../api/casesApi";
 import { Button } from "@/shared/components/ui/button";
-import { Paperclip, X, FileText, Loader2 } from "lucide-react";
-import { CASES_KEY } from "../hooks/useCases";
+import { useEffect, useState } from "react";
+import { Upload, FileText, X } from "lucide-react";
+import type { AttachmentFile } from "../hooks/useAttachment";
 
 interface Props {
-  caseId: number;
-  existingUrl?: string | null;
+  files: AttachmentFile[];
+
+  addFiles: (files: FileList | null) => void;
+
+  removeFile: (id: string) => void;
 }
 
-export function AttachmentUploader({ caseId, existingUrl }: Props) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(existingUrl ?? null);
-  const qc = useQueryClient();
+export function AttachmentUploader({files, addFiles, removeFile,}: Props) {
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: (file: File) => casesApi.uploadAttachment(caseId, file),
-    onSuccess: (data) => {
-      setPreview(data.url);
-      qc.invalidateQueries({ queryKey: [CASES_KEY, caseId] });
-    },
-  });
+  const [selectedFile, setSelectedFile] =useState<AttachmentFile | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) mutate(file);
-  };
+  useEffect(() => {
+    if (files.length > 0 && !selectedFile) {
+      setSelectedFile(files[0]);
+    }
+    if (files.length === 0) {
+      setSelectedFile(null);
+    }
+  }, [files, selectedFile]);
 
   return (
-    <div className="space-y-2">
-      <input
-        ref={inputRef}
-        type="file"
-        className="hidden"
-        accept=".pdf,.png,.jpg,.jpeg,.xlsx,.docx"
-        onChange={handleChange}
-      />
-
-      {preview ? (
-        <div className="flex items-center gap-2 p-2 rounded-md border bg-muted/30">
-          <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-          <a
-            href={preview}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-600 underline underline-offset-2 truncate flex-1"
-          >
-            View Attachment
-          </a>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={() => setPreview(null)}
-          >
-            <X className="h-3 w-3" />
-          </Button>
+    <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-5 min-h-[420px]">
+      {/* LEFT PANEL */}
+      <div className="rounded-2xl border bg-slate-50 p-4 space-y-4">
+        <div>
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            Storage File List
+          </h3>
         </div>
-      ) : (
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={isPending}
-          onClick={() => inputRef.current?.click()}
-          className="gap-2"
-        >
-          {isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+
+        {/* UPLOAD BUTTON */}
+        <label className="block">
+          <input
+            type="file"
+            multiple
+            className="hidden"
+            accept="*/*"
+            onChange={(e) =>
+              addFiles(e.target.files)
+            }
+          />
+
+          <div className="flex items-center justify-center gap-2 rounded-xl border border-dashed bg-violet-50 hover:bg-violet-100 transition-colors cursor-pointer h-12 text-sm font-medium text-violet-700">
+            <Upload className="h-4 w-4" />
+
+            Select Local File Attachment
+          </div>
+        </label>
+
+        {/* FILE LIST */}
+        <div className="rounded-xl border bg-white min-h-[250px] p-2 space-y-2 overflow-auto">
+          {files.length === 0 ? (
+            <div className="h-[220px] flex flex-col items-center justify-center text-slate-400 text-sm">
+              <FileText className="h-8 w-8 mb-2 opacity-40" />
+
+              No storage files registered.
+            </div>
           ) : (
-            <Paperclip className="h-4 w-4" />
+            files.map((file) => (
+              <div
+                key={file.id}
+                onClick={() => setSelectedFile(file)}
+                className={`flex items-start justify-between gap-2 rounded-lg border p-3 cursor-pointer transition-colors ${
+                  selectedFile?.id === file.id
+                    ? "bg-violet-50 border-violet-200"
+                    : "hover:bg-slate-50"
+                }`}
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {file.file.name}
+                  </p>
+
+                  <p className="text-xs text-slate-500">
+                    {Math.round(
+                      file.file.size / 1024
+                    )}{" "}
+                    KB
+                  </p>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+
+                    if (selectedFile?.id === file.id) {
+                      setSelectedFile(null);
+                    }
+
+                    removeFile(file.id);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))
           )}
-          {isPending ? "Uploading…" : "Attach File"}
-        </Button>
-      )}
+        </div>
+      </div>
+
+      {/* RIGHT PREVIEW PANEL */}
+      <div className="rounded-2xl border bg-white flex items-center justify-center min-h-[420px]">
+        {files.length === 0 ? (
+          <div className="text-center text-slate-400">
+            <FileText className="h-10 w-10 mx-auto mb-3 opacity-40" />
+
+            <p className="text-sm">
+              Select an attachment on the left to
+              preview contents here.
+            </p>
+          </div>
+        ) : (
+          <div className="w-full h-full p-6">
+            <iframe
+              src={selectedFile?.preview}
+              className="w-full h-[400px] rounded-xl border"
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

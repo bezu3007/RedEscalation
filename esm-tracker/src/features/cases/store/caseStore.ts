@@ -30,38 +30,39 @@ interface CaseUIState {
 
   selectedCaseId: number | null;
 
-  isCreateModalOpen: boolean;
+  selectedParentCase: CaseItem | null;
 
+  isCreateModalOpen: boolean;
   isEditModalOpen: boolean;
+  isViewModalOpen: boolean;
 
   editingCase: CaseItem | null;
+  viewingCase: CaseItem | null;
 
   page: number;
-
   pageSize: number;
 
   visibleColumns: Record<ColumnKey, boolean>;
 
-  setVisibleColumns: (
-    columns: Record<ColumnKey, boolean>
-  ) => void;
+  setVisibleColumns: (columns: Record<ColumnKey, boolean>) => void;
 
   setFilters: (filters: Partial<CaseFilters>) => void;
-
   resetFilters: () => void;
 
   setSelectedCaseId: (id: number | null) => void;
 
   openCreateModal: () => void;
-
   closeCreateModal: () => void;
 
   openEditModal: (caseItem: CaseItem) => void;
-
   closeEditModal: () => void;
 
-  setPage: (page: number) => void;
+  openViewModal: (caseItem: CaseItem) => void;
+  closeViewModal: () => void;
 
+  setSelectedParentCase: (data: CaseItem | null) => void;
+
+  setPage: (page: number) => void;
   setPageSize: (size: number) => void;
 }
 
@@ -69,15 +70,16 @@ export const useCaseStore = create<CaseUIState>((set) => ({
   filters: defaultFilters,
 
   selectedCaseId: null,
+  selectedParentCase: null,
 
   isCreateModalOpen: false,
-
   isEditModalOpen: false,
+  isViewModalOpen: false,
 
   editingCase: null,
+  viewingCase: null,
 
   page: 1,
-
   pageSize: 25,
 
   visibleColumns: {
@@ -110,12 +112,17 @@ export const useCaseStore = create<CaseUIState>((set) => ({
   setSelectedCaseId: (id) =>
     set({ selectedCaseId: id }),
 
+  // CREATE
   openCreateModal: () =>
     set({ isCreateModalOpen: true }),
 
   closeCreateModal: () =>
-    set({ isCreateModalOpen: false }),
+    set({
+      isCreateModalOpen: false,
+      selectedParentCase: null,
+    }),
 
+  // EDIT
   openEditModal: (caseItem) =>
     set({
       isEditModalOpen: true,
@@ -128,6 +135,24 @@ export const useCaseStore = create<CaseUIState>((set) => ({
       editingCase: null,
     }),
 
+  // VIEW
+  openViewModal: (caseItem) =>
+    set({
+      isViewModalOpen: true,
+      viewingCase: caseItem,
+    }),
+
+  closeViewModal: () =>
+    set({
+      isViewModalOpen: false,
+      viewingCase: null,
+    }),
+
+  // SUB CASE CONTEXT
+  setSelectedParentCase: (data) =>
+    set({ selectedParentCase: data }),
+
+  // PAGINATION
   setPage: (page) => set({ page }),
 
   setPageSize: (size) =>

@@ -1,50 +1,25 @@
 import React, { useCallback, useMemo, useRef } from "react";
-
 import { AgGridReact } from "ag-grid-react";
-
 import type { ColDef, GridReadyEvent, ICellRendererParams } from "ag-grid-community";
-
-import { ModuleRegistry } from "ag-grid-community";
-
 import { useCases } from "../hooks/useCases";
-
 import { useCaseStore } from "../store/caseStore";
-
 import { StatusBadge } from "./StatusBadge";
-
 import { CaseTypeBadge } from "./CaseTypeBadge";
-
 import type { CaseItem, CasePriority } from "../types";
-
 import { formatDate } from "@/shared/utils/formatDate";
-
 import { Button } from "@/shared/components/ui/button";
-
-import { Eye, Pencil } from "lucide-react";
-
+import { Eye, Pencil, ChevronRight, ChevronDown, MoreVertical, Wrench, LoaderCircle, PlusCircle, X} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 import { cn } from "@/shared/lib/utils";
-
 import "ag-grid-community/styles/ag-grid.css";
-
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { ChevronRight, ChevronDown } from "lucide-react";
-
-// Module registration removed: using default community bundle exports.
-
-
+import { createPortal } from "react-dom";
 
 const PRIORITY_CLASSES: Record<CasePriority, string> = {
-
   Low: "text-slate-500",
-
   Medium: "text-blue-600",
-
   High: "text-orange-600",
-
   Critical: "text-red-600 font-semibold",
-
 };
 
 function ExpandCell() {
@@ -65,80 +40,163 @@ function ExpandCell() {
   );
 }
 
-function ActionsCell({ data }: ICellRendererParams<CaseItem>) {
-
+function RowMenuCell({ data }: ICellRendererParams<CaseItem>) {
   const navigate = useNavigate();
 
-  const { openEditModal } = useCaseStore();
+  const {
+    openEditModal,
+    setSelectedParentCase,
+    openCreateModal,
+    openViewModal,
+  } = useCaseStore();
 
+  const [open, setOpen] = React.useState(false);
+  const [pos, setPos] = React.useState<{ x: number; y: number } | null>(null);
 
+  const btnRef = React.useRef<HTMLButtonElement>(null);
 
   if (!data) return null;
 
+  const toggleMenu = () => {
+    const rect = btnRef.current?.getBoundingClientRect();
+    if (!rect) return;
 
+    setPos({
+      x: rect.left,
+      y: rect.bottom,
+    });
+
+    setOpen((prev) => !prev);
+  };
 
   return (
+    <>
+      {/* TRIGGER */}
+      <div className="flex items-center justify-center h-full">
+        <button
+          ref={btnRef}
+          onClick={toggleMenu}
+          className="h-8 w-8 rounded-md hover:bg-slate-100 flex items-center justify-center"
+        >
+          <MoreVertical className="h-4 w-4" />
+        </button>
+      </div>
 
-    <div className="flex items-center gap-1 h-full">
+      {/* MENU */}
+      {open &&
+        pos &&
+        createPortal(
+          <>
+            {/* BACKDROP */}
+            <div
+              className="fixed inset-0 z-[998]"
+              onClick={() => setOpen(false)}
+            />
 
-      <Button
+            {/* PANEL */}
+            <div
+              className="fixed z-[9999] w-56 rounded-2xl border bg-white shadow-2xl overflow-hidden"
+              style={{
+                top: pos.y + 6,
+                left: pos.x,
+              }}
+            >
+              {/* HEADER */}
+              <div className="flex items-center justify-between px-4 py-3 border-b bg-slate-50">
+                <p className="font-medium text-sm">{data.caseNumber}</p>
 
-        size="icon"
+                <button
+                  onClick={() => setOpen(false)}
+                  className="h-7 w-7 rounded-full hover:bg-slate-200 flex items-center justify-center"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
 
-        variant="ghost"
+              {/* ACTIONS */}
+              <div className="p-2 space-y-1">
+                {/* VIEW */}
+                <button
+                  onClick={() => {
+                    openViewModal(data);
+                    setOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm"
+                >
+                  <Eye className="h-4 w-4 text-cyan-500" />
+                  View
+                </button>
 
-        className="h-7 w-7"
+                {/* EDIT */}
+                <button
+                  onClick={() => {
+                    openEditModal(data);
+                    setOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm"
+                >
+                  <Pencil className="h-4 w-4 text-blue-500" />
+                  Edit
+                </button>
 
-        onClick={() => navigate(`/cases/${data.id}`)}
+                {/* FIXED (optional future action) */}
+                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm">
+                  <Wrench className="h-4 w-4 text-indigo-500" />
+                  Mark Fixed
+                </button>
 
-      >
+                {/* IN PROGRESS */}
+                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm">
+                  <LoaderCircle className="h-4 w-4 text-orange-500" />
+                  In Progress
+                </button>
 
-        <Eye className="h-3.5 w-3.5" />
-
-      </Button>
-
-      <Button
-
-        size="icon"
-
-        variant="ghost"
-
-        className="h-7 w-7"
-
-        onClick={() => openEditModal(data)}
-
-      >
-
-        <Pencil className="h-3.5 w-3.5" />
-
-      </Button>
-
-    </div>
-
+                {/* CREATE SUBCASE */}
+                <button
+                  onClick={() => {
+                    setSelectedParentCase(data);
+                    openCreateModal();
+                    setOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm"
+                >
+                  <PlusCircle className="h-4 w-4 text-green-600" />
+                  Create Sub Case
+                </button>
+              </div>
+            </div>
+          </>,
+          document.body
+        )}
+    </>
   );
-
 }
 
-
-
 export function CaseGrid() {
-
   const gridRef = useRef<AgGridReact<CaseItem>>(null);
-
   const { data, isLoading, isFetching } = useCases();
-
   const { page, pageSize, setPage, setPageSize, visibleColumns, } = useCaseStore();
 
   const colDefs = useMemo<ColDef<CaseItem>[]>(
     () => [
       {
-        headerName: "Expand",
-        width: 90,
+        headerName: "",
+        width: 50,
         pinned: "left",
         sortable: false,
         filter: false,
         resizable: false,
         cellRenderer: ExpandCell,
+      },
+
+      {
+        headerName: "",
+        width: 30,
+        pinned: "left",
+        sortable: false,
+        filter: false,
+        resizable: false,
+        cellRenderer: RowMenuCell,
       },
 
       {
@@ -153,8 +211,8 @@ export function CaseGrid() {
       {
         field: "title",
         headerName: "Title",
-        flex: 2,
-        minWidth: 200,
+        flex: 1,
+        minWidth: 150,
         tooltipField: "title",
         hide: !visibleColumns.title,
       },
@@ -246,15 +304,6 @@ export function CaseGrid() {
           value ? formatDate(value) : "—",
         sort: "desc",
       },
-
-      {
-        headerName: "",
-        width: 90,
-        pinned: "right",
-        sortable: false,
-        filter: false,
-        cellRenderer: ActionsCell,
-      },
     ],
     [visibleColumns]
   );
@@ -275,30 +324,20 @@ export function CaseGrid() {
   return (
     <div className="flex flex-col gap-3">
       <div
-        className="ag-theme-quartz w-full"
+        className="ag-theme-quartz w-full overflow-x-visible"
         style={{ height: "calc(100vh - 280px)", minHeight: 400 }}
       >
         <AgGridReact
           ref={gridRef}
-
           rowData={data?.items ?? []}
-
           columnDefs={colDefs}
-
           defaultColDef={defaultColDef}
-
           onGridReady={onGridReady}
-
           loading={isLoading}
-
           rowHeight={44}
-
           headerHeight={44}
-
           suppressCellFocus
-
           animateRows
-
           getRowId={({ data: d }) => String(d.id)}
         />
       </div>

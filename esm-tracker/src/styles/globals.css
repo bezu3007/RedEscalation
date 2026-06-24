@@ -105,3 +105,13 @@
   border-radius: 16px;
   overflow: hidden;
 }
+
+.ag-root-wrapper,
+.ag-root,
+.ag-body-viewport,
+.ag-center-cols-viewport,
+.ag-center-cols-container,
+.ag-row,
+.ag-cell {
+  overflow: visible !important;
+}
