@@ -1,103 +1,111 @@
 import { useCallback, useEffect, useState } from "react";
-
-import {
-  useCaseStore,
-  type ColumnKey,
-} from "../store/caseStore";
-
+import { useCases } from "../hooks/useCases";
+import {useCaseStore,type ColumnKey,} from "../store/caseStore";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-
-import {
-  Plus,
-  X,
-  Search,
-  Filter,
-  Columns3,
-} from "lucide-react";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu";
-
+import {Plus,X,Search,Filter,Columns3,} from "lucide-react";
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue,} from "@/shared/components/ui/select";
+import {DropdownMenu,DropdownMenuContent,DropdownMenuCheckboxItem,DropdownMenuTrigger,} from "@/shared/components/ui/dropdown-menu";
 import { DateField } from "@/shared/components/DateField";
+import type {CaseStatus,CaseType,} from "../types";
 
-import type {
-  CaseStatus,
-  CaseType,
-  CasePriority,
-} from "../types";
 
-const STATUSES: CaseStatus[] = [
-  "Open",
-  "InProgress",
-  "PendingApproval",
-  "Resolved",
-  "Closed",
-  "Rejected",
-];
+export function FilterBar() {
 
-const TYPES: CaseType[] = [
-  "Bug",
-  "FeatureRequest",
-  "Support",
-  "Payment",
-  "Infrastructure",
-  "Other",
-];
+  const STATUSES: CaseStatus[] = [
+    "Accepted",
+    "Solved",
+    "Fixed",
+    "Prepared",
+    "Re Journal",
+    "Rejected",
+    "Returned",
+    "Reviewed",
+    "Not Solved",
+    "On Progress",
+  ];
 
-const PRIORITIES: CasePriority[] = [
-  "Low",
-  "Medium",
-  "High",
-  "Critical",
-];
+  const TYPES: CaseType[] = [
+    "Performance",
+    "Error",
+    "Report",
+    "Intermitant Case",
+    "New Functionality",
+    "Customization",
+    "Not Implemented",
+  ];
 
-type FilterKey =
+  type FilterKey =
   | "status"
-  | "caseType"
-  | "priority"
-  | "fromDate"
-  | "toDate";
+  | "CaseType"
+  | "Module"
+  | "projectName"
+  | "PaidorNot"
+  | "fromIssueDate"
+  | "toIssueDate";
 
 const FILTER_CONFIG: {
   key: FilterKey;
   label: string;
 }[] = [
   { key: "status", label: "Status" },
-  { key: "caseType", label: "Type" },
-  { key: "priority", label: "Priority" },
-  { key: "fromDate", label: "From Date" },
-  { key: "toDate", label: "To Date" },
-];
-
-const COLUMN_CONFIG: {
-  key: ColumnKey;
-  label: string;
-}[] = [
-  { key: "caseNumber", label: "Case #" },
-  { key: "title", label: "Title" },
-  { key: "status", label: "Status" },
-  { key: "caseType", label: "Type" },
-  { key: "priority", label: "Priority" },
+  { key: "CaseType", label: "Type" },
+  { key: "Module", label: "Module" },
   { key: "projectName", label: "Project" },
-  { key: "department", label: "Department" },
-  { key: "assignedDeveloper", label: "Developer" },
-  { key: "createdAt", label: "Created Date" },
+  { key: "PaidorNot", label: "Payement Status" },
+  { key: "fromIssueDate", label: "From Date" },
+  { key: "toIssueDate", label: "To Date" },
 ];
 
-export function FilterBar() {
+  const COLUMN_CONFIG: {
+    key: ColumnKey;
+    label: string;
+  }[] = [
+    { key: "caseNumber", label: "Case #" },//
+    { key: "issueDate", label: "Created" },//
+    { key: "projectName", label: "Project" },//
+    { key: "issues", label: "Issue" },//
+    { key: "paidorNot", label: "Payment Status" },//
+    { key: "caseType", label: "Case Type" },//
+    { key: "module", label: "Module" },//
+    {
+      key: "functionalConsultant",
+      label: "functional Consultant",//
+    },
+    { key: "reviewedBy", label: "Reviewed By" },//
+    { key: "developer", label: "Developer" },//
+    { key: "department", label: "Department" },//
+    { key: "status", label: "Status" },//
+    { key: "releaseNote", label: "Release Note" },
+    { key: "startDate", label: "Start Date" },
+    { key: "deadLine", label: "Deadline" },
+  ];
+
+  const { data } = useCases();
+  const moduleOptions = Array.from(
+    new Set(
+      (data?.items ?? [])
+        .map((x) => x.module)
+        .filter(Boolean)
+    )
+  ).sort();
+
+  const paymentOptions = Array.from(
+    new Set(
+      (data?.items ?? [])
+        .map((x) => x.paidorNot)
+        .filter(Boolean)
+    )
+  ).sort();
+
+  const projectOptions = Array.from(
+    new Set(
+      (data?.items ?? [])
+        .map((x) => x.projectName)
+        .filter(Boolean)
+    )
+  ).sort();
+
   const {
     filters,
     setFilters,
@@ -107,6 +115,7 @@ export function FilterBar() {
     setVisibleColumns,
   } = useCaseStore();
 
+  //filter
   const [draftFilters, setDraftFilters] = useState(filters);
 
   useEffect(() => {
@@ -137,14 +146,21 @@ export function FilterBar() {
     );
   }, [visibleFilters]);
 
+
+  //columns
   useEffect(() => {
     const saved =
       localStorage.getItem("visibleColumns");
 
     if (saved) {
-      setVisibleColumns(JSON.parse(saved));
+      const parsed = JSON.parse(saved);
+
+      setVisibleColumns({
+        ...visibleColumns,
+        ...parsed,
+      });
     }
-  }, [setVisibleColumns]);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(
@@ -153,23 +169,21 @@ export function FilterBar() {
     );
   }, [visibleColumns]);
 
-  const handleSearch = useCallback(
-    (
-      e: React.ChangeEvent<HTMLInputElement>
-    ) => {
-      setFilters({
-        search: e.target.value,
-      });
-    },
-    [setFilters]
-  );
+  // useEffect(() => {
+  //   const saved =
+  //     localStorage.getItem("visibleColumns");
+
+  //   if (saved) {
+  //     setVisibleColumns(JSON.parse(saved));
+  //   }
+  // }, [setVisibleColumns]);
 
   const hasActiveFilters =
     Object.values(filters).some(Boolean);
 
   return (
     <div className="bg-white border rounded-lg p-4 shadow-sm space-y-3">
-      {/* TOP ROW */}
+      {/* TOP */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         {/* LEFT */}
         <div className="flex flex-wrap items-center gap-2 flex-1">
@@ -179,21 +193,20 @@ export function FilterBar() {
             <Input
               placeholder="Search cases..."
               className="pl-8 h-8 text-sm bg-gray-50"
-              // value={filters.search}
-              // onChange={handleSearch}
               value={draftFilters.search}
-                onChange={(e) =>
-                  setDraftFilters({
-                    ...draftFilters,
-                    search: e.target.value,
-                  })
-                }
+              onChange={(e) =>
+                setDraftFilters({
+                  ...draftFilters,
+                  search: e.target.value,
+                })
+              }
             />
           </div>
         </div>
 
         {/* RIGHT */}
         <div className="flex items-center gap-2">
+
           {/* FILTERS */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -290,25 +303,18 @@ export function FilterBar() {
             className="gap-2 shrink-0"
           >
             <Plus className="h-4 w-4" />
-            New Case
+            Add Issue
           </Button>
         </div>
       </div>
 
-      {/* FILTER ROW */}
+      {/* FILTERS */}
       <div className="flex flex-wrap gap-2 items-center">
+        {/* STATUS */}
         {visibleFilters.status && (
           <Select
-            // value={filters.status || "all"}
             value={draftFilters.status || "all"}
             onValueChange={(v) =>
-              // setFilters({
-              //   status:
-              //     v === "all"
-              //       ? ""
-              //       : (v as CaseStatus),
-              // })
-
               setDraftFilters({
                 ...draftFilters,
                 status:
@@ -318,7 +324,7 @@ export function FilterBar() {
               })
             }
           >
-            <SelectTrigger className="w-[150px] bg-gray-50">
+            <SelectTrigger className="w-[170px] bg-gray-50">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
 
@@ -328,36 +334,19 @@ export function FilterBar() {
               </SelectItem>
 
               {STATUSES.map((s) => (
-                <SelectItem
+                <SelectItem className="bg-white"
                   key={s}
                   value={s}
                 >
-                  {s === "InProgress"
-                    ? "In Progress"
-                    : s ===
-                      "PendingApproval"
-                    ? "Pending Approval"
-                    : s}
+                  {s}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         )}
 
-        {visibleFilters.caseType && (
-          // <Select
-          //   value={
-          //     filters.caseType || "all"
-          //   }
-          //   onValueChange={(v) =>
-          //     setFilters({
-          //       caseType:
-          //         v === "all"
-          //           ? ""
-          //           : (v as CaseType),
-          //     })
-          //   }
-          // >
+        {/* TYPE */}
+        {visibleFilters.CaseType && (
           <Select
             value={draftFilters.caseType || "all"}
             onValueChange={(v) =>
@@ -370,8 +359,8 @@ export function FilterBar() {
               })
             }
           >
-            <SelectTrigger className="w-[150px] bg-gray-50">
-              <SelectValue placeholder="Type" />
+            <SelectTrigger className="w-[170px] bg-gray-50">
+              <SelectValue placeholder="Case Type" />
             </SelectTrigger>
 
             <SelectContent>
@@ -380,46 +369,107 @@ export function FilterBar() {
               </SelectItem>
 
               {TYPES.map((t) => (
-                <SelectItem
+                <SelectItem className="bg-white"
                   key={t}
                   value={t}
                 >
-                  {t ===
-                  "FeatureRequest"
-                    ? "Feature Request"
-                    : t}
+                  {t}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         )}
 
-        {visibleFilters.priority && (
+        {/* MODULE */}
+        {visibleFilters.Module && (
           <Select
-            value={
-              draftFilters.priority || "all"
-            }
+            value={draftFilters.module || "all"}
             onValueChange={(v) =>
               setDraftFilters({
                 ...draftFilters,
-                priority:
-                  v === "all"
-                    ? ""
-                    : (v as CasePriority),
+                module:
+                  v === "all" ? "" : v,
               })
             }
           >
-            <SelectTrigger className="w-[140px] bg-gray-50">
-              <SelectValue placeholder="Priority" />
+            <SelectTrigger className="w-[180px] bg-gray-50">
+              <SelectValue placeholder="Module" />
             </SelectTrigger>
 
             <SelectContent>
               <SelectItem value="all">
-                All Priorities
+                All Modules
               </SelectItem>
 
-              {PRIORITIES.map((p) => (
+              {moduleOptions.map((m) => (
                 <SelectItem
+                  key={m}
+                  value={m}
+                >
+                  {m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+
+        {/* Project */}
+        {visibleFilters.projectName && (
+          <Select
+            value={draftFilters.projectName || "all"}
+            onValueChange={(v) =>
+              setDraftFilters({
+                ...draftFilters,
+                projectName:
+                  v === "all" ? "" : v,
+              })
+            }
+          >
+            <SelectTrigger className="w-[180px] bg-gray-50">
+              <SelectValue placeholder="Projects" />
+            </SelectTrigger>
+
+            <SelectContent>
+              <SelectItem value="all">
+                All Projects
+              </SelectItem>
+
+              {projectOptions.map((m) => (
+                <SelectItem className="bg-white"
+                  key={m}
+                  value={m}
+                >
+                  {m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+
+        {/* PAYMENT */}
+        {visibleFilters.PaidorNot && (
+          <Select
+            value={draftFilters.paidorNot || "all"}
+            onValueChange={(v) =>
+              setDraftFilters({
+                ...draftFilters,
+                paidorNot:
+                  v === "all" ? "" : v,
+              })
+            }
+          >
+            <SelectTrigger className="w-[180px] bg-gray-50">
+              <SelectValue placeholder="Payment Status" />
+            </SelectTrigger>
+
+            <SelectContent>
+              <SelectItem value="all">
+                All Payments
+              </SelectItem>
+
+              {paymentOptions.map((p) => (
+                <SelectItem className="bg-white"
                   key={p}
                   value={p}
                 >
@@ -430,68 +480,86 @@ export function FilterBar() {
           </Select>
         )}
 
-        {visibleFilters.fromDate && (
+        {/* DATE RANGE */}
+        {(visibleFilters.fromIssueDate || visibleFilters.toIssueDate) && (
+        <div className="flex items-center gap-2">
           <DateField
-            placeholder="From date"
-            value={draftFilters.dateFrom}
-            onChange={(v) =>
+            placeholder="From Date"
+            value={
+              draftFilters.fromIssueDate
+            }
+            onChange={(value) =>
               setDraftFilters({
                 ...draftFilters,
-                dateFrom: v,
+                fromIssueDate: value,
               })
             }
-            className="w-[140px] bg-gray-50"
+            className="w-[160px] bg-gray-50"
           />
+
+          <DateField
+            placeholder="To Date"
+            value={
+              draftFilters.toIssueDate
+            }
+            onChange={(value) =>
+              setDraftFilters({
+                ...draftFilters,
+                toIssueDate: value,
+              })
+            }
+            className="w-[160px] bg-gray-50"
+          />
+        </div>
         )}
 
-        {visibleFilters.toDate && (
-          <DateField
-            placeholder="To date"
-            value={draftFilters.dateTo}
-            onChange={(v) =>
-              setDraftFilters({
-                ...draftFilters,
-                dateTo: v,
-              })
-            }
-            className="w-[140px] bg-gray-50"
-          />
-        )}
-        
+        {/* SHOW */}
         <Button
           size="sm"
-          onClick={() => setFilters(draftFilters)}
-          className="gap-2 ml-auto"
+          onClick={() => {
+            if (
+              !draftFilters.fromIssueDate ||
+              !draftFilters.toIssueDate
+            ) {
+              alert(
+                "Date range is required"
+              );
+
+              return;
+            }
+
+            setFilters(draftFilters);
+          }}
         >
           Show
         </Button>
-          {/* CLEAR */}
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              // onClick={resetFilters}
-              onClick={() => {
-                resetFilters();
 
-                setDraftFilters({
+        {/* CLEAR */}
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              resetFilters();
+
+              setDraftFilters({
                   search: "",
                   status: "",
                   caseType: "",
-                  priority: "",
-                  dateFrom: "",
-                  dateTo: "",
-                  department: "",
+                  module: "",
                   projectName: "",
-                  assignedDeveloper: "",
+                  paidorNot: "",
+                  fromIssueDate: "",
+                  toIssueDate: "",
+                  developer: "",
                 });
-              }}
-              className="gap-1 text-muted-foreground"
-            >
-              <X className="h-4 w-4" />
-              Clear
-            </Button>
-          )}
+            }}
+            className="gap-1 text-muted-foreground"
+          >
+            <X className="h-4 w-4" />
+            Clear
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -1,27 +1,20 @@
 import React, { useCallback, useMemo, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, GridReadyEvent, ICellRendererParams } from "ag-grid-community";
+import { useVoucherInit } from "../hooks/useVoucherInit";
 import { useCases } from "../hooks/useCases";
-import { useCaseTransition } from "../hooks/useCaseTransition";
 import { useCaseStore } from "../store/caseStore";
 import { StatusBadge } from "./StatusBadge";
 import { CaseTypeBadge } from "./CaseTypeBadge";
-import type { CaseItem, CasePriority, CaseStatus } from "../types";
+import type { CaseItem } from "../types";
 import { formatDate } from "@/shared/utils/formatDate";
 import { Button } from "@/shared/components/ui/button";
-import { Eye, Pencil, ChevronRight, ChevronDown, MoreVertical, Wrench, LoaderCircle, PlusCircle, X, CheckCircle2,  RotateCcw, Clock3, Ban, PlayCircle, CheckCheck, Lock} from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { cn } from "@/shared/lib/utils";
+import { ChevronRight, ChevronDown,} from "lucide-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { createPortal } from "react-dom";
+import { RowMenuCell } from "./RowMenuCell";
+// import { CASE_TYPES } from "../types";
 
-const PRIORITY_CLASSES: Record<CasePriority, string> = {
-  Low: "text-slate-500",
-  Medium: "text-blue-600",
-  High: "text-orange-600",
-  Critical: "text-red-600 font-semibold",
-};
 
 function ExpandCell() {
   const [expanded, setExpanded] = React.useState(false);
@@ -41,266 +34,11 @@ function ExpandCell() {
   );
 }
 
-function RowMenuCell({ data }: ICellRendererParams<CaseItem>) {
-  const { mutate: transitionCase } = useCaseTransition();
-  const handleTransition = ( targetStatus: CaseStatus) => {
-    if (!data) return;
-
-    transitionCase({
-      caseId: data.id,
-      targetStatus,
-    });
-
-    setOpen(false);
-  };
-
-  const navigate = useNavigate();
-
-  const {
-    openEditModal,
-    setSelectedParentCase,
-    openCreateModal,
-    openViewModal,
-  } = useCaseStore();
-
-  const [open, setOpen] = React.useState(false);
-  const [pos, setPos] = React.useState<{ x: number; y: number } | null>(null);
-
-  const btnRef = React.useRef<HTMLButtonElement>(null);
-
-  if (!data) return null;
-
-  const toggleMenu = () => {
-    const rect = btnRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    setPos({
-      x: rect.left,
-      y: rect.bottom,
-    });
-
-    setOpen((prev) => !prev);
-  };
-
-  return (
-    <>
-      {/* TRIGGER */}
-      <div className="flex items-center justify-center h-full">
-        <button
-          ref={btnRef}
-          onClick={toggleMenu}
-          className="h-8 w-8 rounded-md hover:bg-slate-100 flex items-center justify-center"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </button>
-      </div>
-
-      {/* MENU */}
-      {open &&
-        pos &&
-        createPortal(
-          <>
-            {/* BACKDROP */}
-            <div
-              className="fixed inset-0 z-[998]"
-              onClick={() => setOpen(false)}
-            />
-
-            {/* PANEL */}
-            <div
-              className="fixed z-[9999] w-56 rounded-2xl border bg-white shadow-2xl overflow-hidden"
-              style={{
-                top: pos.y + 6,
-                left: pos.x,
-              }}
-            >
-              {/* HEADER */}
-              <div className="flex items-center justify-between px-4 py-3 border-b bg-slate-50">
-                <p className="font-medium text-sm">{data.caseNumber}</p>
-
-                <button
-                  onClick={() => setOpen(false)}
-                  className="h-7 w-7 rounded-full hover:bg-slate-200 flex items-center justify-center"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-
-              {/* ACTIONS */}
-              <div className="p-2 space-y-1">
-                {/* VIEW */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    navigate(`/cases/${data.id}`)
-                  }
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <Eye className="h-4 w-4 text-cyan-500" />
-
-                  VIEW
-                </button>
-
-                {/* EDIT */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    openEditModal(data);
-
-                    setOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <Pencil className="h-4 w-4 text-blue-500" />
-
-                  EDIT
-                </button>
-
-                <div className="my-2 border-t" />
-
-                {/* APPROVE */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleTransition("Approved")
-                  }
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-
-                  APPROVE
-                </button>
-
-                {/* REJECT */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleTransition("Rejected")
-                  }
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <Ban className="h-4 w-4 text-red-500" />
-
-                  REJECT
-                </button>
-
-                {/* RETURN */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleTransition("Returned")
-                  }
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <RotateCcw className="h-4 w-4 text-orange-500" />
-
-                  RETURN
-                </button>
-
-                {/* DEADLINE */}
-                <button
-                  type="button"
-                  onClick={() => handleTransition("DeadlineExtension")}
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <Clock3 className="h-4 w-4 text-violet-600" />
-
-                  DEADLINE EXTENSION
-                </button>
-
-                <div className="my-2 border-t" />
-
-                {/* OPEN */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleTransition("Open")
-                  }
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <RotateCcw className="h-4 w-4 text-slate-500" />
-
-                  OPEN
-                </button>
-
-                {/* IN PROGRESS */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleTransition("InProgress")
-                  }
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <PlayCircle className="h-4 w-4 text-blue-500" />
-
-                  IN PROGRESS
-                </button>
-
-                {/* PENDING */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleTransition(
-                      "PendingApproval"
-                    )
-                  }
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <LoaderCircle className="h-4 w-4 text-amber-500" />
-
-                  PENDING APPROVAL
-                </button>
-
-                {/* RESOLVED */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleTransition("Resolved")
-                  }
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <CheckCheck className="h-4 w-4 text-green-600" />
-
-                  RESOLVED
-                </button>
-
-                {/* CLOSED */}
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleTransition("Closed")
-                  }
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <Lock className="h-4 w-4 text-slate-600" />
-
-                  CLOSED
-                </button>
-
-                <div className="my-2 border-t" />
-
-                {/* SUB CASE */}
-                <button
-                  type="button"
-                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-slate-100 text-sm"
-                >
-                  <PlusCircle className="h-4 w-4 text-green-600" />
-
-                  CREATE SUB CASE
-                </button>
-              </div>
-            </div>
-          </>,
-          document.body
-        )}
-    </>
-  );
-}
-
 export function CaseGrid() {
+  useVoucherInit();
   const gridRef = useRef<AgGridReact<CaseItem>>(null);
   const { data, isLoading, isFetching } = useCases();
-  const { page, pageSize, setPage, setPageSize, visibleColumns, } = useCaseStore();
+  const { page, pageSize, setPage, visibleColumns, } = useCaseStore();
 
   const colDefs = useMemo<ColDef<CaseItem>[]>(
     () => [
@@ -326,7 +64,7 @@ export function CaseGrid() {
 
       {
         field: "caseNumber",
-        headerName: "Case #",
+        headerName: "Case Number",
         width: 110,
         pinned: "left",
         cellClass: "font-mono text-xs",
@@ -334,18 +72,24 @@ export function CaseGrid() {
       },
 
       {
-        field: "title",
-        headerName: "Title",
+        field: "projectName",
+        headerName: "Project",
         flex: 1,
         minWidth: 150,
-        tooltipField: "title",
-        hide: !visibleColumns.title,
+        hide: !visibleColumns.projectName,
+      },
+
+      {
+        field: "issues",
+        headerName: "Issues",
+        flex: 1,
+        minWidth: 150,
+        hide: !visibleColumns.issues,
       },
 
       {
         field: "status",
         headerName: "Status",
-        width: 150,
         hide: !visibleColumns.status,
         cellRenderer: ({
           value,
@@ -373,58 +117,80 @@ export function CaseGrid() {
       },
 
       {
-        field: "priority",
-        headerName: "Priority",
-        width: 100,
-        hide: !visibleColumns.priority,
-        cellRenderer: ({
-          value,
-        }: ICellRendererParams<CaseItem, string>) =>
-          value ? (
-            <span
-              className={cn(
-                "text-sm",
-                PRIORITY_CLASSES[
-                  value as CasePriority
-                ]
-              )}
-            >
-              {value}
-            </span>
-          ) : null,
+        field: "reviewedBy",
+        headerName: "Reviewed By",
+        hide: !visibleColumns.reviewedBy,
+        flex: 1,
+        minWidth: 150,
       },
 
       {
-        field: "projectName",
-        headerName: "Project",
+        field: "module",
+        headerName: "Module",
+        hide: !visibleColumns.module,
+        width: 100,
+        minWidth: 50,
+      },
+      
+      {
+        field: "paidorNot",
+        headerName: "Payement Status",
+        hide: !visibleColumns.paidorNot,
         flex: 1,
         minWidth: 120,
-        hide: !visibleColumns.projectName,
+      },
+
+      {
+        field: "functionalConsultant",
+        headerName: "FunctionalConsultant",
+        flex: 1,
+        minWidth: 140,
+        hide: !visibleColumns.functionalConsultant,
+      },
+
+      {
+        field: "developer",
+        headerName: "Developer",
+        flex: 1,
+        minWidth: 140,
+        hide: !visibleColumns.developer,
+        valueFormatter: ({ value }) =>
+          value ?? "—",
       },
 
       {
         field: "department",
         headerName: "Department",
         flex: 1,
-        minWidth: 120,
-        hide: !visibleColumns.department,
-      },
-
-      {
-        field: "assignedDeveloper",
-        headerName: "Developer",
-        flex: 1,
         minWidth: 140,
-        hide: !visibleColumns.assignedDeveloper,
+        hide: !visibleColumns.department,
         valueFormatter: ({ value }) =>
           value ?? "—",
       },
 
       {
-        field: "createdAt",
+        field: "releaseNote",
+        headerName: "Release Note",
+        flex: 1,
+        minWidth: 140,
+        hide: !visibleColumns.releaseNote,
+      },
+
+      {
+        field: "issueDate",
         headerName: "Created",
         width: 130,
-        hide: !visibleColumns.createdAt,
+        hide: !visibleColumns.issueDate,
+        valueFormatter: ({ value }) =>
+          value ? formatDate(value) : "—",
+        sort: "desc",
+      },
+
+      {
+        field: "deadLine",
+        headerName: "DeadLine",
+        width: 130,
+        hide: !visibleColumns.deadLine,
         valueFormatter: ({ value }) =>
           value ? formatDate(value) : "—",
         sort: "desc",

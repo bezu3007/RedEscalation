@@ -1,81 +1,128 @@
-// export type CaseStatus =
-//   | "Open"
-//   | "InProgress"
-//   | "PendingApproval"
-//   | "Resolved"
-//   | "Closed"
-//   | "Rejected";
+export const Case_Status =[
+   "Accepted",
+   "Solved",
+   "Fixed",
+   "Prepared",
+   "Re Journal",
+   "Rejected",
+   "Returned",
+   "Reviewed",
+   "Not Solved",
+   "On Progress",
+]
 export type CaseStatus =
-  | "Open"
-  | "InProgress"
-  | "PendingApproval"
-  | "Approved"
-  | "Resolved"
-  | "Closed"
-  | "Rejected"
-  | "Returned"
-  | "DeadlineExtension";
+  (typeof Case_Status)[number];
+
+export const CASE_TYPES = [
+  "Performance",
+  "Error",
+  "Report",
+  "Intermitant Case",
+  "New Functionality",
+  "Customization",
+  "Not Implemented",
+] as const;
 
 export type CaseType =
-  | "Bug"
-  | "FeatureRequest"
-  | "Support"
-  | "Payment"
-  | "Infrastructure"
-  | "Other";
+  (typeof CASE_TYPES)[number];
 
-export type CasePriority = "Low" | "Medium" | "High" | "Critical";
+  export const PAID_OR_NOT = [
+  "Paid",
+  "Free",
+  "To Be Determined",
+] as const;
 
-export interface CaseItem {
-  id: number;
-  caseNumber: string;
-  title: string;
-  description: string;
-  status: CaseStatus;
-  caseType: CaseType;
-  priority: CasePriority;
-  projectName: string;
-  moduleName: string;
-  department: string;
-  reportedBy: string;
-  assignedDeveloper: string | null;
-  assignedDeveloperId: string | null;
-  voucherNumber: string | null;
-  paymentStatus: string | null;
-  paymentAmount: number | null;
-  attachmentUrl: string | null;
-  createdAt: string;
-  updatedAt: string;
-  resolvedAt: string | null;
-  aiSuggestedDeveloper?: string | null;
-}
+export type PaidorNot =
+  (typeof PAID_OR_NOT)[number];
 
 export interface CaseFilters {
   search: string;
   status: CaseStatus | "";
   caseType: CaseType | "";
-  priority: CasePriority | "";
-  department: string;
+  module: string;
   projectName: string;
-  assignedDeveloper: string;
-  dateFrom: string;
-  dateTo: string;
+  paidorNot: string;
+  developer: string;
+  fromIssueDate: string;
+  toIssueDate: string;
+}
+
+export interface VoucherDTO {
+  id: number;
+  code: string;
+  consignee1: number;
+  consignee2: number;
+  consignee3: number | null;
+  consignee4: number | null;
+  issuedDate: string;
+  note: string;
+  originConsigneeUnit: number;
+  consigneeUnit1: number;
+  lastModified: string;
+  extension1: string;
+  extension2: string;
+  extension3: string;
+  extension4: string;
+  lastState: number;
+  startDate: string | null;
+  endDate: string | null;
+  remark: string;
+  type: number;
+  lastUser: number;
+  definition: number;
+}
+
+export interface ActivityDTO {
+  id: number;
+  reference: number;
+  device: string | null;
+  timeStamp: string;
+  user: number;
+  day: number;
+  month: number;
+  year: number;
+  platform: string;
+  consigneeUnit: number;
+  activityDefinition: number;
+  remark: string;
+}
+
+export interface VoucherBuffer {
+  voucher: VoucherDTO;
+  activity: ActivityDTO;
+  transactionReferencesBuffer: any[];
 }
 
 export interface CreateCaseRequest {
-  title: string;
-  description: string;
-  caseType: CaseType;
-  priority: CasePriority;
+  id: number | null;
+  caseNumber: string | "";
+  issueDate: string;
   projectName: string;
-  moduleName: string;
-  department: string;
-  voucherNumber?: string;
-  paymentAmount?: number;
+  projectNameID: string | undefined;
+  issues: string;
+  paidorNot: string;
+  caseType: CaseType;
+  module: string;
+  functionalConsultant: string;
+  functionalConsultantID: string;
+  reviewedBy: string | null;
+  developer: string | null;
+  developerId: string | null;
+  department: string | null;
+  departmentID: string | null;
+  developmentStatus: string;
+  UATStatus: string | null;
+  status: CaseStatus;
+  releaseNote: string;
+  startDate: string;
+  deadLine: string;
+  referencedID: string;
+  attachmentUrl: string;
+//aiSuggestedDeveloper?: string | null;
 }
 
 export interface UpdateCaseRequest extends Partial<CreateCaseRequest> {
-  assignedDeveloperId?: string;
+  developerId?: string;
   status?: CaseStatus;
 }
 
@@ -105,4 +152,171 @@ export interface AiSuggestDevelopersResponse {
     score: number;
     reason: string;
   }>;
+}
+
+export interface CaseItem {
+  id: number | null;
+  caseNumber: string | "";
+  issueDate: string;
+  projectName: string;
+  projectNameID: string;
+  issues: string;
+  paidorNot: string;
+  caseType: CaseType;
+  module: string;
+  functionalConsultant: string;
+  functionalConsultantID: string;
+  reviewedBy: string | null;
+  developer: string | null;
+  developerId: string | null;
+  department: string | null;
+  departmentID: string | null;
+  developmentStatus: string;
+  UATStatus: string | null;
+  status: CaseStatus;
+  releaseNote: string;
+  startDate: string;
+  deadLine: string;
+  referencedID: string;
+  attachmentUrl: string;
+//aiSuggestedDeveloper?: string | null;
+}
+
+// Main interface matching the API response structure
+export interface VoucherInit {
+    voucherId: string;
+    // workflows: WorkFlow[];
+    extensions: Extension[];
+    requiredConsignees: RequiredConsignee[];
+    // Additional fields you might want to include
+    // currencies?: Currency[];
+    // configs?: Config[];
+    // references?: Reference[];
+}
+
+// export interface WorkFlow {
+//     id: number;
+//     reference: number;
+//     consigneeUnit: number | null;
+//     description: number;
+//     state: number;
+//     index: number;
+//     needsPassCode: boolean;
+//     issuingEffect: boolean;
+//     isManual: boolean;
+//     requiredTime: number;
+//     maxRepeat: number;
+//     sequence: boolean;
+//     isPrint: boolean;
+//     remark: string | null;
+// }
+
+// ============ Main Response Types ============
+
+export interface VoucherInitResponse {
+  data: VoucherData;
+}
+
+export interface VoucherData {
+  voucherId: string;
+  // workflows: WorkFlow[];
+  // currencies: Currency[];
+  // configs: Config[];
+  extensions: Extension[];
+  requiredConsignees: RequiredConsignee[];
+  // references?: Reference[];
+  sourceStoreMappings?: any[];
+  destinationStoreMappings?: any[];
+}
+
+export interface Extension {
+    id: number;
+    voucherDefinition: number;
+    descritpion: string;  // Note: typo in JSON "descritpion"
+    index: number;
+    isMandatory: boolean;
+    type: number;
+    exDataType: null;
+    remark: string | null;
+}
+
+export interface RequiredConsignee {
+    rqGSLObject: RqGSLObject;
+    consignees: Consignee[];
+}
+
+export interface RqGSLObject {
+    id: number;
+    voucherDefn: number;
+    type: number;
+    consigneeUnit: null;
+    index: number;
+    description: string;
+    isMandatory: boolean;
+    needConsigneeUnit: boolean;
+    remark: string | null;
+}
+
+export interface Consignee {
+    id: number;
+    code: string;  // Note: JSON has code as string, e.g., "0910990961"
+    gslType: number;
+    isPerson: boolean;
+    firstName: string;
+    secondName: string | null;
+    thirdName: string | null;
+    fullName: string;
+    tin: string | null;
+    categoryId: number;
+    categoryDescription: string;
+    phoneNo: string | null;
+    mainConsigneeUnit: number | null;
+    mainConsigneeUnitName: string | null;
+    email: string | null;
+}
+
+// Optional: Additional interfaces for completeness
+// export interface Currency {
+//     id: number;
+//     country: number;
+//     description: string;
+//     sign: string;
+//     abbrivation: string;
+//     isDefault: boolean;
+//     remark: string | null;
+// }
+
+// export interface Config {
+//     id: number;
+//     pointer: number;
+//     reference: string;
+//     consigneeUnit: null;
+//     attribute: string;
+//     currentValue: string;
+//     previousValue: string | null;
+//     remark: string | null;
+// }
+
+// export interface Reference {
+//     id: number;
+//     relationType: number;
+//     consigneeUnit: null;
+//     referringPointer: number;
+//     referringObject: number;
+//     referencedPointer: number;
+//     referencedObject: number;
+//     relationLevel: null;
+//     remark: string | null;
+// }
+
+export interface VoucherInitResult {
+  raw: VoucherData;
+  voucherId: string;
+  // workflows: WorkFlow[];
+  // currencies: Currency[];
+  // configs: Config[];
+  projects: Consignee[];
+  functionalConsultants: Consignee[];
+  developers: Consignee[];
+  modules: Extension | undefined;
 }

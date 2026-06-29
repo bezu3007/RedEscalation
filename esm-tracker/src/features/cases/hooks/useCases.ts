@@ -1,33 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { casesApi, type CasesQueryParams } from "../api/casesApi";
-
 import { useCaseStore } from "../store/caseStore";
-
-
+import type { VoucherBuffer } from "../types";
 
 export const CASES_KEY = "cases";
-
-
 
 export function useCases(extraParams?: Partial<CasesQueryParams>) {
 
   const { filters, page, pageSize } = useCaseStore();
 
-
-
   return useQuery({
-
     queryKey: [CASES_KEY, filters, page, pageSize, extraParams],
-
     queryFn: () =>
-
       casesApi.getAll({ ...filters, page, pageSize, ...extraParams }),
-
     placeholderData: (prev) => prev,
-
   });
-
 }
 
 
@@ -49,55 +36,47 @@ export function useCase(id: number | null) {
 
 
 export function useCreateCase() {
-
   const qc = useQueryClient();
 
   return useMutation({
+    mutationFn: (body: any) =>
+      casesApi.create(body),
 
-    mutationFn: casesApi.create,
-
-    onSuccess: () => qc.invalidateQueries({ queryKey: [CASES_KEY] }),
-
+    onSuccess: () => {
+      qc.invalidateQueries({queryKey: [CASES_KEY],});
+    },
   });
-
 }
 
 
 
 export function useUpdateCase() {
-
   const qc = useQueryClient();
 
   return useMutation({
-
-    mutationFn: ({ id, body }: { id: number; body: Parameters<typeof casesApi.update>[1] }) =>
-
+    mutationFn: ({ id, body }: { id: number; body: VoucherBuffer }) =>
       casesApi.update(id, body),
 
-    onSuccess: (data) => {
-
-      qc.invalidateQueries({ queryKey: [CASES_KEY] });
-
-      qc.setQueryData([CASES_KEY, data.id], data);
-
+    onSuccess: () => {
+      qc.invalidateQueries({
+        queryKey: [CASES_KEY],
+      });
     },
-
   });
-
 }
 
 
 
-export function useDevelopers() {
+// export function useDevelopers() {
 
-  return useQuery({
+//   return useQuery({
 
-    queryKey: ["developers"],
+//     queryKey: ["developers"],
 
-    queryFn: casesApi.getDevelopers,
+//     queryFn: casesApi.getDevelopers,
 
-    staleTime: 5 * 60 * 1000,
+//     staleTime: 5 * 60 * 1000,
 
-  });
+//   });
 
-}
+// }

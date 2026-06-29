@@ -1,3 +1,4 @@
+import { cn } from "@/shared/lib/utils";
 import * as React from "react";
 import {
   Controller,
@@ -19,8 +20,11 @@ const FormField = <
   return <Controller {...props} />;
 };
 
-const FormItem = ({ children }: { children: React.ReactNode }) => (
-  <div className="space-y-2">{children}</div>
+const FormItem = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn("space-y-2", className)}
+    {...props}
+  />
 );
 
 const FormLabel = ({ children }: { children: React.ReactNode }) => (

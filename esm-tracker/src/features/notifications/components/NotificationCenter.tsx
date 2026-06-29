@@ -25,11 +25,15 @@ export function NotificationCenter() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const { data: notifications = [] } = useQuery({
+  const { data } = useQuery({
     queryKey: ["notifications"],
     queryFn: notificationsApi.getAll,
     refetchInterval: 30_000,
   });
+
+  const notifications = Array.isArray(data)
+    ? data
+    : [];
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 

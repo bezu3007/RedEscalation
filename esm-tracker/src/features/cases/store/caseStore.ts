@@ -1,97 +1,94 @@
 import { create } from "zustand";
-
 import type { CaseFilters, CaseItem } from "../types";
+
+const today =new Date().toISOString().split("T")[0];
 
 const defaultFilters: CaseFilters = {
   search: "",
   status: "",
   caseType: "",
-  priority: "",
-  department: "",
+  module: "",
   projectName: "",
-  assignedDeveloper: "",
-  dateFrom: "",
-  dateTo: "",
+  paidorNot: "",
+  developer: "",
+  fromIssueDate: today,
+  toIssueDate: today,
 };
 
 export type ColumnKey =
   | "caseNumber"
-  | "title"
-  | "status"
-  | "caseType"
-  | "priority"
+  | "issueDate"
   | "projectName"
+  | "issues"
+  | "paidorNot"
+  | "caseType"
+  | "module"
+  | "functionalConsultant"
+  | "reviewedBy"
+  | "developer"
   | "department"
-  | "assignedDeveloper"
-  | "createdAt";
+  | "developmentStatus"
+  | "status"
+  | "releaseNote"
+  | "startDate"
+  | "deadLine";
+
 
 interface CaseUIState {
   filters: CaseFilters;
-
   selectedCaseId: number | null;
-
   selectedParentCase: CaseItem | null;
-
   isCreateModalOpen: boolean;
   isEditModalOpen: boolean;
   isViewModalOpen: boolean;
-
   editingCase: CaseItem | null;
   viewingCase: CaseItem | null;
-
   page: number;
   pageSize: number;
-
   visibleColumns: Record<ColumnKey, boolean>;
-
   setVisibleColumns: (columns: Record<ColumnKey, boolean>) => void;
-
   setFilters: (filters: Partial<CaseFilters>) => void;
   resetFilters: () => void;
-
   setSelectedCaseId: (id: number | null) => void;
-
   openCreateModal: () => void;
   closeCreateModal: () => void;
-
   openEditModal: (caseItem: CaseItem) => void;
   closeEditModal: () => void;
-
   openViewModal: (caseItem: CaseItem) => void;
   closeViewModal: () => void;
-
   setSelectedParentCase: (data: CaseItem | null) => void;
-
   setPage: (page: number) => void;
   setPageSize: (size: number) => void;
 }
 
 export const useCaseStore = create<CaseUIState>((set) => ({
   filters: defaultFilters,
-
   selectedCaseId: null,
   selectedParentCase: null,
-
   isCreateModalOpen: false,
   isEditModalOpen: false,
   isViewModalOpen: false,
-
   editingCase: null,
   viewingCase: null,
-
   page: 1,
   pageSize: 25,
-
   visibleColumns: {
     caseNumber: true,
-    title: true,
-    status: true,
-    caseType: true,
-    priority: true,
+    issueDate: true,
     projectName: true,
-    department: true,
-    assignedDeveloper: true,
-    createdAt: true,
+    issues: false,
+    paidorNot: false,
+    caseType: true,
+    module: true,
+    functionalConsultant: true,
+    reviewedBy: false,
+    developer: true,
+    department: false,
+    developmentStatus: false,
+    status: false,
+    releaseNote: false,
+    startDate: false,
+    deadLine: false,
   },
 
   setVisibleColumns: (visibleColumns) =>
@@ -161,3 +158,4 @@ export const useCaseStore = create<CaseUIState>((set) => ({
       page: 1,
     }),
 }));
+

@@ -50,7 +50,7 @@ export function TopBar() {
   //     .slice(0, 2) ?? "U";
 
   return (
-    <header className="border-b bg-background sticky top-0 z-50">
+    <header className="border-b bg-background sticky top-0 z-50 bg-white">
       <div className="h-16 px-6 flex items-center justify-between gap-4">
         {/* LEFT */}
         <div className="flex items-center gap-3 min-w-fit">
