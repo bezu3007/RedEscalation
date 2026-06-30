@@ -8,46 +8,34 @@ import type { CaseItem, CaseStatus } from "../types";
 
 import { Loader2 } from "lucide-react";
 
-
-
 const TRANSITION_LABELS: Record<CaseStatus, string> = {
-
-  Open: "Open",
-
-  InProgress: "Start Progress",
-
-  PendingApproval: "Submit for Approval",
-
-  Resolved: "Mark Resolved",
-
-  Closed: "Close",
-
+  Accepted: "Accept",
+  Solved: "Mark Solved",
+  Fixed: "Mark Fixed",
+  Prepared: "Prepare",
+  "Re Journal": "Re Journal",
   Rejected: "Reject",
-
+  Returned: "Return",
+  Reviewed: "Review",
+  "Not Solved": "Mark Not Solved",
+  "On Progress": "Start Progress",
 };
 
 
-
 const TRANSITION_VARIANTS: Record<
-
   CaseStatus,
-
   "primary" | "outline" | "danger" | "secondary"
-
 > = {
-
-  Open: "outline",
-
-  InProgress: "primary",
-
-  PendingApproval: "secondary",
-
-  Resolved: "primary",
-
-  Closed: "outline",
-
+  Accepted: "secondary",
+  Solved: "primary",
+  Fixed: "primary",
+  Prepared: "secondary",
+  "Re Journal": "outline",
   Rejected: "danger",
-
+  Returned: "outline",
+  Reviewed: "secondary",
+  "Not Solved": "danger",
+  "On Progress": "primary",
 };
 
 
@@ -98,7 +86,7 @@ export function CaseActionBar({ caseItem }: Props) {
 
           onClick={() =>
 
-            mutate({ caseId: caseItem.id, targetStatus: target })
+            mutate({ caseId: String(caseItem.id), targetStatus: target })
 
           }
 

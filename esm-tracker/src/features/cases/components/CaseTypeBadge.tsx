@@ -44,12 +44,6 @@ const TYPE_CONFIG: Record<CaseType,{ label: string; className: string }> = {
     className:
       "bg-gray-50 text-gray-700 border-gray-200",
   },
-
-  Other: {
-    label: "Other",
-    className:
-      "bg-slate-50 text-slate-700 border-slate-200",
-  },
 };
 
 interface Props {
@@ -58,9 +52,7 @@ interface Props {
 }
 
 export function CaseTypeBadge({type,className,}: Props) {
-  const config =
-    TYPE_CONFIG[type] ??
-    TYPE_CONFIG["Other"];
+  const config = TYPE_CONFIG[type];
 
   return (
     <Badge

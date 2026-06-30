@@ -1,81 +1,6 @@
-// import { useQuery } from "@tanstack/react-query";
-// import { casesApi } from "../api/casesApi";
-
-// export function useVoucherInit() {
-//   return useQuery({
-//     queryKey: ["voucher-init"],
-
-//     queryFn: async () => {
-//       const response =
-//         await casesApi.voucherInit();
-
-//       const data = response.data;
-
-//       const projects =
-//         data.requiredConsignees[0]
-//           ?.consignees ?? [];
-
-//       const functionalConsultants =
-//         data.requiredConsignees?.[1]
-//           ?.consignees ?? [];
-
-//       const developers =
-//         data.requiredConsignees?.[2]
-//           ?.consignees ?? [];
-
-//       const modules = [
-//         ...new Set<string>(
-//           (
-//             data.extensions?.[2]?.remark ?? ""
-//           )
-//             .split(",")
-//             .map((m: string) => m.trim())
-//             .filter(Boolean)
-//         ),
-//       ];
-
-//       return {
-//         raw: data,
-
-//         voucherId: data.voucherId,
-
-//         workflows: data.workflows,
-
-//         currencies: data.currencies,
-
-//         configs: data.configs,
-
-//         projects,
-
-//         functionalConsultants,
-
-//         developers,
-
-//         modules,
-//       };
-//     },
-
-//     staleTime: Infinity,
-
-//     gcTime: Infinity,
-
-//     refetchOnWindowFocus: false,
-
-//     refetchOnReconnect: false,
-
-//     refetchOnMount: false,
-//   });
-// }
-
-// useVoucherInit.ts
-
 import { useQuery } from "@tanstack/react-query";
 import { casesApi } from "../api/casesApi";
-import {
-  VoucherData,
-  VoucherInitResult,
-  Extension,
-  Consignee,} from "../types"
+import {VoucherData, VoucherInitResult, Extension, Consignee,} from "../types"
 
 export function useVoucherInit() {
   return useQuery<VoucherInitResult>({
@@ -109,10 +34,10 @@ export function useVoucherInit() {
     },
 
     // Cache settings - data rarely changes
-    staleTime: Infinity,
-    gcTime: Infinity,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    refetchOnMount: false,
+    retry: 1,
   });
 }

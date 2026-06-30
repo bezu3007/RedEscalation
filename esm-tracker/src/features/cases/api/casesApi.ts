@@ -46,19 +46,23 @@ function normalizeCaseType(type: string): CaseType {
 export const casesApi = {
 
   voucherInit: async () => {
-    const response = await apiClient.get(
-      "/TransactionLibrary/voucher-init",
-      {
-        params: {
-          voucherDefn: 400,
-          consigneeUnit_id: 3,
-          userId: 94,
-          isWeb: true,
-        },
-      }
-    );
-
-    return response.data;
+    try {
+      const response = await apiClient.get(
+        "/TransactionLibrary/voucher-init",
+        {
+          params: {
+            voucherDefn: 400,
+            consigneeUnit_id: 3,
+            userId: 94,
+            isWeb: true,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Voucher init error:", error);
+      throw error; // Re-throw to be handled by React Query
+    }
   },
 
   getAll: async (params: CasesQueryParams): Promise<CasesResponse> => {
@@ -115,7 +119,7 @@ export const casesApi = {
         projectName:
           item.consignee1FullName || "",
 
-        projectNameID:
+        projectNameId:
           item.consignee1Id || "",
 
         issues:
@@ -133,7 +137,7 @@ export const casesApi = {
         functionalConsultant:
           item.consignee2FullName || "",
 
-        functionalConsultantID:
+        functionalConsultantId:
           item.consignee2Id || "",
 
         reviewedBy:
@@ -142,13 +146,13 @@ export const casesApi = {
         developer:
           item.consignee3FullName || "",
 
-        developerID:
+        developerId:
           item.consignee3Id || "",
 
         department:
           item.consigneeUnit1Description || "",
 
-        departmentID:
+        departmentId:
           item.consigneeUnit1Id || "",
 
         developmentStatus:
@@ -210,25 +214,25 @@ export const casesApi = {
       caseNumber: item.code,
       issueDate: item.issueDate,
       projectName: item.consignee1FullName || "",
-      projectNameID: item.consignee1Id || "",
+      projectNameId: item.consignee1Id || "",
       issues: item.Note || "",
       paidorNot: item.Extension1 || "",
       caseType: normalizeCaseType(item.Extension2),
       module: item.Extension3 || "",
       functionalConsultant: item.consignee2FullName || "",
-      functionalConsultantID: item.consignee2Id || "",
+      functionalConsultantId: item.consignee2Id || "",
       reviewedBy: item.consignee4FullName || "",
       developer: item.consignee3FullName || "",
       developerId: item.consignee3Id || "",
       department: item.ConsigneeUnit1Description || "",
-      departmentID: item.ConsigneeUnit1Id || "",
+      departmentId: item.ConsigneeUnit1Id || "",
       developmentStatus: item.Extension4 || "",
       UATStatus: item.LastStateDescription || "",
       status: normalizeStatus(item.LastStateDescription),
       releaseNote: item.Remark || "",
       startDate: item.StartDate || "",
       deadLine: item.DeadLine || "",
-      referencedID: item.Id || "",
+      referencedId: item.Id || "",
       attachmentUrl: item.attachmentUrl || "",
     };
     console.log(mapped);

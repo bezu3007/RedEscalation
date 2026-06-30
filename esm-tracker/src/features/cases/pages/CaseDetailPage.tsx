@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useCase } from "../hooks/useCases";
 import { CaseActionBar } from "../components/CaseActionBar";
-import { DeveloperSuggester } from "../components/DeveloperSuggester";
-import { AttachmentUploader } from "../components/AttachmentUploader";
+// import { DeveloperSuggester } from "../components/DeveloperSuggester";
+// import { AttachmentUploader } from "../components/AttachmentUploader";
 import { StatusBadge } from "../components/StatusBadge";
 import { CaseTypeBadge } from "../components/CaseTypeBadge";
 import { CaseForm } from "../components/CaseForm";
@@ -13,7 +13,6 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import {Card, CardContent, CardHeader, CardTitle,} from "@/shared/components/ui/card";
 import { ArrowLeft, FileDown, Pencil } from "lucide-react";
 import { formatDate } from "@/shared/utils/formatDate";
-import { casesApi } from "../api/casesApi";
 
 export default function CaseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -83,7 +82,8 @@ export default function CaseDetailPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-2">
+          {/* <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-2"> */}
+          <Button>
             <FileDown className="h-4 w-4" />
             Export PDF
           </Button>
@@ -151,13 +151,13 @@ export default function CaseDetailPage() {
 
             <CardContent>
 
-              <AttachmentUploader
+              {/* <AttachmentUploader
 
                 caseId={caseItem.id}
 
                 existingUrl={caseItem.attachmentUrl}
 
-              />
+              /> */}
 
             </CardContent>
 
@@ -187,7 +187,7 @@ export default function CaseDetailPage() {
 
               )}
 
-              <DeveloperSuggester caseId={caseItem.id} />
+              {/* <DeveloperSuggester caseId={caseItem.id} /> */}
 
             </CardContent>
 

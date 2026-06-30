@@ -2,8 +2,11 @@ import { useCaseStore } from "../store/caseStore";
 import { CaseGrid } from "../components/CaseGrid";
 import { FilterBar } from "../components/FilterBar";
 import { CaseForm } from "../components/CaseForm";
+import { useVoucherInit } from "../hooks/useVoucherInit";
+import { Loader2 } from "lucide-react";
 
 export default function CaseListPage() {
+  const { data: initData} = useVoucherInit();
   const {
     isCreateModalOpen,
     isEditModalOpen,
@@ -12,6 +15,7 @@ export default function CaseListPage() {
     closeCreateModal,
     closeEditModal,
   } = useCaseStore();
+
 
   return (
     <div className="space-y-4">
@@ -26,11 +30,14 @@ export default function CaseListPage() {
 
       <FilterBar />
       <CaseGrid />
-      <CaseForm
-        mode="create"
-        open={isCreateModalOpen}
-        onClose={closeCreateModal}
-      />
+      {isCreateModalOpen && (
+        <CaseForm
+          mode="create"
+          open={true}
+          onClose={closeCreateModal}
+          initData={initData}
+        />
+      )}
 
       {editingCase && (
         <CaseForm
@@ -38,6 +45,7 @@ export default function CaseListPage() {
           initialData={editingCase}
           open={isEditModalOpen}
           onClose={closeEditModal}
+          initData={initData}
         />
       )}
     </div>

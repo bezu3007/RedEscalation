@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useCreateCase, useUpdateCase } from "../hooks/useCases";
 import type { CaseItem, CreateCaseRequest } from "../types";
-import { CASE_TYPES, PAID_OR_NOT, Case_Status } from "../types";
+import { CASE_TYPES, PAID_OR_NOT } from "../types";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/shared/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
@@ -13,27 +13,11 @@ import { Loader2 } from "lucide-react";
 import { useAttachment } from "../hooks/useAttachment";
 import { AttachmentUploader } from "./AttachmentUploader";
 import { cn } from "@/shared/lib/utils";
-import { useVoucherInit } from "../hooks/useVoucherInit";
 import type { Consignee, Extension } from "../types";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger} from "@/shared/components/ui/popover"
-
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/shared/components/ui/command";
-
-import { Check, ChevronsUpDown } from "lucide-react";
-
 
 interface CaseFormValues extends CreateCaseRequest {
-  projectNameID: string;
+  projectNameId: string;
+  developer: string;
 }
 
 interface Props {
@@ -41,27 +25,30 @@ interface Props {
   initialData?: CaseItem;
   open: boolean;
   onClose: () => void;
+  initData?: {
+    projects?: any[];
+    developers?: Consignee[];
+    modules?: Extension;
+  };
 }
 
-function mapCaseToVoucherBuffer(
-  values: CaseFormValues,
-  initialData?: CaseItem
-) {
+function mapCaseToVoucherBuffer(values: CaseFormValues, initialData?: CaseItem) {
   const now = new Date();
   const isEditing = !!initialData;
+  const developerId = values.developer ? parseInt(values.developer) : 0;
 
   return {
     voucher: {
       id: isEditing ? initialData.id! : 0,
       code: "",
       lastDevice: "",
-      consignee1: Number(values.projectNameID),
+      consignee1: Number(values.projectNameId),
       subTotal: 0,
       discount: 0,
       addCharge: 0,
       grandTotal: 0,
       consignee2: 37453,
-      consignee3: 183,
+      consignee3: developerId || 183,
       consignee4: null,
       issuedDate: now.toISOString(),
       note: values.issues,
@@ -72,7 +59,7 @@ function mapCaseToVoucherBuffer(
       extension1: values.paidorNot,
       extension2: values.caseType,
       extension3: values.module,
-      extension4: values.developmentStatus,
+      extension4: values.developmentStatus || "Prepared",
       lastState: 1305,
       startDate: values.issueDate,
       endDate: values.deadLine,
@@ -100,12 +87,30 @@ function mapCaseToVoucherBuffer(
   };
 }
 
-export function CaseForm({ mode, initialData, open, onClose }: Props) {
-  const [projectOpen, setProjectOpen] = useState(false);
+export function CaseForm({ mode, initialData, open, onClose, initData }: Props) {
   const [activeTab, setActiveTab] = useState<"general" | "attachments" | "notes">("general");
   const [deploymentNotes, setDeploymentNotes] = useState("");
+  
+  const projectOptions = useMemo(
+    () => initData?.projects ?? [],
+    [initData?.projects]
+  );
+  // Memoize module list with duplicate removal
+  const moduleList = useMemo(() => {
+    if (!initData?.modules?.remark) return [];
+    const modules = initData.modules.remark
+      .split(",")
+      .map((m) => m.trim())
+      .filter((m) => m.length > 0);
+    return [...new Set(modules)];
+  }, [initData?.modules]);
 
-  const { data: initData, isLoading: isLoadingInit } = useVoucherInit();
+  // Memoize developer options
+  const developerOptions = useMemo(
+    () => initData?.developers ?? [],
+    [initData?.developers]
+  );
+
   const { mutate: createCase, isPending: creating } = useCreateCase();
   const { mutate: updateCase, isPending: updating } = useUpdateCase();
   const { files, addFiles, removeFile, reset: resetAttachments } = useAttachment();
@@ -115,7 +120,7 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
   const form = useForm<CaseFormValues>({
     defaultValues: {
       projectName: "",
-      projectNameID: "",
+      projectNameId: "",
       module: "",
       caseType: "Error",
       developer: "",
@@ -129,12 +134,15 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
     },
   });
 
+  // FIXED: Removed 'form' from dependencies to prevent infinite loop
   useEffect(() => {
+    if (!open) return;
+    
     if (mode === "edit" && initialData) {
       form.reset({
         caseNumber: initialData.caseNumber,
         projectName: initialData.projectName,
-        projectNameID: initialData.projectNameID,
+        projectNameId: initialData.projectNameId,
         module: initialData.module,
         caseType: initialData.caseType,
         developer: initialData.developer ?? "",
@@ -146,10 +154,10 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
         issues: initialData.issues ?? "",
         developmentStatus: initialData.developmentStatus ?? "",
       });
-    } else {
+    } else if (mode === "create") {
       form.reset({
         projectName: "",
-        projectNameID: "",
+        projectNameId: "",
         module: "",
         caseType: "Error",
         developer: "",
@@ -162,17 +170,17 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
         developmentStatus: "",
       });
     }
-  }, [mode, initialData, form]);
+  }, [mode, initialData, open]); // REMOVED 'form' from dependencies
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     form.reset();
     resetAttachments();
     setDeploymentNotes("");
     setActiveTab("general");
     onClose();
-  };
+  }, [form, resetAttachments, onClose]);
 
-  const onSubmit = (values: CaseFormValues) => {
+  const onSubmit = useCallback((values: CaseFormValues) => {
     console.log("FORM VALUES", values);
 
     const payload = mapCaseToVoucherBuffer(values, initialData);
@@ -207,29 +215,10 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
         }
       );
     }
-  };
+  }, [mode, initialData, createCase, updateCase, handleClose]);
 
-  // Helper to parse modules from extension remark
-  const getModuleList = (modules: Extension | undefined): string[] => {
-    if (!modules?.remark) return [];
-    return modules.remark.split(",").map((m) => m.trim());
-  };
-
-  // Get the selected project's name for display
-  const selectedProject = initData?.projects?.find(
-    (p: Consignee) => String(p.id) === form.watch("projectNameID")
-  );
-
-  if (isLoadingInit) {
-    return (
-      <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
-        <DialogContent className="max-w-5xl p-0 overflow-hidden border-0 rounded-3xl bg-white">
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-slate-600" />
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
+  if (!initData) {
+    return null;
   }
 
   return (
@@ -303,80 +292,31 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
                   {/* ROW 1 - Project & Module */}
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
-  control={form.control}
-  name="projectNameID"
-  render={({ field }) => (
-    <FormItem className="flex flex-col">
-      <FormLabel>Projects</FormLabel>
-
-      <Popover
-        open={projectOpen}
-        onOpenChange={setProjectOpen}
-      >
-        <PopoverTrigger asChild>
-          <FormControl>
-            <Button
-              variant="outline"
-              role="combobox"
-              className="justify-between h-10 bg-white"
-            >
-              {field.value
-                ? initData?.projects?.find(
-                    (p) =>
-                      String(p.id) === field.value
-                  )?.fullName
-                : "Select project"}
-
-              <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-            </Button>
-          </FormControl>
-        </PopoverTrigger>
-
-        <PopoverContent className="w-[350px] p-0 bg-white">
-          <Command>
-            <CommandInput placeholder="Search project..." />
-
-            <CommandList>
-              <CommandEmpty>
-                No project found.
-              </CommandEmpty>
-
-              <CommandGroup>
-                {initData?.projects?.map(
-                  (project: Consignee) => (
-                    <CommandItem
-                      key={project.id}
-                      value={project.fullName}
-                      onSelect={() => {
-                        field.onChange(
-                          String(project.id)
-                        );
-
-                        setProjectOpen(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          String(project.id) ===
-                            field.value
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-
-                      {project.fullName}
-                    </CommandItem>
-                  )
-                )}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </FormItem>
-  )}
-/>
+                      control={form.control}
+                      name="projectNameId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Projects</FormLabel>
+                          <Select
+                            value={field.value ?? undefined}
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="h-10 bg-white">
+                                <SelectValue placeholder="Select project" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white z-[100]">
+                              {projectOptions.map((project) => (
+                                <SelectItem key={project.id} value={project.id}>
+                                  {project.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
+                    />
 
                     <FormField
                       control={form.control}
@@ -393,8 +333,8 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
                                 <SelectValue placeholder="Select module" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-white">
-                              {getModuleList(initData?.modules).map((module: string) => (
+                            <SelectContent className="bg-white z-[100]">
+                              {moduleList.map((module: string) => (
                                 <SelectItem key={module} value={module}>
                                   {module}
                                 </SelectItem>
@@ -420,7 +360,7 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-white">
+                            <SelectContent className="bg-white z-[100]">
                               {CASE_TYPES.map((t) => (
                                 <SelectItem key={t} value={t}>
                                   {t}
@@ -444,7 +384,7 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-white">
+                            <SelectContent className="bg-white z-[100]">
                               {PAID_OR_NOT.map((t) => (
                                 <SelectItem key={t} value={t}>
                                   {t}
@@ -457,7 +397,7 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
                     />
                   </div>
 
-                  {/* ROW 3 - Developer & Department */}
+                  {/* ROW 3 - Developer */}
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -474,10 +414,10 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
                                 <SelectValue placeholder="Select developer" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-white">
-                              {initData?.developers?.map((dev: Consignee) => (
-                                <SelectItem key={dev.id} value={String(dev.id)}>
-                                  {dev.fullName}
+                            <SelectContent className="bg-white z-[100]">
+                              {developerOptions.map((developer: Consignee) => (
+                                <SelectItem key={developer.id} value={String(developer.id)}>
+                                  {developer.fullName}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -511,33 +451,6 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
                           <FormControl>
                             <Input type="date" className="h-10 bg-white" {...field} />
                           </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {/* Development Status */}
-                  <div className="grid grid-cols-1 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="developmentStatus"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Development Status</FormLabel>
-                          <Select value={field.value ?? ""} onValueChange={field.onChange}>
-                            <FormControl>
-                              <SelectTrigger className="h-10 bg-white">
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-white">
-                              {Case_Status.map((t) => (
-                                <SelectItem key={t} value={t}>
-                                  {t}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
                         </FormItem>
                       )}
                     />
@@ -595,7 +508,7 @@ export function CaseForm({ mode, initialData, open, onClose }: Props) {
             <div className="flex items-center gap-3 border-t bg-slate-50 px-6 py-4">
               <Button
                 type="submit"
-                disabled={isPending || isLoadingInit}
+                disabled={isPending}
                 className="rounded-xl bg-slate-900 px-6 hover:bg-slate-800"
               >
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -3,22 +3,42 @@ import { casesApi } from "../api/casesApi";
 import { CASES_KEY } from "./useCases";
 import type { CaseStatus } from "../types";
 
-const VALID_TRANSITIONS: Record<CaseStatus, CaseStatus[]> = {
-  Open: ["InProgress", "Closed", "Returned"],
-  InProgress: ["PendingApproval", "Open", "DeadlineExtension"],
-  PendingApproval: ["Approved", "Rejected", "Returned"],
-  Approved: ["Resolved", "Closed"],
-  Resolved: ["Closed"],
-  Closed: [],
-  Rejected: ["Open"],
-  Returned: ["Open", "InProgress"],
-  DeadlineExtension: ["InProgress", "PendingApproval"],
+const CASE_TRANSITIONS: Record<CaseStatus, CaseStatus[]> = {
+  Accepted: ["On Progress", "Rejected"],
+
+  "On Progress": [
+    "Fixed",
+    "Not Solved",
+    "Returned",
+  ],
+
+  Fixed: ["Reviewed"],
+
+  Reviewed: ["Solved", "Returned"],
+
+  Solved: [],
+
+  Rejected: [],
+
+  Returned: ["On Progress"],
+
+  Prepared: ["Reviewed"],
+
+  "Re Journal": ["Reviewed"],
+
+  "Not Solved": ["On Progress"],
 };
 
+// export function getAllowedTransitions(
+//   current: CaseStatus
+// ): CaseStatus[] {
+//   return VALID_TRANSITIONS[current] ?? [];
+// }
+
 export function getAllowedTransitions(
-  current: CaseStatus
+  status: CaseStatus
 ): CaseStatus[] {
-  return VALID_TRANSITIONS[current] ?? [];
+  return CASE_TRANSITIONS[status] ?? [];
 }
 
 export function useCaseTransition() {

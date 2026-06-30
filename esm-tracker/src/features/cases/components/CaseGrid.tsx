@@ -1,7 +1,6 @@
-import React, { useCallback, useMemo, useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
-import type { ColDef, GridReadyEvent, ICellRendererParams } from "ag-grid-community";
-import { useVoucherInit } from "../hooks/useVoucherInit";
+import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import { useCases } from "../hooks/useCases";
 import { useCaseStore } from "../store/caseStore";
 import { StatusBadge } from "./StatusBadge";
@@ -13,7 +12,6 @@ import { ChevronRight, ChevronDown,} from "lucide-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { RowMenuCell } from "./RowMenuCell";
-// import { CASE_TYPES } from "../types";
 
 
 function ExpandCell() {
@@ -34,8 +32,7 @@ function ExpandCell() {
   );
 }
 
-export function CaseGrid() {
-  useVoucherInit();
+export const CaseGrid = React.memo( function CaseGrid() {
   const gridRef = useRef<AgGridReact<CaseItem>>(null);
   const { data, isLoading, isFetching } = useCases();
   const { page, pageSize, setPage, visibleColumns, } = useCaseStore();
@@ -193,7 +190,6 @@ export function CaseGrid() {
         hide: !visibleColumns.deadLine,
         valueFormatter: ({ value }) =>
           value ? formatDate(value) : "—",
-        sort: "desc",
       },
     ],
     [visibleColumns]
@@ -208,9 +204,7 @@ export function CaseGrid() {
     []
   );
 
-  const onGridReady = useCallback((_: GridReadyEvent) => {}, []);
-
-  const totalPages = data ? Math.ceil(data.totalCount / pageSize) : 0;
+  const totalPages = Math.max(1,data ? Math.ceil(data.totalCount / pageSize) : 1);
 
   return (
     <div className="flex flex-col gap-3">
@@ -223,7 +217,6 @@ export function CaseGrid() {
           rowData={data?.items ?? []}
           columnDefs={colDefs}
           defaultColDef={defaultColDef}
-          onGridReady={onGridReady}
           loading={isLoading}
           rowHeight={44}
           headerHeight={44}
@@ -265,4 +258,4 @@ export function CaseGrid() {
       </div>
     </div>
   );
-}
+});
