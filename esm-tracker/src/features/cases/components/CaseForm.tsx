@@ -359,7 +359,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                                 <SelectValue placeholder="Select project" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-white z-[100] w-[var(--radix-select-trigger-width)] max-h-[320px] overflow-hidden">
+                            <SelectContent 
+                              className="bg-white z-[100] max-h-[320px] overflow-hidden"
+                              position="popper" // Add this
+                              sideOffset={4}    // Add this
+                            >
                               <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
                                 <Input
                                   value={projectQuery}
@@ -482,7 +486,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                                 <SelectValue placeholder="Select developer" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-white z-[100] w-[var(--radix-select-trigger-width)] max-h-[320px] overflow-hidden">
+                            <SelectContent 
+                              className="bg-white z-[100] overflow-hidden"
+                              position="popper" // Add this
+                              sideOffset={4}    // Add this
+                            >
                               <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
                                 <Input
                                   value={developerQuery}
