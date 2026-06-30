@@ -26,7 +26,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   initData?: {
-    projects?: any[];
+    projects?: Consignee[];
     developers?: Consignee[];
     modules?: Extension;
   };
@@ -90,11 +90,35 @@ function mapCaseToVoucherBuffer(values: CaseFormValues, initialData?: CaseItem) 
 export function CaseForm({ mode, initialData, open, onClose, initData }: Props) {
   const [activeTab, setActiveTab] = useState<"general" | "attachments" | "notes">("general");
   const [deploymentNotes, setDeploymentNotes] = useState("");
-  
-  const projectOptions = useMemo(
-    () => initData?.projects ?? [],
-    [initData?.projects]
-  );
+  const [projectQuery, setProjectQuery] = useState("");
+  const [developerQuery, setDeveloperQuery] = useState("");
+
+  const projectOptions = useMemo(() => {
+    const projects = initData?.projects ?? [];
+    const query = projectQuery.trim().toLowerCase();
+
+    if (!query) {
+      return projects.slice(0, 250);
+    }
+
+    return projects
+      .filter((project) => {
+        const haystack = [
+          project.fullName,
+          project.firstName,
+          project.secondName,
+          project.thirdName,
+          project.code,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(query);
+      })
+      .slice(0, 250);
+  }, [initData?.projects, projectQuery]);
+
   // Memoize module list with duplicate removal
   const moduleList = useMemo(() => {
     if (!initData?.modules?.remark) return [];
@@ -106,10 +130,39 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   }, [initData?.modules]);
 
   // Memoize developer options
-  const developerOptions = useMemo(
-    () => initData?.developers ?? [],
-    [initData?.developers]
-  );
+  const developerOptions = useMemo(() => {
+    const developers = initData?.developers ?? [];
+    const query = developerQuery.trim().toLowerCase();
+
+    if (!query) {
+      return developers.slice(0, 250);
+    }
+
+    return developers
+      .filter((developer) => {
+        const haystack = [
+          developer.fullName,
+          developer.firstName,
+          developer.secondName,
+          developer.thirdName,
+          developer.code,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(query);
+      })
+      .slice(0, 250);
+  }, [initData?.developers, developerQuery]);
+
+  useEffect(() => {
+    console.log("CaseForm option counts:", {
+      projects: projectOptions.length,
+      modules: moduleList.length,
+      developers: developerOptions.length,
+    });
+  }, [projectOptions, moduleList, developerOptions]);
 
   const { mutate: createCase, isPending: creating } = useCreateCase();
   const { mutate: updateCase, isPending: updating } = useUpdateCase();
@@ -306,12 +359,27 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                                 <SelectValue placeholder="Select project" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-white z-[100]">
-                              {projectOptions.map((project) => (
-                                <SelectItem key={project.id} value={project.id}>
-                                  {project.label}
-                                </SelectItem>
-                              ))}
+                            <SelectContent className="bg-white z-[100] w-[var(--radix-select-trigger-width)] max-h-[320px] overflow-hidden">
+                              <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
+                                <Input
+                                  value={projectQuery}
+                                  onChange={(e) => setProjectQuery(e.target.value)}
+                                  onKeyDown={(e) => e.stopPropagation()}
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  placeholder="Search project"
+                                  className="h-8"
+                                />
+                              </div>
+                              <div className="px-2 pb-1 text-xs text-slate-500">
+                                Showing first 250 matches. Type to narrow the list.
+                              </div>
+                              <div className="h-[220px] overflow-y-auto">
+                                {projectOptions.map((project: Consignee) => (
+                                  <SelectItem key={project.id} value={String(project.id)}>
+                                    {project.fullName}
+                                  </SelectItem>
+                                ))}
+                              </div>
                             </SelectContent>
                           </Select>
                         </FormItem>
@@ -414,12 +482,27 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                                 <SelectValue placeholder="Select developer" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="bg-white z-[100]">
-                              {developerOptions.map((developer: Consignee) => (
-                                <SelectItem key={developer.id} value={String(developer.id)}>
-                                  {developer.fullName}
-                                </SelectItem>
-                              ))}
+                            <SelectContent className="bg-white z-[100] w-[var(--radix-select-trigger-width)] max-h-[320px] overflow-hidden">
+                              <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
+                                <Input
+                                  value={developerQuery}
+                                  onChange={(e) => setDeveloperQuery(e.target.value)}
+                                  onKeyDown={(e) => e.stopPropagation()}
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  placeholder="Search developer"
+                                  className="h-8"
+                                />
+                              </div>
+                              <div className="px-2 pb-1 text-xs text-slate-500">
+                                Showing first 250 matches. Type to narrow the list.
+                              </div>
+                              <div className="h-[220px] overflow-y-auto">
+                                {developerOptions.map((developer: Consignee) => (
+                                  <SelectItem key={developer.id} value={String(developer.id)}>
+                                    {developer.fullName}
+                                  </SelectItem>
+                                ))}
+                              </div>
                             </SelectContent>
                           </Select>
                         </FormItem>
