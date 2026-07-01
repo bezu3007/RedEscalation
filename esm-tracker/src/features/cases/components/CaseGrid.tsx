@@ -12,11 +12,12 @@ import { ChevronRight, ChevronDown,} from "lucide-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { RowMenuCell } from "./RowMenuCell";
+import { useNavigate } from "react-router-dom";
+import {StatusActionPopup} from "./StatusActionPopup";
 
 
 function ExpandCell() {
   const [expanded, setExpanded] = React.useState(false);
-
   return (
     <button
       type="button"
@@ -37,6 +38,34 @@ export const CaseGrid = React.memo( function CaseGrid() {
   const { data, isLoading, isFetching } = useCases();
   const { page, pageSize, setPage, visibleColumns, } = useCaseStore();
 
+  // const navigate = useNavigate();
+  // const onRowClicked = (params: any) => {
+  //   navigate(`/cases/${params.data.id}`);
+  // };
+  function StatusChangeCell(params: ICellRendererParams<CaseItem>) {
+  const [showPopup, setShowPopup] = React.useState(false);
+  const cellRef = React.useRef<HTMLDivElement>(null);
+  const data = params.data;
+
+  if (!data) return null;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowPopup(true);
+  };
+  return (
+    <div ref={cellRef} onClick={handleClick} className="cursor-pointer">
+      <StatusBadge status={data.status} />
+      {showPopup && (
+        <StatusActionPopup
+          caseItem={data}
+          onClose={() => setShowPopup(false)}
+          anchorEl={cellRef.current}
+        />
+      )}
+    </div>
+  );
+}
   const colDefs = useMemo<ColDef<CaseItem>[]>(
     () => [
       {
@@ -62,7 +91,7 @@ export const CaseGrid = React.memo( function CaseGrid() {
       {
         field: "caseNumber",
         headerName: "Case Number",
-        width: 110,
+        width: 130,
         pinned: "left",
         cellClass: "font-mono text-xs",
         hide: !visibleColumns.caseNumber,
@@ -77,6 +106,14 @@ export const CaseGrid = React.memo( function CaseGrid() {
       },
 
       {
+        field: "module",
+        headerName: "Module",
+        hide: !visibleColumns.module,
+        width: 150,
+        minWidth: 50,
+      },
+
+      {
         field: "issues",
         headerName: "Issues",
         flex: 1,
@@ -88,14 +125,8 @@ export const CaseGrid = React.memo( function CaseGrid() {
         field: "status",
         headerName: "Status",
         hide: !visibleColumns.status,
-        cellRenderer: ({
-          value,
-        }: ICellRendererParams<CaseItem, string>) =>
-          value ? (
-            <StatusBadge
-              status={value as CaseItem["status"]}
-            />
-          ) : null,
+        
+        cellRenderer: StatusChangeCell,
       },
 
       {
@@ -120,14 +151,6 @@ export const CaseGrid = React.memo( function CaseGrid() {
         flex: 1,
         minWidth: 150,
       },
-
-      {
-        field: "module",
-        headerName: "Module",
-        hide: !visibleColumns.module,
-        width: 100,
-        minWidth: 50,
-      },
       
       {
         field: "paidorNot",
@@ -140,7 +163,7 @@ export const CaseGrid = React.memo( function CaseGrid() {
       {
         field: "functionalConsultant",
         headerName: "FunctionalConsultant",
-        flex: 1,
+        width: 250,
         minWidth: 140,
         hide: !visibleColumns.functionalConsultant,
       },
@@ -148,7 +171,7 @@ export const CaseGrid = React.memo( function CaseGrid() {
       {
         field: "developer",
         headerName: "Developer",
-        flex: 1,
+        width: 250,
         minWidth: 140,
         hide: !visibleColumns.developer,
         valueFormatter: ({ value }) =>
@@ -223,6 +246,9 @@ export const CaseGrid = React.memo( function CaseGrid() {
           suppressCellFocus
           animateRows
           getRowId={({ data: d }) => String(d.id)}
+          rowClass="hover:bg-slate-50"
+          // onRowClicked={onRowClicked}
+          // rowClass="cursor-pointer hover:bg-slate-50" 
         />
       </div>
 

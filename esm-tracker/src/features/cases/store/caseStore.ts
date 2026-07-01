@@ -85,10 +85,10 @@ export const useCaseStore = create<CaseUIState>((set) => ({
     developer: true,
     department: false,
     developmentStatus: false,
-    status: false,
+    status: true,
     releaseNote: false,
     startDate: false,
-    deadLine: false,
+    deadLine: true,
   },
 
   setVisibleColumns: (visibleColumns) =>

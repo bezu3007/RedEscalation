@@ -45,8 +45,10 @@ const DialogContent = React.forwardRef<
       {children}
 
       {showCloseButton && (
-        <DialogPrimitive.Close className="absolute right-4 top-4">
-          ✕
+        <DialogPrimitive.Close
+          className="absolute right-4 top-4 rounded-md p-2 text-gray-500 bg-gray-50 hover:bg-gray-200 hover:text-gray-900 transition"
+        >
+          <X className="h-5 w-5" />
         </DialogPrimitive.Close>
       )}
     </DialogPrimitive.Content>

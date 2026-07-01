@@ -28,7 +28,8 @@ export default function CaseListPage() {
         </div>
       </div>
 
-      <FilterBar />
+      <FilterBar 
+          initData={initData}/>
       <CaseGrid />
       {isCreateModalOpen && (
         <CaseForm

@@ -605,14 +605,6 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                className="rounded-xl"
-              >
-                Cancel
-              </Button>
             </div>
           </form>
         </Form>

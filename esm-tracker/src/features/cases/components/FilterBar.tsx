@@ -7,7 +7,7 @@ import {Plus,X,Search,Filter,Columns3} from "lucide-react";
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/shared/components/ui/select";
 import {DropdownMenu,DropdownMenuContent,DropdownMenuCheckboxItem,DropdownMenuTrigger} from "@/shared/components/ui/dropdown-menu";
 import { DateField } from "@/shared/components/DateField";
-import type {CaseStatus,CaseType} from "../types";
+import type {CaseItem, CaseStatus,CaseType, Consignee, Extension} from "../types";
 
 const STATUSES: CaseStatus[] = [
   "Accepted",
@@ -75,24 +75,102 @@ const COLUMN_CONFIG: {
   { key: "deadLine", label: "Deadline" },
 ];
 
-export function FilterBar() {
+interface Props {
+  initData?: {
+    projects?: Consignee[];
+    developers?: Consignee[];
+    modules?: Extension;
+  };
+}
+
+export function FilterBar({ initData }: Props) {
   const { data } = useCases();
   
   // Memoize derived data to prevent recalculation on every render
-  const { moduleOptions, paymentOptions, projectOptions } = useMemo(() => {
+  const [projectQuery, setProjectQuery] = useState("");
+  const [moduleQuery, setModuleQuery] = useState("");
+  // const [developerQuery, setDeveloperQuery] = useState("");
+
+  const projectOptions = useMemo(() => {
+    const projects = initData?.projects ?? [];
+    const query = projectQuery.trim().toLowerCase();
+
+    if (!query) {
+      return projects.slice(0, 250);
+    }
+
+    return projects
+      .filter((project) => {
+        const haystack = [
+          project.fullName,
+          project.firstName,
+          project.secondName,
+          project.thirdName,
+          project.code,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(query);
+      })
+      .slice(0, 250);
+  }, [initData?.projects, projectQuery]);
+
+  const moduleList = useMemo(() => {
+  if (!initData?.modules?.remark) return [];
+  const modules = initData.modules.remark
+    .split(",")
+    .map((m) => m.trim())
+    .filter((m) => m.length > 0);
+  return [...new Set(modules)];
+}, [initData?.modules]);
+
+const filteredModuleOptions = useMemo(() => {
+  const query = moduleQuery.trim().toLowerCase();
+  
+  if (!query) {
+    return moduleList.slice(0, 250);
+  }
+  
+  return moduleList
+    .filter((module) => module.toLowerCase().includes(query))
+    .slice(0, 250);
+}, [moduleList, moduleQuery]);
+
+  // Memoize developer options
+  // const developerOptions = useMemo(() => {
+  //   const developers = initData?.developers ?? [];
+  //   const query = developerQuery.trim().toLowerCase();
+
+  //   if (!query) {
+  //     return developers.slice(0, 250);
+  //   }
+
+  //   return developers
+  //     .filter((developer) => {
+  //       const haystack = [
+  //         developer.fullName,
+  //         developer.firstName,
+  //         developer.secondName,
+  //         developer.thirdName,
+  //         developer.code,
+  //       ]
+  //         .filter(Boolean)
+  //         .join(" ")
+  //         .toLowerCase();
+
+  //       return haystack.includes(query);
+  //     })
+  //     .slice(0, 250);
+  // }, [initData?.developers, developerQuery]);
+
+  const { paymentOptions } = useMemo(() => {
     const items = data?.items ?? [];
     
     return {
-      moduleOptions: Array.from(
-        new Set(items.map((x) => x.module).filter(Boolean))
-      ).sort(),
-      
       paymentOptions: Array.from(
         new Set(items.map((x) => x.paidorNot).filter(Boolean))
-      ).sort(),
-      
-      projectOptions: Array.from(
-        new Set(items.map((x) => x.projectName).filter(Boolean))
       ).sort(),
     };
   }, [data?.items]);
@@ -247,7 +325,9 @@ export function FilterBar() {
             }
           >
             <SelectTrigger className="w-[170px] bg-gray-50">
-              <SelectValue placeholder="Status" />
+              <div className="px-2 pb-1 text-sm text-slate-500">
+                Select Status
+              </div>
             </SelectTrigger>
             <SelectContent className="bg-white z-[100]">
               <SelectItem value="all">All Statuses</SelectItem>
@@ -266,7 +346,9 @@ export function FilterBar() {
             }
           >
             <SelectTrigger className="w-[170px] bg-gray-50">
-              <SelectValue placeholder="Case Type" />
+              <div className="px-2 pb-1 text-sm text-slate-500">
+                Select Case Type
+              </div>
             </SelectTrigger>
             <SelectContent className="bg-white z-[100]">
               <SelectItem value="all">All Types</SelectItem>
@@ -285,13 +367,35 @@ export function FilterBar() {
             }
           >
             <SelectTrigger className="w-[180px] bg-gray-50">
-              <SelectValue placeholder="Module" />
+              <div className="px-2 pb-1 text-sm text-slate-500">
+                Select Module
+              </div>
             </SelectTrigger>
-            <SelectContent className="bg-white z-[100]">
-              <SelectItem value="all">All Modules</SelectItem>
-              {moduleOptions.map((m) => (
-                <SelectItem key={m} value={m}>{m}</SelectItem>
-              ))}
+            <SelectContent 
+              className="bg-white z-[100] max-h-[320px] overflow-hidden"
+              position="popper"
+              sideOffset={4}
+            >
+              <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
+                <Input
+                  value={moduleQuery}
+                  onChange={(e) => setModuleQuery(e.target.value)}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  placeholder="Search module"
+                  className="h-8"
+                />
+              </div>
+              <div className="px-2 pb-1 text-xs text-slate-500">
+                Showing first 250 matches. Type to narrow the list.
+              </div>
+              <div className="h-[220px] overflow-y-auto">
+                {filteredModuleOptions.map((module: string) => (
+                  <SelectItem key={module} value={module}>
+                    {module}
+                  </SelectItem>
+                ))}
+              </div>
             </SelectContent>
           </Select>
         )}
@@ -304,13 +408,35 @@ export function FilterBar() {
             }
           >
             <SelectTrigger className="w-[180px] bg-gray-50">
-              <SelectValue placeholder="Projects" />
+              <div className="px-2 pb-1 text-sm text-slate-500">
+                Select a project
+              </div>
             </SelectTrigger>
-            <SelectContent className="bg-white z-[100]">
-              <SelectItem value="all">All Projects</SelectItem>
-              {projectOptions.map((m) => (
-                <SelectItem key={m} value={m}>{m}</SelectItem>
-              ))}
+            <SelectContent 
+              className="bg-white z-[100] max-h-[320px] overflow-hidden"
+              position="popper"
+              sideOffset={4} 
+            >
+              <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
+                <Input
+                  value={projectQuery}
+                  onChange={(e) => setProjectQuery(e.target.value)}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  placeholder="Search project"
+                  className="h-8"
+                />
+              </div>
+              <div className="px-2 pb-1 text-xs text-slate-500">
+                Showing first 250 matches. Type to narrow the list.
+              </div>
+              <div className="h-[220px] overflow-y-auto">
+                {projectOptions.map((project: Consignee) => (
+                  <SelectItem key={project.id} value={String(project.id)}>
+                    {project.fullName}
+                  </SelectItem>
+                ))}
+              </div>
             </SelectContent>
           </Select>
         )}
@@ -323,7 +449,9 @@ export function FilterBar() {
             }
           >
             <SelectTrigger className="w-[180px] bg-gray-50">
-              <SelectValue placeholder="Payment Status" />
+              <div className="px-2 pb-1 text-sm text-slate-500">
+                Payment Status
+              </div>
             </SelectTrigger>
             <SelectContent className="bg-white z-[100]">
               <SelectItem value="all">All Payments</SelectItem>
@@ -342,7 +470,7 @@ export function FilterBar() {
               onChange={(value) =>
                 setDraftFilters({ ...draftFilters, fromIssueDate: value })
               }
-              className="w-[160px] bg-gray-50"
+              className="w-[160px] bg-gray-50 text-sm text-slate-500"
             />
             <DateField
               placeholder="To Date"
@@ -350,7 +478,7 @@ export function FilterBar() {
               onChange={(value) =>
                 setDraftFilters({ ...draftFilters, toIssueDate: value })
               }
-              className="w-[160px] bg-gray-50"
+              className="w-[160px] bg-gray-50 text-sm text-slate-500"
             />
           </div>
         )}
