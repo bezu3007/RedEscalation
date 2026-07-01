@@ -1,11 +1,15 @@
+// AppRouter.tsx
 import { lazy, Suspense } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
+  Outlet,
 } from "react-router-dom";
 import { AppShell } from "@/shared/components/AppShell";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { AuthGuard } from "@/features/auth/components/AuthGuard";
+import { Providers } from "@/app/providers";
 
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
 const CaseListPage = lazy(() => import("@/features/cases/pages/CaseListPage"));
@@ -25,6 +29,7 @@ function PageLoader() {
   );
 }
 
+// Create the router without Providers wrapper
 const router = createBrowserRouter([
   {
     path: "/login",
@@ -36,32 +41,41 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <AppShell />,
+    element: <AuthGuard />, // This will check authentication and redirect if needed
     children: [
-      { index: true, element: <Navigate to="/cases" replace /> },
       {
-        path: "cases",
         element: (
           <Suspense fallback={<PageLoader />}>
-            <CaseListPage />
+            <AppShell />
           </Suspense>
         ),
-      },
-      {
-        path: "cases/:id",
-        element: (
-          <Suspense fallback={<PageLoader />}>
-            <CaseDetailPage />
-          </Suspense>
-        ),
-      },
-      {
-        path: "analytics",
-        element: (
-          <Suspense fallback={<PageLoader />}>
-            <AnalyticsPage />
-          </Suspense>
-        ),
+        children: [
+          { index: true, element: <Navigate to="/cases" replace /> },
+          {
+            path: "cases",
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <CaseListPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "cases/:id",
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <CaseDetailPage />
+              </Suspense>
+            ),
+          },
+          {
+            path: "analytics",
+            element: (
+              <Suspense fallback={<PageLoader />}>
+                <AnalyticsPage />
+              </Suspense>
+            ),
+          },
+        ],
       },
     ],
   },
@@ -69,5 +83,10 @@ const router = createBrowserRouter([
 ]);
 
 export function AppRouter() {
-  return <RouterProvider router={router} />;
+  // Wrap the entire app with Providers
+  return (
+    <Providers>
+      <RouterProvider router={router} />
+    </Providers>
+  );
 }

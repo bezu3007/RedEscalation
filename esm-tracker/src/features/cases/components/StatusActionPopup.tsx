@@ -105,6 +105,7 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
+  
 
   // Position the popup near the clicked cell
   const getPopupPosition = () => {

@@ -1,59 +1,35 @@
+// shared/lib/apiClient.ts
 import axios from "axios";
-import { useAuthStore } from "@/features/auth/store/authStore";
 
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? "/api",
   headers: { "Content-Type": "application/json" },
   timeout: 30_000,
+  withCredentials: true, // Important for cookie-based auth
 });
 
+// Request interceptor - just add any needed headers
 apiClient.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().accessToken;
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  // If using cookie-based auth, we don't need to add tokens manually
+  // The cookies will be sent automatically with withCredentials: true
   return config;
 });
 
-let refreshing: Promise<string> | null = null;
-
+// Response interceptor
 apiClient.interceptors.response.use(
-  (res) => res,
-  async (err) => {
-    const original = err.config;
-
-    if (err.response?.status === 401 && !original._retry) {
-      original._retry = true;
-
-      const { refreshToken, setTokens, logout } = useAuthStore.getState();
-      if (!refreshToken) {
-        logout();
-        window.location.href = "/login";
-        return Promise.reject(err);
-      }
-
-      if (!refreshing) {
-        refreshing = axios
-          .post(`${import.meta.env.VITE_API_BASE_URL ?? "/api"}/auth/refresh`, {
-            refreshToken,
-          })
-          .then((r) => {
-            setTokens(r.data.accessToken, r.data.refreshToken);
-            return r.data.accessToken;
-          })
-          .catch(() => {
-            logout();
-            window.location.href = "/login";
-            return Promise.reject(err);
-          })
-          .finally(() => {
-            refreshing = null;
-          });
-      }
-
-      const newToken = await refreshing;
-      original.headers.Authorization = `Bearer ${newToken}`;
-      return apiClient(original);
+  (response) => response,
+  async (error) => {
+    // If 401 and not login request, redirect to login
+    if (error.response?.status === 401 && !error.config.url?.includes('/auth/login')) {
+      // Clear any stored user data
+      localStorage.removeItem('ems-user');
+      localStorage.removeItem('ems-login-timestamp');
+      
+      // Redirect to login
+      window.location.href = '/login';
+      return Promise.reject(error);
     }
-
-    return Promise.reject(err);
+    
+    return Promise.reject(error);
   }
 );

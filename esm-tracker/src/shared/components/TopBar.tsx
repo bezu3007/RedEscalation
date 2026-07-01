@@ -3,23 +3,21 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
 
 import { Button } from "@/shared/components/ui/button";
-// import { Input } from "@/shared/components/ui/input";
-
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuLabel,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "@/shared/components/ui/dropdown-menu";
-
-// import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
 
 import {
-  // LogOut,
+  LogOut,
   LayoutGrid,
   BarChart3,
+  User as UserIcon,
 } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
@@ -38,16 +36,26 @@ const NAV = [
 ];
 
 export function TopBar() {
-  // const { user, logout } = useAuthStore();
+  const { user, signOut } = useAuthStore();
   const { pathname } = useLocation();
 
-  // const initials =
-  //   user?.fullName
-  //     ?.split(" ")
-  //     .map((w) => w[0])
-  //     .join("")
-  //     .toUpperCase()
-  //     .slice(0, 2) ?? "U";
+  const initials =
+    user?.fullName
+      ?.split(" ")
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) ?? "U";
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      // The signOut function will handle clearing state and redirecting
+      // through the AuthGuard
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <header className="border-b bg-background sticky top-0 z-50 bg-white">
@@ -74,7 +82,6 @@ export function TopBar() {
             </p>
           </div>
         </div>
-
 
         {/* RIGHT */}
         <div className="flex items-center gap-3">
@@ -105,16 +112,16 @@ export function TopBar() {
             })}
           </nav>
 
-          {/* USER */}
-          {/* <DropdownMenu>
+          {/* USER DROPDOWN */}
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full"
+                className="rounded-full hover:bg-muted"
               >
                 <Avatar className="h-9 w-9">
-                  <AvatarFallback className="text-xs">
+                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -127,25 +134,29 @@ export function TopBar() {
             >
               <DropdownMenuLabel className="font-normal">
                 <p className="text-sm font-medium">
-                  {user?.fullName}
+                  {user?.fullName || user?.userName || "User"}
                 </p>
-
-                <p className="text-xs text-muted-foreground">
-                  {user?.email}
+                <p className="text-xs text-muted-foreground truncate">
+                  {user?.email || user?.userName || "No email"}
                 </p>
+                {user?.branch && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Branch: {user.branch}
+                  </p>
+                )}
               </DropdownMenuLabel>
 
               <DropdownMenuSeparator />
 
               <DropdownMenuItem
-                onClick={logout}
-                className="text-destructive gap-2"
+                onClick={handleLogout}
+                className="text-destructive gap-2 cursor-pointer"
               >
                 <LogOut className="h-4 w-4" />
                 Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu> */}
+          </DropdownMenu>
         </div>
       </div>
     </header>
