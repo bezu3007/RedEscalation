@@ -3,9 +3,11 @@ export interface User {
   id: string | number;
   userName: string;
   email?: string;
-  role?: string;
+  // role?: string;
   fullName?: string;
-  department?: string;
+  department?: number;
+  departmentDescription?: string;
+  person?: number;
   branch?: string;
   remark?: string;
   tin?: string;
@@ -19,6 +21,20 @@ export interface User {
   passwordConfig?: any;
   botLink?: string;
   // Add any other properties from your response
+}
+
+export enum UserRole {
+  ADMIN = "admin",
+  FUNCTIONAL_CONSULTANT = "fc",
+  PROJECT_MANAGER = "pm",
+  DEVELOPER = "developer",
+}
+
+export interface AuthenticatedUser {
+  id: number;
+  departmentId: number;
+  role: UserRole;
+  personId: number;
 }
 
 export interface Consignee {

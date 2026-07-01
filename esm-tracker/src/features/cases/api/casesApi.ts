@@ -3,6 +3,8 @@ import type {CasesResponse, CaseItem, CaseFilters, CaseStatus, CaseType, Voucher
   // Developer,
   // AiSuggestDevelopersResponse,
 } from "../types";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { UserRole } from "@/features/auth/types";
 
 export interface CasesQueryParams
   extends Partial<CaseFilters> {
@@ -10,6 +12,9 @@ export interface CasesQueryParams
   pageSize?: number;
   sortField?: string;
   sortOrder?: "asc" | "desc";
+  userRole?: UserRole;
+  userId?: number;
+  departmentId?: number;
 }
 
 function normalizeStatus(apiStatus: string): CaseStatus {
@@ -66,120 +71,101 @@ export const casesApi = {
   },
 
   getAll: async (params: CasesQueryParams): Promise<CasesResponse> => {
-
     const query = new URLSearchParams();
 
+    // Get current user from auth store
+    const user = useAuthStore.getState().user;
+    const userRole = useAuthStore.getState().getUserRole();
+    
+    if (!user) {
+      throw new Error("User not authenticated");
+    }
+
+    console.log("Current user:", user);
+    console.log("User role:", userRole);
+
+    // Add date range (required for filtering)
     query.append(":IssuedDate", params.fromIssueDate!);
-    query.append(":IssuedDate", params.toIssueDate!);
+    query.append("IssuedDate:", params.toIssueDate!);
 
-    query.append("Consignee3Id","183" );
+    // ROLE-BASED FILTERING - Matches your C# logic
+    if (userRole === UserRole.DEVELOPER) {
+      // dep.Department == 56
+      // Filter by Consignee3Id (assigned developer)
+      query.append("Consignee3Id", user.id.toString());
+      console.log("Developer filter - Consignee3Id:", user.id);
+    } 
+    else if (userRole === UserRole.FUNCTIONAL_CONSULTANT) {
+      // dep.Department != 56 (not developers department)
+      // Filter by Consignee4Id (the FC's ID)  
+      query.append("Consignee4Id", user.id.toString());
+      console.log("FC filter - Consignee4Id:", user.id);
+    } 
+    else if (userRole === UserRole.PROJECT_MANAGER) {
+      // PMs see cases through Consignee1 (project manager field)
+      // In GetGridData, PMs are shown as ProjectName (which is actually the PM)
+      query.append("Consignee1Id", user.id.toString());
+      console.log("PM filter - Consignee1Id:", user.id);
+    } 
+    else if (userRole === UserRole.ADMIN) {
+      // userId == 37453 (admin user ID)
+      // Admin sees all cases
+      // Optionally filter to show reviewed cases by default
+      if (!params.status) {
+        query.append("LastStateDescription", "Reviewed");
+      }
+      console.log("Admin - no filter applied (viewing all)");
+    }
 
+    // Additional filters (if provided by user)
     if (params.caseType) {
-      query.append(
-        "Extension2",
-        params.caseType
-      );
+      query.append("Extension2", params.caseType);
     }
-
     if (params.status) {
-      query.append(
-        "LastStateDescription",
-        params.status
-      );
+      query.append("LastStateDescription", params.status);
     }
-
     if (params.module) {
-      query.append(
-        "Extension3",
-        params.module
-      );
+      query.append("Extension3", params.module);
     }
-
     if (params.paidorNot) {
-      query.append(
-        "Extension1",
-        params.paidorNot
-      );
+      query.append("Extension1", params.paidorNot);
+    }
+    if (params.projectName) {
+      query.append("Consignee1Id", params.projectName);
     }
 
-    const url =
-      `/EscalationView/dynamic/?${query.toString()}`;
+    const url = `/EscalationView/dynamic/?${query.toString()}`;
+    console.log("API URL:", url);
 
     const response = await apiClient.get(url);
-
     const data = response.data ?? [];
 
-    const mapped: CaseItem[] = data.map(
-      (item: any) => ({
-        id: item.id,
-        caseNumber: item.code,
-
-        issueDate: item.issuedDate,
-
-        projectName:
-          item.consignee1FullName || "",
-
-        projectNameId:
-          item.consignee1Id || "",
-
-        issues:
-          item.note || "",
-
-        paidorNot:
-          item.extension1 || "",
-
-        caseType:
-          normalizeCaseType(item.extension2),
-
-        module:
-          item.extension3 || "",
-
-        functionalConsultant:
-          item.consignee2FullName || "",
-
-        functionalConsultantId:
-          item.consignee2Id || "",
-
-        reviewedBy:
-          item.consignee4FullName || "",
-
-        developer:
-          item.consignee3FullName || "",
-
-        developerId:
-          item.consignee3Id || "",
-
-        department:
-          item.consigneeUnit1Description || "",
-
-        departmentId:
-          item.consigneeUnit1Id || "",
-
-        developmentStatus:
-          item.extension4 || "",
-
-        UATStatus:
-          item.lastStateDescription || "",
-
-        status:
-          normalizeStatus(
-            item.lastStateDescription
-          ),
-
-        releaseNote:
-          item.remark || "",
-
-        startDate:
-          item.startDate || "",
-
-        deadLine:
-          item.deadLine || "",
-
-        referencedID:
-          item.id || "",
-        attachmentUrl: item.attachmentUrl || "",
-      })
-    );
+    const mapped: CaseItem[] = data.map((item: any) => ({
+      id: item.id,
+      caseNumber: item.code || "",
+      issueDate: item.issuedDate || "",
+      projectName: item.consignee1FullName || "",
+      projectNameId: item.consignee1Id || "",
+      issues: item.note || "",
+      paidorNot: item.extension1 || "",
+      caseType: normalizeCaseType(item.extension2),
+      module: item.extension3 || "",
+      functionalConsultant: item.consignee2FullName || "",
+      functionalConsultantId: item.consignee2Id || "",
+      reviewedBy: item.consignee4FullName || "",
+      developer: item.consignee3FullName || "",
+      developerId: item.consignee3Id || "",
+      department: item.consigneeUnit1Description || "",
+      departmentId: item.consigneeUnit1Id || "",
+      developmentStatus: item.extension4 || "",
+      UATStatus: item.lastStateDescription || "",
+      status: normalizeStatus(item.lastStateDescription),
+      releaseNote: item.remark || "",
+      startDate: item.startDate || "",
+      deadLine: item.deadLine || "",
+      referencedID: item.id || "",
+      attachmentUrl: item.attachmentUrl || "",
+    }));
 
     const page = params.page ?? 1;
     const pageSize = params.pageSize ?? 25;
