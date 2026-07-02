@@ -40,7 +40,7 @@ const TYPE_CONFIG: Record<CaseType,{ label: string; className: string }> = {
   },
 
   "Not Implemented": {
-    label: "Not Impl",
+    label: "Not Implemented",
     className:
       "bg-gray-50 text-gray-700 border-gray-200",
   },

@@ -124,15 +124,15 @@ export const CaseGrid = React.memo( function CaseGrid() {
       {
         field: "status",
         headerName: "Status",
+        width: 120,
         hide: !visibleColumns.status,
-        
         cellRenderer: StatusChangeCell,
       },
 
       {
         field: "caseType",
         headerName: "Type",
-        width: 120,
+        width: 150,
         hide: !visibleColumns.caseType,
         cellRenderer: ({
           value,
