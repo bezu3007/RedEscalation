@@ -1,13 +1,5 @@
 import { User, UserRole } from "../types";
 
-/**
- * Determine user role based on department and user ID
- * This matches your C# logic:
- * - Admin: department 56 AND user id 37453
- * - Developer: department 56 (and not admin)
- * - Functional Consultant: department != 56 (default)
- * - Project Manager: Not explicitly stored, derived from case assignments
- */
 export function determineUserRole(user: User | null): UserRole {
   if (!user) return UserRole.FUNCTIONAL_CONSULTANT;
 
@@ -24,12 +16,10 @@ export function determineUserRole(user: User | null): UserRole {
     return UserRole.DEVELOPER;
   }
 
-  // For FC and PM, we need to determine based on context
-  // By default, if not admin or developer, they are FC
-  // PM status is determined by being assigned as Consignee1 in cases
-  // This will be checked at the API level when filtering cases
+  if (userId === 231){
+    return UserRole.PROJECT_MANAGER;
+  }
   
-  // Default to FUNCTIONAL_CONSULTANT
   return UserRole.FUNCTIONAL_CONSULTANT;
 }
 

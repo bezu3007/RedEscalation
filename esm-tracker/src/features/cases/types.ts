@@ -48,28 +48,34 @@ export interface CaseFilters {
 }
 
 export interface VoucherDTO {
-  id: number;
-  code: string;
-  consignee1: number;
-  consignee2: number;
-  consignee3: number | null;
-  consignee4: number | null;
-  issuedDate: string;
-  note: string;
-  originConsigneeUnit: number;
-  consigneeUnit1: number;
-  lastModified: string;
-  extension1: string;
-  extension2: string;
-  extension3: string;
-  extension4: string;
-  lastState: number;
-  startDate: string | null;
-  endDate: string | null;
-  remark: string;
-  type: number;
-  lastUser: number;
-  definition: number;
+    id: number; // Make sure this is required number, not nullable
+    code: string;
+    lastDevice: string;
+    consignee1: number;
+    subTotal: number;
+    discount: number;
+    addCharge: number;
+    grandTotal: number;
+    consignee2: number;
+    consignee3: number;
+    consignee4: number | null;
+    issuedDate: string;
+    note: string;
+    originConsigneeUnit: number;
+    consigneeUnit1: number;
+    lastModified: string;
+    createdOn: string;
+    extension1: string;
+    extension2: string;
+    extension3: string;
+    extension4: string;
+    lastState: number;
+    startDate: string;
+    endDate: string;
+    remark: string;
+    type: number;
+    lastUser: number;
+    definition: number;
 }
 
 export interface ActivityDTO {
@@ -90,6 +96,10 @@ export interface ActivityDTO {
 export interface VoucherBuffer {
   voucher: VoucherDTO;
   activity: ActivityDTO;
+  IdGenerationParams: {
+    isWeb: boolean;
+    consigneeUnitId: number;
+  };
   transactionReferencesBuffer: any[];
 }
 
@@ -170,7 +180,7 @@ export interface CaseItem {
   developer: string | null;
   developerId: string | null;
   department: string | null;
-  departmentId: string | null;
+  departmentId: Number | null;
   developmentStatus: string;
   UATStatus: string | null;
   status: CaseStatus;

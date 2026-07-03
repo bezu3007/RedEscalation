@@ -7,7 +7,7 @@ import {Plus,X,Search,Filter,Columns3} from "lucide-react";
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/shared/components/ui/select";
 import {DropdownMenu,DropdownMenuContent,DropdownMenuCheckboxItem,DropdownMenuTrigger} from "@/shared/components/ui/dropdown-menu";
 import { DateField } from "@/shared/components/DateField";
-import type {CaseItem, CaseStatus,CaseType, Consignee, Extension} from "../types";
+import {PAID_OR_NOT, type CaseItem, type CaseStatus,type CaseType, type Consignee, type Extension} from "../types";
 
 const STATUSES: CaseStatus[] = [
   "Accepted",
@@ -165,15 +165,9 @@ const filteredModuleOptions = useMemo(() => {
   //     .slice(0, 250);
   // }, [initData?.developers, developerQuery]);
 
-  const { paymentOptions } = useMemo(() => {
-    const items = data?.items ?? [];
-    
-    return {
-      paymentOptions: Array.from(
-        new Set(items.map((x) => x.paidorNot).filter(Boolean))
-      ).sort(),
-    };
-  }, [data?.items]);
+  const paymentOptions = useMemo(() => {
+    return [...PAID_OR_NOT]; // Convert readonly array to mutable array
+  }, []);
 
   const {
     filters,
@@ -325,9 +319,7 @@ const filteredModuleOptions = useMemo(() => {
             }
           >
             <SelectTrigger className="w-[170px] bg-gray-50">
-              <div className="px-2 pb-1 text-sm text-slate-500">
-                Select Status
-              </div>
+              <SelectValue placeholder="Select Status" />
             </SelectTrigger>
             <SelectContent className="bg-white z-[100]">
               <SelectItem value="all">All Statuses</SelectItem>
@@ -346,9 +338,7 @@ const filteredModuleOptions = useMemo(() => {
             }
           >
             <SelectTrigger className="w-[170px] bg-gray-50">
-              <div className="px-2 pb-1 text-sm text-slate-500">
-                Select Case Type
-              </div>
+              <SelectValue placeholder="Select Case Type" />
             </SelectTrigger>
             <SelectContent className="bg-white z-[100]">
               <SelectItem value="all">All Types</SelectItem>
@@ -449,9 +439,7 @@ const filteredModuleOptions = useMemo(() => {
             }
           >
             <SelectTrigger className="w-[180px] bg-gray-50">
-              <div className="px-2 pb-1 text-sm text-slate-500">
-                Payment Status
-              </div>
+              <SelectValue placeholder="Payment Status" />
             </SelectTrigger>
             <SelectContent className="bg-white z-[100]">
               <SelectItem value="all">All Payments</SelectItem>

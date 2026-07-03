@@ -14,6 +14,10 @@ import "ag-grid-community/styles/ag-theme-quartz.css";
 import { RowMenuCell } from "./RowMenuCell";
 import { useNavigate } from "react-router-dom";
 import {StatusActionPopup} from "./StatusActionPopup";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { UserRole } from "@/features/auth/types";
+import { getAllowedTransitions } from "../utils/permissions";
+
 
 
 function ExpandCell() {
@@ -42,30 +46,47 @@ export const CaseGrid = React.memo( function CaseGrid() {
   // const onRowClicked = (params: any) => {
   //   navigate(`/cases/${params.data.id}`);
   // };
+  // Inside CaseGrid.tsx - Update StatusChangeCell
+
   function StatusChangeCell(params: ICellRendererParams<CaseItem>) {
-  const [showPopup, setShowPopup] = React.useState(false);
-  const cellRef = React.useRef<HTMLDivElement>(null);
-  const data = params.data;
+    const [showPopup, setShowPopup] = React.useState(false);
+    const cellRef = React.useRef<HTMLDivElement>(null);
+    const data = params.data;
+    const userRole = useAuthStore.getState().getUserRole();
 
-  if (!data) return null;
+    if (!data) return null;
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowPopup(true);
-  };
-  return (
-    <div ref={cellRef} onClick={handleClick} className="cursor-pointer">
-      <StatusBadge status={data.status} />
-      {showPopup && (
-        <StatusActionPopup
-          caseItem={data}
-          onClose={() => setShowPopup(false)}
-          anchorEl={cellRef.current}
-        />
-      )}
-    </div>
-  );
-}
+    // Check if user has any actions for this status
+    const effectiveUserRole = userRole ?? UserRole.ADMIN
+    const allowedTransitions = getAllowedTransitions(data.status, effectiveUserRole);
+    const hasActions = allowedTransitions.length > 0;
+
+    // FC should never be able to click
+    const canClick = userRole !== UserRole.FUNCTIONAL_CONSULTANT && hasActions;
+
+    const handleClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!canClick) return;
+      setShowPopup(true);
+    };
+
+    return (
+      <div 
+        ref={cellRef} 
+        onClick={handleClick} 
+        className={`${canClick ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
+      >
+        <StatusBadge status={data.status} />
+        {showPopup && (
+          <StatusActionPopup
+            caseItem={data}
+            onClose={() => setShowPopup(false)}
+            anchorEl={cellRef.current}
+          />
+        )}
+      </div>
+    );
+  }
   const colDefs = useMemo<ColDef<CaseItem>[]>(
     () => [
       {

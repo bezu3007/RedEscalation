@@ -1,6 +1,10 @@
-import React, { useEffect, useRef } from "react";
+// StatusActionPopup.tsx
+
+import React, { useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useCaseTransition } from "../hooks/useCaseTransition";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { getAllowedTransitions } from "../utils/permissions";
 import type { CaseItem, CaseStatus } from "../types";
 import { 
   CheckCircle2, 
@@ -45,48 +49,30 @@ const STATUS_CONFIG: Record<CaseStatus, { label: string; icon: React.ReactNode; 
   DeadlineExtension: { label: "Deadline Extension", icon: <Clock3 className="h-4 w-4" />, color: "text-violet-600" },
 };
 
-// All available statuses (filtered by allowed transitions)
-const ALL_STATUSES: CaseStatus[] = [
-  "Prepared", "Review", "Returned", "Rejected", "Approved", 
-  "OnProgress", "Solved", "NotSolved", "Open", "InProgress", 
-  "PendingApproval", "Resolved", "Closed", "DeadlineExtension"
-];
-
 export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionPopupProps) {
   const { mutate, isPending } = useCaseTransition();
   const popupRef = useRef<HTMLDivElement>(null);
+  const userRole = useAuthStore.getState().getUserRole();
 
-  // Get allowed transitions from your hook
-  const getAllowedTransitions = (status: CaseStatus): CaseStatus[] => {
-    // This should match your existing logic
-    const transitions: Record<CaseStatus, CaseStatus[]> = {
-      // Define your transition rules here
-      Open: ["InProgress", "PendingApproval"],
-      InProgress: ["PendingApproval", "OnProgress"],
-      PendingApproval: ["Approved", "Rejected", "Returned"],
-      Approved: ["InProgress", "Solved", "Closed"],
-      Rejected: ["Open", "InProgress"],
-      Returned: ["Open", "InProgress"],
-      OnProgress: ["Review", "Solved"],
-      Review: ["Approved", "Returned", "Rejected"],
-      Solved: ["Closed", "NotSolved"],
-      NotSolved: ["Open", "InProgress"],
-      Closed: [],
-      DeadlineExtension: ["Open", "InProgress"],
-      Prepared: ["Review", "Returned"],
-      "On Progress": ["Review", "Solved"],
-      Accepted: ["InProgress", "Solved"],
-      Fixed: ["Review", "Solved"],
-      "Re Journal": ["Open", "InProgress"],
-      Reviewed: ["Approved", "Returned"],
-      Resolved: ["Closed"],
-    };
-    return transitions[status] || [];
-  };
-
-  const allowedStatuses = getAllowedTransitions(caseItem.status);
+  // Get allowed transitions based on role AND status
+  const allowedStatuses = useMemo(() => {
+    if (!userRole) return [];
+    return getAllowedTransitions(caseItem.status, userRole);
+  }, [caseItem.status, userRole]);
 
   const handleStatusChange = (targetStatus: CaseStatus) => {
+    if (!userRole) {
+      console.error("No user role available for status transition");
+      return;
+    }
+
+    // Double-check permission before calling API
+    const allowed = getAllowedTransitions(caseItem.status, userRole);
+    if (!allowed.includes(targetStatus)) {
+      console.error(`Transition to ${targetStatus} not allowed for role ${userRole}`);
+      return;
+    }
+
     mutate({
       caseId: String(caseItem.id),
       targetStatus,
@@ -105,7 +91,6 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
-  
 
   // Position the popup near the clicked cell
   const getPopupPosition = () => {
@@ -117,7 +102,10 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
     };
   };
 
-  if (allowedStatuses.length === 0) return null;
+  // If no actions allowed for this role+status, don't show anything
+  if (allowedStatuses.length === 0) {
+    return null;
+  }
 
   const position = getPopupPosition();
 
@@ -132,9 +120,14 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-slate-50">
-        <p className="font-medium text-sm">
-          Change Status: <span className="font-mono">{caseItem.caseNumber}</span>
-        </p>
+        <div>
+          <p className="font-medium text-sm">
+            {caseItem.caseNumber}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Current: {caseItem.status}
+          </p>
+        </div>
         <button
           onClick={onClose}
           className="h-7 w-7 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors"
@@ -169,10 +162,13 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
         })}
       </div>
 
-      {/* Current Status */}
-      <div className="px-4 py-2 border-t bg-slate-50/50">
+      {/* Footer with role info */}
+      <div className="px-4 py-2 border-t bg-slate-50/50 flex justify-between">
         <p className="text-xs text-muted-foreground">
-          Current: <span className="font-medium">{caseItem.status}</span>
+          Status: <span className="font-medium">{caseItem.status}</span>
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Role: <span className="font-medium">{userRole}</span>
         </p>
       </div>
     </div>,

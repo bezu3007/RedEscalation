@@ -84,36 +84,26 @@ export const casesApi = {
     console.log("Current user:", user);
     console.log("User role:", userRole);
 
-    // Add date range (required for filtering)
     query.append(":IssuedDate", params.fromIssueDate!);
     query.append("IssuedDate:", params.toIssueDate!);
 
     // ROLE-BASED FILTERING - Matches your C# logic
     if (userRole === UserRole.DEVELOPER) {
-      // dep.Department == 56
-      // Filter by Consignee3Id (assigned developer)
       query.append("Consignee3Id", user.id.toString());
       console.log("Developer filter - Consignee3Id:", user.id);
     } 
     else if (userRole === UserRole.FUNCTIONAL_CONSULTANT) {
-      // dep.Department != 56 (not developers department)
-      // Filter by Consignee4Id (the FC's ID)  
-      query.append("Consignee4Id", user.id.toString());
-      console.log("FC filter - Consignee4Id:", user.id);
+      query.append("Consignee2Id", user.id.toString());
+      console.log("FC filter - Consignee2Id:", user.id);
     } 
     else if (userRole === UserRole.PROJECT_MANAGER) {
-      // PMs see cases through Consignee1 (project manager field)
-      // In GetGridData, PMs are shown as ProjectName (which is actually the PM)
-      query.append("Consignee1Id", user.id.toString());
+      query.append("Consignee2Id", user.id.toString());
       console.log("PM filter - Consignee1Id:", user.id);
     } 
     else if (userRole === UserRole.ADMIN) {
-      // userId == 37453 (admin user ID)
-      // Admin sees all cases
-      // Optionally filter to show reviewed cases by default
-      if (!params.status) {
-        query.append("LastStateDescription", "Reviewed");
-      }
+      // if (!params.status) {
+      //   query.append("LastStateDescription", "Reviewed");
+      // }
       console.log("Admin - no filter applied (viewing all)");
     }
 
@@ -230,11 +220,8 @@ export const casesApi = {
     return res.data;
   },
 
-  update: async (id: number, body: VoucherBuffer) => {
-    const res = await apiClient.put(
-      `/VoucherBuffer/${id}`, // or whatever your API expects
-      body
-    );
+  update: async (body: VoucherBuffer) => {
+    const res = await apiClient.put(`/VoucherBuffer`, body);
 
     return res.data;
   },
@@ -256,88 +243,4 @@ export const casesApi = {
     return response.data;
   },
 
-  //   return apiClient
-  //     .post(
-  //       `/cases/${body.caseId}/transition`,
-  //       body
-  //     )
-  //     .then((r) => r.data);
-  // },
-
-
-  //////////////////////////////////////////////
-  /////////Mock use//////////////////////////////
-  // uploadAttachment: (
-  //   caseId: number,
-  //   file: File
-  // ): Promise<{ url: string }> => {
-  //   const form = new FormData();
-
-  //   form.append("file", file);
-
-  //   return apiClient
-  //     .post(
-  //       `/cases/${caseId}/attachments`,
-  //       form,
-  //       {
-  //         headers: {
-  //           "Content-Type":
-  //             "multipart/form-data",
-  //         },
-  //       }
-  //     )
-  //     .then((r) => r.data);
-  // },
-
-  // getDevelopers: (): Promise<
-  //   Developer[]
-  // > =>
-  //   import.meta.env.DEV
-  //     ? Promise.resolve([
-  //         {
-  //           id: "dev-1",
-
-  //           name: "Alice",
-
-  //           department:
-  //             "Engineering",
-
-  //           activeCaseCount: 2,
-  //         },
-
-  //         {
-  //           id: "dev-2",
-
-  //           name: "Bob",
-
-  //           department: "Finance",
-
-  //           activeCaseCount: 1,
-  //         },
-  //       ])
-  //     : apiClient
-  //         .get("/developers")
-  //         .then((r) => r.data),
-
-  // aiSuggestDevelopers: (
-  //   caseId: number
-  // ): Promise<AiSuggestDevelopersResponse> =>
-  //   apiClient
-  //     .post(
-  //       `/ai/suggest-developers`,
-  //       { caseId }
-  //     )
-  //     .then((r) => r.data),
-
-  // exportToPdf: (
-  //   caseId: number
-  // ): Promise<Blob> =>
-  //   apiClient
-  //     .get(
-  //       `/cases/${caseId}/export/pdf`,
-  //       {
-  //         responseType: "blob",
-  //       }
-  //     )
-  //     .then((r) => r.data),
 };

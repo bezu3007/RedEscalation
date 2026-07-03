@@ -193,20 +193,24 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
     
     if (mode === "edit" && initialData) {
       form.reset({
-        caseNumber: initialData.caseNumber,
-        projectName: initialData.projectName,
-        projectNameId: initialData.projectNameId,
-        module: initialData.module,
-        caseType: initialData.caseType,
-        developer: initialData.developer ?? "",
-        paidorNot: initialData.paidorNot,
-        department: initialData.department ?? "",
-        issueDate: initialData.issueDate ?? "",
-        deadLine: initialData.deadLine ?? "",
-        releaseNote: initialData.releaseNote ?? "",
-        issues: initialData.issues ?? "",
-        developmentStatus: initialData.developmentStatus ?? "",
+      caseNumber: initialData.caseNumber || "",
+      projectName: initialData.projectName || "",
+      projectNameId: initialData.projectNameId ? String(initialData.projectNameId) : "",
+      module: initialData.module || "",
+      caseType: initialData.caseType || "Error",
+      developer: initialData.developerId ? String(initialData.developerId) : "",
+      paidorNot: initialData.paidorNot || "Free",
+      department: initialData.department || "",
+      issueDate: initialData.issueDate ? initialData.issueDate.split('T')[0] : "", 
+      deadLine: initialData.deadLine ? initialData.deadLine.split('T')[0] : "",
+      releaseNote: initialData.releaseNote || "",
+      issues: initialData.issues || "",
+      developmentStatus: initialData.developmentStatus || "",
       });
+      if (initialData.releaseNote) {
+        setDeploymentNotes(initialData.releaseNote);
+      }
+      
     } else if (mode === "create") {
       form.reset({
         projectName: "",
