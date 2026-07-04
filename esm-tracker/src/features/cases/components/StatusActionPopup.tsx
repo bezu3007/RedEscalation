@@ -2,10 +2,11 @@
 
 import React, { useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { useCaseTransition } from "../hooks/useCaseTransition";
+import { useUpdateCase } from "../hooks/useCases";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { getAllowedTransitions } from "../utils/permissions";
-import type { CaseItem, CaseStatus } from "../types";
+import type { CaseItem, CaseStatus, CaseFormValues } from "../types";
+import { mapCaseToVoucherBuffer } from "../hooks/useMapCaseToVoucherBuffer";
 import { 
   CheckCircle2, 
   Ban, 
@@ -24,37 +25,33 @@ interface StatusActionPopupProps {
   caseItem: CaseItem;
   onClose: () => void;
   anchorEl: HTMLElement | null;
+  onStatusUpdate?: (newStatus: string) => void;
 }
 
-// Status configuration
 const STATUS_CONFIG: Record<CaseStatus, { label: string; icon: React.ReactNode; color: string }> = {
   Prepared: { label: "Prepare", icon: <FileCheck className="h-4 w-4" />, color: "text-blue-500" },
-  Review: { label: "Review", icon: <RefreshCw className="h-4 w-4" />, color: "text-purple-500" },
+  Reviewed: { label: "Review", icon: <RefreshCw className="h-4 w-4" />, color: "text-purple-500" },
   Returned: { label: "Return", icon: <RotateCcw className="h-4 w-4" />, color: "text-orange-500" },
   Rejected: { label: "Reject", icon: <Ban className="h-4 w-4" />, color: "text-red-500" },
   Approved: { label: "Approve", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-green-600" },
   OnProgress: { label: "On Progress", icon: <PlayCircle className="h-4 w-4" />, color: "text-blue-500" },
   Solved: { label: "Solved", icon: <CheckCheck className="h-4 w-4" />, color: "text-green-600" },
-  NotSolved: { label: "Not Solved", icon: <AlertCircle className="h-4 w-4" />, color: "text-red-500" },
+  "Not Solved": { label: "Not Solved", icon: <AlertCircle className="h-4 w-4" />, color: "text-red-500" },
   Accepted: { label: "Accept", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-green-600" },
   Fixed: { label: "Fix", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-blue-500" },
-  "Re Journal": { label: "Re Journal", icon: <RefreshCw className="h-4 w-4" />, color: "text-orange-500" },
-  Reviewed: { label: "Review", icon: <FileCheck className="h-4 w-4" />, color: "text-purple-500" },
-  "On Progress": { label: "On Progress", icon: <PlayCircle className="h-4 w-4" />, color: "text-blue-500" },
-  Closed: { label: "Close", icon: <X className="h-4 w-4" />, color: "text-slate-600" },
-  Open: { label: "Open", icon: <RotateCcw className="h-4 w-4" />, color: "text-slate-500" },
-  InProgress: { label: "In Progress", icon: <PlayCircle className="h-4 w-4" />, color: "text-blue-500" },
-  PendingApproval: { label: "Pending Approval", icon: <LoaderCircle className="h-4 w-4" />, color: "text-amber-500" },
-  Resolved: { label: "Resolved", icon: <CheckCheck className="h-4 w-4" />, color: "text-green-600" },
-  DeadlineExtension: { label: "Deadline Extension", icon: <Clock3 className="h-4 w-4" />, color: "text-violet-600" },
+  "Re Journal": { label: "Re Journal", icon: <RefreshCw className="h-4 w-4" />, color: "text-violet-600" },
 };
 
-export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionPopupProps) {
-  const { mutate, isPending } = useCaseTransition();
+export function StatusActionPopup({ 
+  caseItem, 
+  onClose, 
+  anchorEl,
+  onStatusUpdate 
+}: StatusActionPopupProps) {
+  const { mutate: updateCase, isPending } = useUpdateCase();
   const popupRef = useRef<HTMLDivElement>(null);
   const userRole = useAuthStore.getState().getUserRole();
 
-  // Get allowed transitions based on role AND status
   const allowedStatuses = useMemo(() => {
     if (!userRole) return [];
     return getAllowedTransitions(caseItem.status, userRole);
@@ -66,18 +63,53 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
       return;
     }
 
-    // Double-check permission before calling API
     const allowed = getAllowedTransitions(caseItem.status, userRole);
     if (!allowed.includes(targetStatus)) {
       console.error(`Transition to ${targetStatus} not allowed for role ${userRole}`);
       return;
     }
 
-    mutate({
-      caseId: String(caseItem.id),
-      targetStatus,
-    });
-    onClose();
+    // Construct form values from existing case data
+    const formValues: CaseFormValues = {
+      projectName: caseItem.projectName || "",
+      projectNameId: String(caseItem.projectNameId || ""),
+      module: caseItem.module || "",
+      caseType: caseItem.caseType || "Error",
+      developer: String(caseItem.developerId || ""),
+      paidorNot: caseItem.paidorNot || "Free",
+      department: caseItem.department || "",
+      issueDate: caseItem.issueDate ? caseItem.issueDate.split('T')[0] : "",
+      deadLine: caseItem.deadLine ? caseItem.deadLine.split('T')[0] : "",
+      releaseNote: caseItem.releaseNote || "",
+      issues: caseItem.issues || "",
+      developmentStatus: caseItem.developmentStatus || "Prepared",
+      status: targetStatus, // This will be used by mapCaseToVoucherBuffer
+    };
+
+    // Use the existing mapping function
+    const payload = mapCaseToVoucherBuffer(formValues, caseItem);
+
+    console.log("Status Update Payload:", payload);
+
+    // Use the update API
+    updateCase(
+      {
+        id: caseItem.id!,
+        body: payload,
+      },
+      {
+        onSuccess: () => {
+          console.log(`Status updated to: ${targetStatus}`);
+          if (onStatusUpdate) {
+            onStatusUpdate(targetStatus);
+          }
+          onClose();
+        },
+        onError: (err) => {
+          console.error("Status update error:", err);
+        },
+      }
+    );
   };
 
   // Click outside to close
@@ -92,7 +124,6 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  // Position the popup near the clicked cell
   const getPopupPosition = () => {
     if (!anchorEl) return { top: 0, left: 0 };
     const rect = anchorEl.getBoundingClientRect();
@@ -102,7 +133,6 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
     };
   };
 
-  // If no actions allowed for this role+status, don't show anything
   if (allowedStatuses.length === 0) {
     return null;
   }
@@ -118,15 +148,10 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
         left: Math.min(position.left, window.innerWidth - 260),
       }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b bg-slate-50">
         <div>
-          <p className="font-medium text-sm">
-            {caseItem.caseNumber}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Current: {caseItem.status}
-          </p>
+          <p className="font-medium text-sm">{caseItem.caseNumber}</p>
+          <p className="text-xs text-muted-foreground">Current: {caseItem.status}</p>
         </div>
         <button
           onClick={onClose}
@@ -136,7 +161,6 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
         </button>
       </div>
 
-      {/* Status Options */}
       <div className="p-2 max-h-[300px] overflow-y-auto space-y-0.5">
         {allowedStatuses.map((status) => {
           const config = STATUS_CONFIG[status];
@@ -162,7 +186,6 @@ export function StatusActionPopup({ caseItem, onClose, anchorEl }: StatusActionP
         })}
       </div>
 
-      {/* Footer with role info */}
       <div className="px-4 py-2 border-t bg-slate-50/50 flex justify-between">
         <p className="text-xs text-muted-foreground">
           Status: <span className="font-medium">{caseItem.status}</span>

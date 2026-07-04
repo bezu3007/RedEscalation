@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { casesApi } from "../api/casesApi";
 import { CASES_KEY } from "./useCases";
-import type { CaseStatus } from "../types";
+import type { CaseStatus, CaseItem } from "../types";
 
 const CASE_TRANSITIONS: Record<CaseStatus, CaseStatus[]> = {
   Accepted: ["On Progress", "Rejected"],
@@ -28,12 +28,6 @@ const CASE_TRANSITIONS: Record<CaseStatus, CaseStatus[]> = {
 
   "Not Solved": ["On Progress"],
 };
-
-// export function getAllowedTransitions(
-//   current: CaseStatus
-// ): CaseStatus[] {
-//   return VALID_TRANSITIONS[current] ?? [];
-// }
 
 export function getAllowedTransitions(
   status: CaseStatus
@@ -73,19 +67,3 @@ export function useCaseTransition() {
     getAllowedTransitions,
   };
 }
-
-// import { useMutation } from "@tanstack/react-query";
-
-// export function useCaseTransition() {
-//   return useMutation({
-//     mutationFn: async ({
-//       caseId,
-//       targetStatus,
-//     }: {
-//       caseId: number;
-//       targetStatus: string;
-//     }) => {
-//       console.log("Transition:", caseId, targetStatus);
-//     },
-//   });
-// }

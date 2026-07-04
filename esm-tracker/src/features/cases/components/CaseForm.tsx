@@ -13,12 +13,10 @@ import { Loader2 } from "lucide-react";
 import { useAttachment } from "../hooks/useAttachment";
 import { AttachmentUploader } from "./AttachmentUploader";
 import { cn } from "@/shared/lib/utils";
-import type { Consignee, Extension } from "../types";
+import type { Consignee, Extension, CaseFormValues } from "../types";
+import { mapCaseToVoucherBuffer } from "../hooks/useMapCaseToVoucherBuffer";
 
-interface CaseFormValues extends CreateCaseRequest {
-  projectNameId: string;
-  developer: string;
-}
+
 
 interface Props {
   mode: "create" | "edit";
@@ -32,60 +30,6 @@ interface Props {
   };
 }
 
-function mapCaseToVoucherBuffer(values: CaseFormValues, initialData?: CaseItem) {
-  const now = new Date();
-  const isEditing = !!initialData;
-  const developerId = values.developer ? parseInt(values.developer) : 0;
-
-  return {
-    voucher: {
-      id: isEditing ? initialData.id! : 0,
-      code: "",
-      lastDevice: "",
-      consignee1: Number(values.projectNameId),
-      subTotal: 0,
-      discount: 0,
-      addCharge: 0,
-      grandTotal: 0,
-      consignee2: 37453,
-      consignee3: developerId || 183,
-      consignee4: null,
-      issuedDate: now.toISOString(),
-      note: values.issues,
-      originConsigneeUnit: 3,
-      consigneeUnit1: 3,
-      lastModified: now.toISOString(),
-      createdOn: now.toISOString(),
-      extension1: values.paidorNot,
-      extension2: values.caseType,
-      extension3: values.module,
-      extension4: values.developmentStatus || "Prepared",
-      lastState: 1305,
-      startDate: values.issueDate,
-      endDate: values.deadLine,
-      remark: values.releaseNote,
-      type: 1917,
-      lastUser: 409,
-      definition: 400,
-    },
-    activity: {
-      id: 0,
-      reference: 0,
-      device: null,
-      timeStamp: now.toISOString(),
-      user: 409,
-      day: now.getDate(),
-      month: now.getMonth() + 1,
-      year: now.getFullYear(),
-      platform: "WEB",
-      consigneeUnit: 3,
-      activityDefinition: isEditing ? 1001 : 1001,
-      remark: "",
-    },
-    IdGenerationParams: { isWeb: true, consigneeUnitId: 3 },
-    transactionReferencesBuffer: [],
-  };
-}
 
 export function CaseForm({ mode, initialData, open, onClose, initData }: Props) {
   const [activeTab, setActiveTab] = useState<"general" | "attachments" | "notes">("general");
@@ -184,12 +128,14 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       releaseNote: "",
       issues: "",
       developmentStatus: "",
+      status: "Prepared", // Default status for new cases
     },
   });
 
   // FIXED: Removed 'form' from dependencies to prevent infinite loop
   useEffect(() => {
     if (!open) return;
+    console.log('status:', initialData?.status);
     
     if (mode === "edit" && initialData) {
       form.reset({
@@ -206,6 +152,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       releaseNote: initialData.releaseNote || "",
       issues: initialData.issues || "",
       developmentStatus: initialData.developmentStatus || "",
+      status: initialData.status || "Prepared", // Default status if not provided
       });
       if (initialData.releaseNote) {
         setDeploymentNotes(initialData.releaseNote);
@@ -225,6 +172,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
         releaseNote: "",
         issues: "",
         developmentStatus: "",
+        status: "Prepared", // Default status for new cases
       });
     }
   }, [mode, initialData, open]); // REMOVED 'form' from dependencies
@@ -257,6 +205,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
         },
       });
     } else if (initialData) {
+      console.log("Updating case with ID:", initialData.id);
       updateCase(
         {
           id: initialData.id!,
@@ -601,6 +550,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
             {/* FOOTER */}
             <div className="flex items-center gap-3 border-t bg-slate-50 px-6 py-4">
+            <input type="hidden" {...form.register("status")} />
               <Button
                 type="submit"
                 disabled={isPending}

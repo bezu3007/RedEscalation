@@ -192,6 +192,23 @@ export interface CaseItem {
 //aiSuggestedDeveloper?: string | null;
 }
 
+export interface CaseFormValues {
+  projectName: string;
+  projectNameId: string;
+  module: string;
+  caseType: CaseType;
+  developer: string;
+  paidorNot: string;
+  department: string;
+  issueDate: string;
+  deadLine: string;
+  releaseNote: string;
+  issues: string;
+  developmentStatus: string;
+  status?: string; // Add this for status updates
+  caseNumber?: string;
+}
+
 // Main interface matching the API response structure
 export interface VoucherInit {
     voucherId: string;

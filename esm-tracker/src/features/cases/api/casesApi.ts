@@ -5,6 +5,7 @@ import type {CasesResponse, CaseItem, CaseFilters, CaseStatus, CaseType, Voucher
 } from "../types";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
+import {mapStatusToId, mapIdToStatus} from "../utils/statusMapping";
 
 export interface CasesQueryParams
   extends Partial<CaseFilters> {
@@ -215,6 +216,25 @@ export const casesApi = {
     return mapped;
   },
 
+  getVoucherById: async (id: number): Promise<CaseItem> => {
+    const url = `/Voucher/dynamic?id=${id}`;
+
+    console.log("GET BY ID URL:", url);
+
+    const response = await apiClient.get(url);
+
+    console.log("GET BY ID RESPONSE:", response.data);
+
+    const item = response.data;
+    console.log("Fetched voucher1 item:", item);
+
+    if (!item) {
+      throw new Error("Case not found");
+    }
+
+    return item;
+  },
+
   create: async (body: any) => {
     const res = await apiClient.post("/VoucherBuffer", body);
     return res.data;
@@ -233,8 +253,13 @@ export const casesApi = {
     caseId: string;
     targetStatus: CaseStatus;
   }) => {
+
+    const voucher = await casesApi.getVoucherById(Number(caseId));
+    const currentStatusId = mapStatusToId(targetStatus);
+    // voucher.lastState = currentStatusId;
+
     const response = await apiClient.post(
-      `/EscalationView/${caseId}/transition`,
+      `/VoucherBuffer/${caseId}/transition`,
       {
         targetStatus,
       }
