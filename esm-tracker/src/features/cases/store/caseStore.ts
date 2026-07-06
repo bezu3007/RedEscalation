@@ -59,6 +59,15 @@ interface CaseUIState {
   setSelectedParentCase: (data: CaseItem | null) => void;
   setPage: (page: number) => void;
   setPageSize: (size: number) => void;
+
+  statusPopup: {
+    isOpen: boolean;
+    caseItem: CaseItem | null;
+    anchorEl: HTMLElement | null;
+  };
+  
+  openStatusPopup: (caseItem: CaseItem, anchorEl: HTMLElement) => void;
+  closeStatusPopup: () => void;
 }
 
 export const useCaseStore = create<CaseUIState>((set) => ({
@@ -156,6 +165,29 @@ export const useCaseStore = create<CaseUIState>((set) => ({
     set({
       pageSize: size,
       page: 1,
+    }),
+    
+  statusPopup: {
+    isOpen: false,
+    caseItem: null,
+    anchorEl: null,
+  },
+  openStatusPopup: (caseItem, anchorEl) =>
+    set({
+      statusPopup: {
+        isOpen: true,
+        caseItem,
+        anchorEl,
+      },
+    }),
+    
+  closeStatusPopup: () =>
+    set({
+      statusPopup: {
+        isOpen: false,
+        caseItem: null,
+        anchorEl: null,
+      },
     }),
 }));
 

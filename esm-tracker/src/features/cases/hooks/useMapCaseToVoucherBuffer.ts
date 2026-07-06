@@ -1,14 +1,14 @@
 import { CaseFormValues } from "../types";
 import {  CaseItem } from "../types";
 import { mapStatusToId } from "../utils/statusMapping";
-
-export function mapCaseToVoucherBuffer(values: CaseFormValues, initialData?: CaseItem) {
+export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number | null, initialData?: CaseItem) {
   const now = new Date();
   const isEditing = !!initialData;
-  const developerId = values.developer ? parseInt(values.developer) : 0;
+  const developerId = values.developer? parseInt(values.developer) : null;
   console.log('laststatus:', values.status);
   const lastStatusId = mapStatusToId(values.status || "Prepared");
   console.log('lastStatusId:', lastStatusId);
+  console.log("Dev: ", initialData?.developerId);
 
   return {
     voucher: {
@@ -20,8 +20,8 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, initialData?: Cas
       discount: 0,
       addCharge: 0,
       grandTotal: 0,
-      consignee2: 37453,
-      consignee3: developerId || 183,
+      consignee2: isEditing ? initialData?.functionalConsultantId : userId,
+      consignee3: initialData?.developerId || null,
       consignee4: null,
       issuedDate: now.toISOString(),
       note: values.issues,
@@ -38,7 +38,7 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, initialData?: Cas
       endDate: values.deadLine,
       remark: values.releaseNote,
       type: 1917,
-      lastUser: 409,
+      lastUser: userId,
       definition: 400,
     },
     activity: {
@@ -46,7 +46,7 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, initialData?: Cas
       reference: 0,
       device: null,
       timeStamp: now.toISOString(),
-      user: 409,
+      user: userId,
       day: now.getDate(),
       month: now.getMonth() + 1,
       year: now.getFullYear(),

@@ -15,7 +15,8 @@ import { AttachmentUploader } from "./AttachmentUploader";
 import { cn } from "@/shared/lib/utils";
 import type { Consignee, Extension, CaseFormValues } from "../types";
 import { mapCaseToVoucherBuffer } from "../hooks/useMapCaseToVoucherBuffer";
-
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { VoucherBuffer } from "../types";
 
 
 interface Props {
@@ -37,9 +38,21 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   const [projectQuery, setProjectQuery] = useState("");
   const [developerQuery, setDeveloperQuery] = useState("");
 
+  const userId = useAuthStore((s) => s.userId);
+  const personId = useAuthStore((s) => s.personId);
+  console.log("PERSONNNNNN: ", personId);
+
+  const isCreator = useMemo(() => { 
+    if (mode === "create") { return true; }
+    if (!initialData || personId == null) 
+      { return false; } 
+    const creatorPersonId = Number( initialData.functionalConsultantId ); 
+    return creatorPersonId === Number(personId); }, [mode, initialData, personId]); 
+    const isReadOnly = mode === "edit" && !isCreator;
+
   const projectOptions = useMemo(() => {
-    const projects = initData?.projects ?? [];
-    const query = projectQuery.trim().toLowerCase();
+  const projects = initData?.projects ?? [];
+  const query = projectQuery.trim().toLowerCase();
 
     if (!query) {
       return projects.slice(0, 250);
@@ -144,7 +157,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       projectNameId: initialData.projectNameId ? String(initialData.projectNameId) : "",
       module: initialData.module || "",
       caseType: initialData.caseType || "Error",
-      developer: initialData.developerId ? String(initialData.developerId) : "",
+      developer: initialData.developerId != null ? String(initialData.developerId) : null,
       paidorNot: initialData.paidorNot || "Free",
       department: initialData.department || "",
       issueDate: initialData.issueDate ? initialData.issueDate.split('T')[0] : "", 
@@ -188,7 +201,15 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   const onSubmit = useCallback((values: CaseFormValues) => {
     console.log("FORM VALUES", values);
 
-    const payload = mapCaseToVoucherBuffer(values, initialData);
+    const payload = mapCaseToVoucherBuffer(values, userId, initialData);
+
+    const normalizedPayload = {
+      ...payload,
+      voucher: {
+        ...payload.voucher,
+        consignee3: Number(payload.voucher.consignee3) || 0,
+      },
+    } as VoucherBuffer;
 
     console.log("PAYLOAD", payload);
 
@@ -209,7 +230,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       updateCase(
         {
           id: initialData.id!,
-          body: payload,
+          body: normalizedPayload,
         },
         {
           onSuccess: () => {
@@ -306,6 +327,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                           <Select
                             value={field.value ?? undefined}
                             onValueChange={field.onChange}
+                            disabled={isReadOnly}
                           >
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white">
@@ -325,6 +347,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                                   onMouseDown={(e) => e.stopPropagation()}
                                   placeholder="Search project"
                                   className="h-8"
+                                  disabled={isReadOnly}
                                 />
                               </div>
                               <div className="px-2 pb-1 text-xs text-slate-500">
@@ -352,6 +375,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                           <Select
                             value={field.value ?? undefined}
                             onValueChange={field.onChange}
+                            disabled={isReadOnly}
                           >
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white">
@@ -379,7 +403,8 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Case Type</FormLabel>
-                          <Select value={field.value} onValueChange={field.onChange}>
+                          <Select value={field.value} onValueChange={field.onChange}
+                            disabled={isReadOnly}>
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white">
                                 <SelectValue />
@@ -403,7 +428,8 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Payment Status</FormLabel>
-                          <Select value={field.value} onValueChange={field.onChange}>
+                          <Select value={field.value} onValueChange={field.onChange}
+                            disabled={isReadOnly}>
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white">
                                 <SelectValue />
@@ -433,6 +459,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                           <Select
                             value={field.value ?? undefined}
                             onValueChange={field.onChange}
+                            disabled={isReadOnly}
                           >
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white">
@@ -480,7 +507,8 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                         <FormItem>
                           <FormLabel>Start Date</FormLabel>
                           <FormControl>
-                            <Input type="date" className="h-10 bg-white" {...field} />
+                            <Input type="date" className="h-10 bg-white" {...field} 
+                            disabled={isReadOnly}/>
                           </FormControl>
                         </FormItem>
                       )}
@@ -493,7 +521,8 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                         <FormItem>
                           <FormLabel>Deadline</FormLabel>
                           <FormControl>
-                            <Input type="date" className="h-10 bg-white" {...field} />
+                            <Input type="date" className="h-10 bg-white" {...field} 
+                            disabled={isReadOnly}/>
                           </FormControl>
                         </FormItem>
                       )}
@@ -515,6 +544,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                             className="resize-none rounded-2xl border bg-slate-50 p-4"
                             placeholder="Enter issue descriptions here..."
                             {...field}
+                            disabled={isReadOnly}
                           />
                         </FormControl>
                       </FormItem>
@@ -531,6 +561,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                   files={files}
                   addFiles={addFiles}
                   removeFile={removeFile}
+                  disabled={isReadOnly}
                 />
               </div>
             )}
@@ -544,6 +575,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                   onChange={(e) => setDeploymentNotes(e.target.value)}
                   placeholder="Write deployment notes..."
                   className="resize-none rounded-2xl border bg-slate-50 p-4"
+                  disabled={isReadOnly}
                 />
               </div>
             )}
@@ -551,13 +583,25 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
             {/* FOOTER */}
             <div className="flex items-center gap-3 border-t bg-slate-50 px-6 py-4">
             <input type="hidden" {...form.register("status")} />
+              {!isReadOnly && (
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="rounded-xl bg-slate-900 px-6 hover:bg-slate-800"
+                >
+                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {mode === "create" ? "Create Case" : "Save Changes"}
+                </Button>
+              )}
+              
+              {/* Show Close button for both modes */}
               <Button
-                type="submit"
-                disabled={isPending}
-                className="rounded-xl bg-slate-900 px-6 hover:bg-slate-800"
+                type="button"
+                variant="outline"
+                onClick={handleClose}
+                className="rounded-xl"
               >
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Changes
+                {isReadOnly ? "Close" : "Cancel"}
               </Button>
             </div>
           </form>

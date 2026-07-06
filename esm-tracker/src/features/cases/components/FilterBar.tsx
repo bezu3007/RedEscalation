@@ -8,6 +8,7 @@ import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/share
 import {DropdownMenu,DropdownMenuContent,DropdownMenuCheckboxItem,DropdownMenuTrigger} from "@/shared/components/ui/dropdown-menu";
 import { DateField } from "@/shared/components/DateField";
 import {PAID_OR_NOT, type CaseItem, type CaseStatus,type CaseType, type Consignee, type Extension} from "../types";
+import {useAuthStore} from "../../auth/store/authStore";
 
 const STATUSES: CaseStatus[] = [
   "Accepted",
@@ -85,6 +86,8 @@ interface Props {
 
 export function FilterBar({ initData }: Props) {
   const { data } = useCases();
+  const userRole = useAuthStore.getState().userRole;
+  const isDeveloper = userRole === "developer";
   
   // Memoize derived data to prevent recalculation on every render
   const [projectQuery, setProjectQuery] = useState("");
@@ -302,10 +305,12 @@ const filteredModuleOptions = useMemo(() => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button onClick={openCreateModal} className="gap-2 shrink-0">
-            <Plus className="h-4 w-4" />
-            Add Issue
-          </Button>
+          {!isDeveloper && (
+            <Button onClick={openCreateModal} className="gap-2 shrink-0">
+              <Plus className="h-4 w-4" />
+              Add Issue
+            </Button>
+          )}
         </div>
       </div>
 

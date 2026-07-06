@@ -246,26 +246,26 @@ export const casesApi = {
     return res.data;
   },
 
-  transition: async ({
-    caseId,
-    targetStatus,
-  }: {
-    caseId: string;
-    targetStatus: CaseStatus;
-  }) => {
+  // transition: async ({
+  //   caseId,
+  //   targetStatus,
+  // }: {
+  //   caseId: string;
+  //   targetStatus: CaseStatus;
+  // }) => {
 
-    const voucher = await casesApi.getVoucherById(Number(caseId));
-    const currentStatusId = mapStatusToId(targetStatus);
-    // voucher.lastState = currentStatusId;
+  //   const voucher = await casesApi.getVoucherById(Number(caseId));
+  //   const currentStatusId = mapStatusToId(targetStatus);
+  //   // voucher.lastState = currentStatusId;
 
-    const response = await apiClient.post(
-      `/VoucherBuffer/${caseId}/transition`,
-      {
-        targetStatus,
-      }
-    );
+  //   const response = await apiClient.post(
+  //     `/VoucherBuffer/${caseId}/transition`,
+  //     {
+  //       targetStatus,
+  //     }
+  //   );
 
-    return response.data;
-  },
+  //   return response.data;
+  // },
 
 };

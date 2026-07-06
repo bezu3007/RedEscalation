@@ -2,15 +2,15 @@ import type { CaseStatus } from "../types";
 
 export function mapStatusToId(status: CaseStatus): number {
   const statusMap: Record<CaseStatus, number> = {
-    Prepared: 1305,
-    Review: 1343,
-    Returned: 1337,
-    Rejected: 1344,
-    OnProgress: 3208,
-    Solved: 1338,
-    NotSolved: 1340,
-    Accepted: 1342,
-    Fixed: 1345,
+    "Prepared": 1305,
+    "Review": 1343,
+    "Returned": 1337,
+    "Rejected": 1344,
+    "OnProgress": 3208,
+    "Solved": 1338,
+    "NotSolved": 1340,
+    "Accepted": 1342,
+    "Fixed": 1345,
     // DeadlineExtension: 1323,
   };
   

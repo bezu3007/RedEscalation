@@ -1,69 +1,69 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { casesApi } from "../api/casesApi";
-import { CASES_KEY } from "./useCases";
-import type { CaseStatus, CaseItem } from "../types";
+// import { useMutation, useQueryClient } from "@tanstack/react-query";
+// import { casesApi } from "../api/casesApi";
+// import { CASES_KEY } from "./useCases";
+// import type { CaseStatus, CaseItem } from "../types";
 
-const CASE_TRANSITIONS: Record<CaseStatus, CaseStatus[]> = {
-  Accepted: ["On Progress", "Rejected"],
+// const CASE_TRANSITIONS: Record<CaseStatus, CaseStatus[]> = {
+//   Accepted: ["On Progress", "Rejected"],
 
-  "On Progress": [
-    "Fixed",
-    "Not Solved",
-    "Returned",
-  ],
+//   "On Progress": [
+//     "Fixed",
+//     "Not Solved",
+//     "Returned",
+//   ],
 
-  Fixed: ["Reviewed"],
+//   Fixed: ["Reviewed"],
 
-  Reviewed: ["Solved", "Returned"],
+//   Reviewed: ["Solved", "Returned"],
 
-  Solved: [],
+//   Solved: [],
 
-  Rejected: [],
+//   Rejected: [],
 
-  Returned: ["On Progress"],
+//   Returned: ["On Progress"],
 
-  Prepared: ["Reviewed"],
+//   Prepared: ["Reviewed"],
 
-  "Re Journal": ["Reviewed"],
+//   "Re Journal": ["Reviewed"],
 
-  "Not Solved": ["On Progress"],
-};
+//   "Not Solved": ["On Progress"],
+// };
 
-export function getAllowedTransitions(
-  status: CaseStatus
-): CaseStatus[] {
-  return CASE_TRANSITIONS[status] ?? [];
-}
+// export function getAllowedTransitions(
+//   status: CaseStatus
+// ): CaseStatus[] {
+//   return CASE_TRANSITIONS[status] ?? [];
+// }
 
-export function useCaseTransition() {
-  const qc = useQueryClient();
+// export function useCaseTransition() {
+//   const qc = useQueryClient();
 
-  const mutation = useMutation({
-    mutationFn: ({
-      caseId,
-      targetStatus,
-    }: {
-      caseId: string;
-      targetStatus: CaseStatus;
-    }) => {
-      return casesApi.transition({
-        caseId,
-        targetStatus,
-      });
-    },
+//   const mutation = useMutation({
+//     mutationFn: ({
+//       caseId,
+//       targetStatus,
+//     }: {
+//       caseId: string;
+//       targetStatus: CaseStatus;
+//     }) => {
+//       return casesApi.transition({
+//         caseId,
+//         targetStatus,
+//       });
+//     },
 
-    onSuccess: (data) => {
-      qc.invalidateQueries({ queryKey: [CASES_KEY] });
+//     onSuccess: (data) => {
+//       qc.invalidateQueries({ queryKey: [CASES_KEY] });
 
-      // optional: update single cache
-      if (data?.id) {
-        qc.setQueryData([CASES_KEY, data.id], data);
-      }
-    },
-  });
+//       // optional: update single cache
+//       if (data?.id) {
+//         qc.setQueryData([CASES_KEY, data.id], data);
+//       }
+//     },
+//   });
 
-  return {
-    ...mutation,
-    getAllowedTransitions,
-  };
-}
+//   return {
+//     ...mutation,
+//     getAllowedTransitions,
+//   };
+// }

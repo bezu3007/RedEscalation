@@ -20,6 +20,7 @@ import {
   AlertCircle,
   X
 } from "lucide-react";
+import { VoucherBuffer } from "../types";
 
 interface StatusActionPopupProps {
   caseItem: CaseItem;
@@ -52,6 +53,9 @@ export function StatusActionPopup({
   const popupRef = useRef<HTMLDivElement>(null);
   const userRole = useAuthStore.getState().getUserRole();
 
+  const userId = useAuthStore((s) => s.userId);
+  const personId = useAuthStore((s) => s.personId);
+
   const allowedStatuses = useMemo(() => {
     if (!userRole) return [];
     return getAllowedTransitions(caseItem.status, userRole);
@@ -73,9 +77,13 @@ export function StatusActionPopup({
     const formValues: CaseFormValues = {
       projectName: caseItem.projectName || "",
       projectNameId: String(caseItem.projectNameId || ""),
+      functionalConsultantId: caseItem.functionalConsultantId,
       module: caseItem.module || "",
       caseType: caseItem.caseType || "Error",
-      developer: String(caseItem.developerId || ""),
+      developer:
+        caseItem.developerId != null
+          ? String(caseItem.developerId)
+          : "",
       paidorNot: caseItem.paidorNot || "Free",
       department: caseItem.department || "",
       issueDate: caseItem.issueDate ? caseItem.issueDate.split('T')[0] : "",
@@ -87,15 +95,23 @@ export function StatusActionPopup({
     };
 
     // Use the existing mapping function
-    const payload = mapCaseToVoucherBuffer(formValues, caseItem);
+    const payload = mapCaseToVoucherBuffer(formValues, userId, caseItem);
 
-    console.log("Status Update Payload:", payload);
+    const normalizedPayload = {
+      ...payload,
+      voucher: {
+        ...payload.voucher,
+        consignee3: Number(payload.voucher.consignee3) || null,
+      },
+    } as VoucherBuffer;
+
+    console.log("Status Update Payload:", normalizedPayload);
 
     // Use the update API
     updateCase(
       {
         id: caseItem.id!,
-        body: payload,
+        body: normalizedPayload,
       },
       {
         onSuccess: () => {

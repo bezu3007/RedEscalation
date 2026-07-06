@@ -56,8 +56,8 @@ export interface VoucherDTO {
     discount: number;
     addCharge: number;
     grandTotal: number;
-    consignee2: number;
-    consignee3: number;
+    consignee2: Number | null;
+    consignee3: number | null;
     consignee4: number | null;
     issuedDate: string;
     note: string;
@@ -74,7 +74,7 @@ export interface VoucherDTO {
     endDate: string;
     remark: string;
     type: number;
-    lastUser: number;
+    lastUser: number | null;
     definition: number;
 }
 
@@ -83,7 +83,7 @@ export interface ActivityDTO {
   reference: number;
   device: string | null;
   timeStamp: string;
-  user: number;
+  user: number | null;
   day: number;
   month: number;
   year: number;
@@ -175,7 +175,7 @@ export interface CaseItem {
   caseType: CaseType;
   module: string;
   functionalConsultant: string;
-  functionalConsultantId: string;
+  functionalConsultantId: Number;
   reviewedBy: string | null;
   developer: string | null;
   developerId: string | null;
@@ -195,9 +195,10 @@ export interface CaseItem {
 export interface CaseFormValues {
   projectName: string;
   projectNameId: string;
+  functionalConsultantId: Number | null;
   module: string;
   caseType: CaseType;
-  developer: string;
+  developer: string | null;
   paidorNot: string;
   department: string;
   issueDate: string;

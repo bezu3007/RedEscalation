@@ -9,9 +9,10 @@ interface Props {
   addFiles: (files: FileList | null) => void;
 
   removeFile: (id: string) => void;
+  disabled?: boolean;
 }
 
-export function AttachmentUploader({files, addFiles, removeFile,}: Props) {
+export function AttachmentUploader({files, addFiles, removeFile, disabled}: Props) {
 
   const [selectedFile, setSelectedFile] =useState<AttachmentFile | null>(null);
 
