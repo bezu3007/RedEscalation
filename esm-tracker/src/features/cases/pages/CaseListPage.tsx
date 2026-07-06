@@ -1,3 +1,4 @@
+// CaseListPage.tsx
 import { useCaseStore } from "../store/caseStore";
 import { CaseGrid } from "../components/CaseGrid";
 import { FilterBar } from "../components/FilterBar";
@@ -6,11 +7,12 @@ import { useVoucherInit } from "../hooks/useVoucherInit";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
+import { StatusActionPopup } from "../components/StatusActionPopup";
 
 export default function CaseListPage() {
   const { user, userRole } = useAuthStore();
 
-   const getPageTitle = () => {
+  const getPageTitle = () => {
     switch (userRole) {
       case UserRole.ADMIN:
         return "Admin Dashboard - All Cases";
@@ -40,16 +42,25 @@ export default function CaseListPage() {
     }
   };
   
-  const { data: initData} = useVoucherInit();
+  const { data: initData } = useVoucherInit();
+  
+  // Get all needed store values
   const {
     isCreateModalOpen,
     isEditModalOpen,
     editingCase,
-    //openCreateModal,
     closeCreateModal,
     closeEditModal,
+    statusPopup,        // Add this
+    closeStatusPopup,   // Add this
   } = useCaseStore();
 
+  // Function to handle status update
+  const handleStatusUpdate = (newStatus: string) => {
+    console.log('Status updated to:', newStatus);
+    // You might want to refresh the case list here
+    // Or update the local state if needed
+  };
 
   return (
     <div className="space-y-4">
@@ -62,14 +73,14 @@ export default function CaseListPage() {
             {getPageDescription()}
           </p>
         </div>
-        {userRole === UserRole.FUNCTIONAL_CONSULTANT || userRole === UserRole.ADMIN && (
+        {(userRole === UserRole.FUNCTIONAL_CONSULTANT || userRole === UserRole.ADMIN) && (
           <button>Create Case</button>
         )}
       </div>
 
-      <FilterBar 
-          initData={initData}/>
+      <FilterBar initData={initData} />
       <CaseGrid />
+      
       {isCreateModalOpen && (
         <CaseForm
           mode="create"
@@ -86,6 +97,19 @@ export default function CaseListPage() {
           open={isEditModalOpen}
           onClose={closeEditModal}
           initData={initData}
+        />
+      )}
+
+      {/* Status Popup */}
+      {statusPopup.isOpen && statusPopup.caseItem && statusPopup.anchorEl && (
+        <StatusActionPopup
+          caseItem={statusPopup.caseItem}
+          anchorEl={statusPopup.anchorEl}
+          onClose={() => {
+            console.log('🔄 Closing popup from parent');
+            closeStatusPopup();
+          }}
+          onStatusUpdate={handleStatusUpdate}
         />
       )}
     </div>

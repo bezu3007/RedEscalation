@@ -1,6 +1,6 @@
 // StatusActionPopup.tsx
 
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useUpdateCase } from "../hooks/useCases";
 import { useAuthStore } from "@/features/auth/store/authStore";
@@ -52,14 +52,27 @@ export function StatusActionPopup({
   const { mutate: updateCase, isPending } = useUpdateCase();
   const popupRef = useRef<HTMLDivElement>(null);
   const userRole = useAuthStore.getState().getUserRole();
-
   const userId = useAuthStore((s) => s.userId);
   const personId = useAuthStore((s) => s.personId);
+  
+  // Flag to prevent closing during status update
+  const isUpdatingRef = useRef(false);
 
   const allowedStatuses = useMemo(() => {
     if (!userRole) return [];
     return getAllowedTransitions(caseItem.status, userRole);
   }, [caseItem.status, userRole]);
+
+  // Memoized close handler
+  const handleClose = useCallback(() => {
+    console.log('🔴 Closing popup');
+    // Don't close if updating
+    if (isUpdatingRef.current) {
+      console.log('⏳ Update in progress, delaying close');
+      return;
+    }
+    onClose();
+  }, [onClose]);
 
   const handleStatusChange = (targetStatus: CaseStatus) => {
     if (!userRole) {
@@ -72,6 +85,9 @@ export function StatusActionPopup({
       console.error(`Transition to ${targetStatus} not allowed for role ${userRole}`);
       return;
     }
+
+    // Set updating flag
+    isUpdatingRef.current = true;
 
     // Construct form values from existing case data
     const formValues: CaseFormValues = {
@@ -91,10 +107,9 @@ export function StatusActionPopup({
       releaseNote: caseItem.releaseNote || "",
       issues: caseItem.issues || "",
       developmentStatus: caseItem.developmentStatus || "Prepared",
-      status: targetStatus, // This will be used by mapCaseToVoucherBuffer
+      status: targetStatus,
     };
 
-    // Use the existing mapping function
     const payload = mapCaseToVoucherBuffer(formValues, userId, caseItem);
 
     const normalizedPayload = {
@@ -107,7 +122,6 @@ export function StatusActionPopup({
 
     console.log("Status Update Payload:", normalizedPayload);
 
-    // Use the update API
     updateCase(
       {
         id: caseItem.id!,
@@ -115,37 +129,68 @@ export function StatusActionPopup({
       },
       {
         onSuccess: () => {
-          console.log(`Status updated to: ${targetStatus}`);
+          console.log(`✅ Status updated to: ${targetStatus}`);
+          isUpdatingRef.current = false;
           if (onStatusUpdate) {
             onStatusUpdate(targetStatus);
           }
-          onClose();
+          // Close after successful update
+          handleClose();
         },
         onError: (err) => {
-          console.error("Status update error:", err);
+          console.error("❌ Status update error:", err);
+          isUpdatingRef.current = false;
+          // Don't close on error - let user retry
         },
       }
     );
   };
 
-  // Click outside to close
+  // Click outside to close - with delay to prevent immediate close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Check if click is inside the popup
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
-        onClose();
+        console.log('🖱️ Clicked outside');
+        handleClose();
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+    // Add small delay to prevent click events from triggering close
+    const timer = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [handleClose]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        console.log('⌨️ Escape key pressed');
+        handleClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [handleClose]);
+
+  // REMOVED: The overflow:hidden effect that was causing the grid to resize
+  // This was the culprit - removing it fixes the grid size issue
 
   const getPopupPosition = () => {
     if (!anchorEl) return { top: 0, left: 0 };
     const rect = anchorEl.getBoundingClientRect();
+    const popupWidth = 260;
+    const left = Math.min(rect.left, window.innerWidth - popupWidth - 10);
     return {
       top: rect.bottom + 4,
-      left: rect.left,
+      left: left,
     };
   };
 
@@ -161,8 +206,10 @@ export function StatusActionPopup({
       className="fixed z-[9999] min-w-[200px] max-w-[260px] rounded-xl border bg-white shadow-2xl overflow-hidden"
       style={{
         top: position.top,
-        left: Math.min(position.left, window.innerWidth - 260),
+        left: position.left,
+        pointerEvents: 'auto', // Ensure clicks are captured
       }}
+      onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
     >
       <div className="flex items-center justify-between px-4 py-3 border-b bg-slate-50">
         <div>
@@ -170,8 +217,13 @@ export function StatusActionPopup({
           <p className="text-xs text-muted-foreground">Current: {caseItem.status}</p>
         </div>
         <button
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log('❌ Close button clicked');
+            handleClose();
+          }}
           className="h-7 w-7 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors"
+          disabled={isPending}
         >
           <X className="h-4 w-4" />
         </button>
@@ -184,7 +236,10 @@ export function StatusActionPopup({
             <button
               key={status}
               type="button"
-              onClick={() => handleStatusChange(status)}
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent click from bubbling
+                handleStatusChange(status);
+              }}
               className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-100 text-sm transition-colors"
               disabled={isPending}
             >
