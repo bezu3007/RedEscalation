@@ -5,27 +5,27 @@ import { cn } from "@/shared/lib/utils";
 
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
-const DialogPortal = DialogPrimitive.Portal;
-const DialogClose = DialogPrimitive.Close;
+// const DialogPortal = DialogPrimitive.Portal;
+// const DialogClose = DialogPrimitive.Close;
 type DialogContentProps = React.ComponentPropsWithoutRef<
   typeof DialogPrimitive.Content
 > & {
   showCloseButton?: boolean;
 };
 
-const DialogOverlay = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      "fixed inset-0 z-50 bg-black/50",
-      className
-    )}
-    {...props}
-  />
-));
+// const DialogOverlay = React.forwardRef<
+//   React.ElementRef<typeof DialogPrimitive.Overlay>,
+//   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+// >(({ className, ...props }, ref) => (
+//   <DialogPrimitive.Overlay
+//     ref={ref}
+//     className={cn(
+//       "fixed inset-0 z-50 bg-black/50",
+//       className
+//     )}
+//     {...props}
+//   />
+// ));
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,

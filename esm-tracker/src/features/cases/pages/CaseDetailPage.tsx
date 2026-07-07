@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useCase } from "../hooks/useCases";
-import { CaseActionBar } from "../components/CaseActionBar";
+// import { CaseActionBar } from "../components/CaseActionBar";
 // import { DeveloperSuggester } from "../components/DeveloperSuggester";
 // import { AttachmentUploader } from "../components/AttachmentUploader";
 import { StatusBadge } from "../components/StatusBadge";
@@ -111,7 +111,7 @@ export default function CaseDetailPage() {
 
 
 
-      <CaseActionBar caseItem={caseItem} />
+      {/* <CaseActionBar caseItem={caseItem} /> */}
 
 
 

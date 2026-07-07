@@ -1,5 +1,3 @@
-// StatusActionPopup.tsx
-
 import React, { useEffect, useRef, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useUpdateCase } from "../hooks/useCases";
@@ -14,7 +12,6 @@ import {
   PlayCircle, 
   LoaderCircle, 
   CheckCheck,
-  Clock3,
   FileCheck,
   RefreshCw,
   AlertCircle,

@@ -15,7 +15,7 @@ import {
 export function RowMenuCell(params: ICellRendererParams) {
   const data = params.data;
   const navigate = useNavigate();
-  const { openEditModal, openCreateModal, openViewModal } = useCaseStore();
+  const { openEditModal, openCreateModal } = useCaseStore();
   const [open, setOpen] = React.useState(false);
   const [pos, setPos] = React.useState<{ x: number; y: number } | null>(null);
   const btnRef = React.useRef<HTMLButtonElement>(null);

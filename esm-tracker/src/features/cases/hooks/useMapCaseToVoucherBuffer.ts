@@ -4,7 +4,7 @@ import { mapStatusToId } from "../utils/statusMapping";
 export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number | null, personId: number | null, initialData?: CaseItem) {
   const now = new Date();
   const isEditing = !!initialData;
-  const developerId = values.developer? parseInt(values.developer) : null;
+  // const developerId = values.developer? parseInt(values.developer) : null;
   console.log('laststatus:', values.status);
   const lastStatusId = mapStatusToId(values.status || "Prepared");
   console.log('lastStatusId:', lastStatusId);

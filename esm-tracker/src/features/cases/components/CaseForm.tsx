@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useCreateCase, useUpdateCase } from "../hooks/useCases";
-import type { CaseItem, CreateCaseRequest } from "../types";
+import type { CaseItem } from "../types";
 import { CASE_TYPES, PAID_OR_NOT } from "../types";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/shared/components/ui/form";
@@ -553,8 +553,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                 </div>
               </div>
             )}
-
-            {/* ATTACHMENTS TAB */}
+            
             {activeTab === "attachments" && (
               <div className="p-6 min-h-[500px]">
                 <AttachmentUploader
@@ -562,6 +561,13 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                   addFiles={addFiles}
                   removeFile={removeFile}
                   disabled={isReadOnly}
+                  maxFileSize={20} // 20MB limit
+                  acceptedTypes={[
+                    "image/*", 
+                    "application/pdf", 
+                    "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  ]}
                 />
               </div>
             )}

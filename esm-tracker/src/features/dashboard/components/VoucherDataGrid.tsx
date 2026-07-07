@@ -1,5 +1,5 @@
 import { Voucher } from "../types";
-import { Eye, Copy, Trash2 } from "lucide-react";
+import { Eye, Copy } from "lucide-react";
 
 interface VoucherDataGridProps {
   vouchers: Voucher[];

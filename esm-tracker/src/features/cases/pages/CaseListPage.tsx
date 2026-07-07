@@ -4,13 +4,12 @@ import { CaseGrid } from "../components/CaseGrid";
 import { FilterBar } from "../components/FilterBar";
 import { CaseForm } from "../components/CaseForm";
 import { useVoucherInit } from "../hooks/useVoucherInit";
-import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
 import { StatusActionPopup } from "../components/StatusActionPopup";
 
 export default function CaseListPage() {
-  const { user, userRole } = useAuthStore();
+  const {userRole } = useAuthStore();
 
   const getPageTitle = () => {
     switch (userRole) {

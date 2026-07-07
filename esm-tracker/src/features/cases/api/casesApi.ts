@@ -5,7 +5,6 @@ import type {CasesResponse, CaseItem, CaseFilters, CaseStatus, CaseType, Voucher
 } from "../types";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
-import {mapStatusToId, mapIdToStatus} from "../utils/statusMapping";
 
 export interface CasesQueryParams
   extends Partial<CaseFilters> {

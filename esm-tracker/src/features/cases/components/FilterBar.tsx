@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
-import { useCases } from "../hooks/useCases";
 import {useCaseStore,type ColumnKey} from "../store/caseStore";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
@@ -7,7 +6,7 @@ import {Plus,X,Search,Filter,Columns3} from "lucide-react";
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/shared/components/ui/select";
 import {DropdownMenu,DropdownMenuContent,DropdownMenuCheckboxItem,DropdownMenuTrigger} from "@/shared/components/ui/dropdown-menu";
 import { DateField } from "@/shared/components/DateField";
-import {PAID_OR_NOT, type CaseItem, type CaseStatus,type CaseType, type Consignee, type Extension} from "../types";
+import {PAID_OR_NOT, type CaseStatus,type CaseType, type Consignee, type Extension} from "../types";
 import {useAuthStore} from "../../auth/store/authStore";
 
 const STATUSES: CaseStatus[] = [
@@ -85,7 +84,7 @@ interface Props {
 }
 
 export function FilterBar({ initData }: Props) {
-  const { data } = useCases();
+  // const { data } = useCases();
   const userRole = useAuthStore.getState().userRole;
   const isDeveloper = userRole === "developer";
   

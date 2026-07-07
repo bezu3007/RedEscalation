@@ -12,7 +12,6 @@ import { ChevronRight, ChevronDown,} from "lucide-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { RowMenuCell } from "./RowMenuCell";
-import { useNavigate } from "react-router-dom";
 import {StatusActionPopup} from "./StatusActionPopup";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";

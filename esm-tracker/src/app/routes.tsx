@@ -4,7 +4,6 @@ import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
-  Outlet,
 } from "react-router-dom";
 import { AppShell } from "@/shared/components/AppShell";
 import { Skeleton } from "@/shared/components/ui/skeleton";

@@ -11,7 +11,7 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
-  const { checkAuth, isAuthenticated } = useAuthStore();
+  const { checkAuth } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {

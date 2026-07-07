@@ -4,7 +4,7 @@ import { useCaseStore } from "../store/caseStore";
 import type { VoucherBuffer } from "../types";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
-import { CaseItem, CaseStatus } from "../types";
+import { CaseItem } from "../types";
 import { ROLE_VISIBLE_STATUSES } from "../utils/permissions";
 
 export const CASES_KEY = "cases";
