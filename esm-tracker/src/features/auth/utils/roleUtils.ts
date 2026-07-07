@@ -5,7 +5,9 @@ export function determineUserRole(user: User | null): UserRole {
 
   const departmentId = user.department || 0;
   const userId = user.id || 0;
+  const userRole = user.role || 0;
 
+  console.log("User determineRole: ", user);
   // ADMIN: Department 56 AND User ID 37453
   if (departmentId === 56 && userId === 37453) {
     return UserRole.ADMIN;
@@ -16,7 +18,10 @@ export function determineUserRole(user: User | null): UserRole {
     return UserRole.DEVELOPER;
   }
 
-  if (userId === 231){
+  // if (userId === 231){
+  //   return UserRole.PROJECT_MANAGER;
+  // }
+  if (userRole === 127) {
     return UserRole.PROJECT_MANAGER;
   }
   

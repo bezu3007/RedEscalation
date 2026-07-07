@@ -3,10 +3,10 @@ import { CaseStatus } from "../types";
 
 // Define what statuses each role can see in the grid
 export const ROLE_VISIBLE_STATUSES: Record<UserRole, CaseStatus[]> = {
-  [UserRole.FUNCTIONAL_CONSULTANT]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "OnProgress", "Solved", "NotSolved"],
-  [UserRole.PROJECT_MANAGER]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "OnProgress", "Solved", "NotSolved"],
-  [UserRole.ADMIN]: ["Prepared","Reviewed", "Accepted", "OnProgress", "Solved", "NotSolved"], // Admin ONLY sees from Reviewed upward
-  [UserRole.DEVELOPER]: ["Accepted", "OnProgress", "Solved", "NotSolved"], // Developer ONLY sees Accepted and above
+  [UserRole.FUNCTIONAL_CONSULTANT]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress", "Solved", "Not Solved"],
+  [UserRole.PROJECT_MANAGER]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress", "Solved", "Not Solved"],
+  [UserRole.ADMIN]: ["Prepared","Reviewed", "Accepted", "On Progress", "Solved", "Not Solved"], // Admin ONLY sees from Reviewed upward
+  [UserRole.DEVELOPER]: ["Accepted", "On Progress", "Solved", "Not Solved"],
 };
 
 // Define allowed transitions for each role and status
@@ -21,12 +21,12 @@ export const ROLE_TRANSITIONS: Record<UserRole, Partial<Record<CaseStatus, CaseS
   
   [UserRole.ADMIN]: {
     "Reviewed": ["Accepted", "Returned", "Rejected"],
-    "NotSolved": ["Returned"], // Not solved goes back to admin
+    "Not Solved": ["Returned"], // Not solved goes back to admin
   },
   
   [UserRole.DEVELOPER]: {
-    "Accepted": ["OnProgress"],
-    "OnProgress": ["Solved", "NotSolved"],
+    "Accepted": ["On Progress"],
+    "On Progress": ["Solved", "Not Solved"],
   },
 };
 
@@ -59,7 +59,7 @@ export function canViewCase(
       return caseItem.functionalConsultantId === userId;
 
     case UserRole.PROJECT_MANAGER:
-      return caseItem.departmentId === userId; // Assuming PM has departmentId
+      return caseItem.departmentId === userId;
 
     case UserRole.ADMIN:
       return true;

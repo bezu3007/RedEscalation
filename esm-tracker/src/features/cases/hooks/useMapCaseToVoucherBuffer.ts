@@ -1,7 +1,7 @@
 import { CaseFormValues } from "../types";
 import {  CaseItem } from "../types";
 import { mapStatusToId } from "../utils/statusMapping";
-export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number | null, initialData?: CaseItem) {
+export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number | null, personId: number | null, initialData?: CaseItem) {
   const now = new Date();
   const isEditing = !!initialData;
   const developerId = values.developer? parseInt(values.developer) : null;
@@ -20,8 +20,8 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number |
       discount: 0,
       addCharge: 0,
       grandTotal: 0,
-      consignee2: isEditing ? initialData?.functionalConsultantId : userId,
-      consignee3: initialData?.developerId || null,
+      consignee2: isEditing ? initialData?.functionalConsultantId : personId,
+      consignee3: initialData?.developerId || values.developer ||null,
       consignee4: null,
       issuedDate: now.toISOString(),
       note: values.issues,
@@ -32,7 +32,7 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number |
       extension1: values.paidorNot,
       extension2: values.caseType,
       extension3: values.module,
-      extension4: values.developmentStatus || "Prepared",
+      extension4: values.status || "Prepared",
       lastState: lastStatusId,
       startDate: values.issueDate,
       endDate: values.deadLine,

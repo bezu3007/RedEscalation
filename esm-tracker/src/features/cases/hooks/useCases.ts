@@ -26,9 +26,6 @@ export function useCases(extraParams?: Partial<CasesQueryParams>) {
         pageSize: 9999, // Or a large number
         ...extraParams 
       });
-
-      // Apply role-based filtering on frontend
-      // const visibleStatuses = ROLE_VISIBLE_STATUSES[userRole] || [];
       
       const filteredItems = response.items.filter((caseItem: CaseItem) => {
         // 1. Check if status is visible for this role
@@ -42,18 +39,10 @@ export function useCases(extraParams?: Partial<CasesQueryParams>) {
             return caseItem.functionalConsultantId === user?.id;
 
           case UserRole.PROJECT_MANAGER:
-            if (user?.department) {
-              return caseItem.departmentId === user.department;
-            }
-            // Fallback: if departmentId exists on user
-            if ((user as any)?.departmentId) {
-              return caseItem.departmentId === (user as any).departmentId;
-            }
-            // If no department info, return true (or false depending on your needs)
             return true;
 
           case UserRole.ADMIN:
-            return true; // Admin sees all visible statuses
+            return true;
 
           case UserRole.DEVELOPER:
             return caseItem.developerId === user?.id;
@@ -137,19 +126,3 @@ export function useUpdateCase() {
     },
   });
 }
-
-
-
-// export function useDevelopers() {
-
-//   return useQuery({
-
-//     queryKey: ["developers"],
-
-//     queryFn: casesApi.getDevelopers,
-
-//     staleTime: 5 * 60 * 1000,
-
-//   });
-
-// }

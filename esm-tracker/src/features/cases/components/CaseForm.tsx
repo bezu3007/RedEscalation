@@ -201,7 +201,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   const onSubmit = useCallback((values: CaseFormValues) => {
     console.log("FORM VALUES", values);
 
-    const payload = mapCaseToVoucherBuffer(values, userId, initialData);
+    const payload = mapCaseToVoucherBuffer(values, userId, personId, initialData);
 
     const normalizedPayload = {
       ...payload,

@@ -110,7 +110,7 @@ export function StatusActionPopup({
       status: targetStatus,
     };
 
-    const payload = mapCaseToVoucherBuffer(formValues, userId, caseItem);
+    const payload = mapCaseToVoucherBuffer(formValues, userId, personId, caseItem);
 
     const normalizedPayload = {
       ...payload,

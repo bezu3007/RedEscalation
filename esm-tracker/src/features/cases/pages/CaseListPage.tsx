@@ -73,7 +73,7 @@ export default function CaseListPage() {
             {getPageDescription()}
           </p>
         </div>
-        {(userRole === UserRole.FUNCTIONAL_CONSULTANT || userRole === UserRole.ADMIN) && (
+        {(userRole === UserRole.FUNCTIONAL_CONSULTANT || userRole === UserRole.ADMIN || userRole === UserRole.PROJECT_MANAGER ) && (
           <button>Create Case</button>
         )}
       </div>

@@ -64,6 +64,8 @@ export const authApi = {
       
       console.log("=== FULL RESPONSE ===");
       console.log("Response data:", response.data);
+      // const role = response.data.data.role;
+      
       console.log("=== END RESPONSE ===");
 
       if (response.status === 200 && response.data?.success) {
@@ -115,6 +117,7 @@ export const authApi = {
           userData.remark = `${loginData.branch}_${encryptPassword(loginData.password)}`;
           userData.branch = loginData.branch;
           userData.tin = loginData.tin;
+          userData.role = response.data.data.role; 
           
           console.log("Final user object:", userData);
 
@@ -146,6 +149,7 @@ export const authApi = {
               userName: personInfo.fullName || personInfo.name || body.username,
               id: personInfo.id || 'unknown',
               fullName: personInfo.fullName || personInfo.name || body.username,
+              role: data.role || 0,
               ...personInfo
             };
             

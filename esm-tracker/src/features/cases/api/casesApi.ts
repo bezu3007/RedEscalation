@@ -97,15 +97,15 @@ export const casesApi = {
       query.append("Consignee2Id", user.id.toString());
       console.log("FC filter - Consignee2Id:", user.id);
     } 
-    else if (userRole === UserRole.PROJECT_MANAGER) {
-      query.append("Consignee2Id", user.id.toString());
-      console.log("PM filter - Consignee1Id:", user.id);
-    } 
-    else if (userRole === UserRole.ADMIN) {
-      // if (!params.status) {
-      //   query.append("LastStateDescription", "Reviewed");
-      // }
-      console.log("Admin - no filter applied (viewing all)");
+    else if (userRole === UserRole.PROJECT_MANAGER || userRole === UserRole.ADMIN) {
+    //   // query.append("Consignee2Id", user.id.toString());
+    //   console.log("PM filter - Consignee2Id:", user.id);
+    // } 
+    // else if (userRole === UserRole.ADMIN) {
+    //   // if (!params.status) {
+    //   //   query.append("LastStateDescription", "Reviewed");
+    //   // }
+      console.log("PM & Admin - no filter applied (viewing all)");
     }
 
     // Additional filters (if provided by user)

@@ -3,7 +3,7 @@ export interface User {
   id: string | number;
   userName: string;
   email?: string;
-  // role?: string;
+  role?: number;
   fullName?: string;
   department?: number;
   departmentDescription?: string;

@@ -7,7 +7,7 @@ export function usePermissions() {
   const { user, userRole } = useAuthStore();
 
   const canCreateCase = userRole === UserRole.FUNCTIONAL_CONSULTANT || 
-                        userRole === UserRole.ADMIN;
+                        userRole === UserRole.ADMIN || userRole === UserRole.PROJECT_MANAGER;
   
   const canEditCase = (caseItem: CaseItem) => {
     if (!user) return false;
@@ -15,7 +15,7 @@ export function usePermissions() {
     // FC can only edit their prepared cases
     if (userRole === UserRole.FUNCTIONAL_CONSULTANT) {
       return caseItem.status === "Prepared" && 
-             caseItem.functionalConsultantId === user.id.toString();
+             caseItem.functionalConsultantId === user.id;
     }
     
     // Admin can edit anything
@@ -71,7 +71,7 @@ export function usePermissions() {
     if (userRole === UserRole.ADMIN) return true;
     if (userRole === UserRole.PROJECT_MANAGER) return caseItem.projectNameId === user.id.toString();
     if (userRole === UserRole.DEVELOPER) return caseItem.developerId === user.id.toString();
-    if (userRole === UserRole.FUNCTIONAL_CONSULTANT) return caseItem.functionalConsultantId === user.id.toString();
+    if (userRole === UserRole.FUNCTIONAL_CONSULTANT) return caseItem.functionalConsultantId === user.id;
     
     return false;
   };
