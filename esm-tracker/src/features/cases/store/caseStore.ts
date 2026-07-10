@@ -40,12 +40,17 @@ interface CaseUIState {
   selectedParentCase: CaseItem | null;
   isCreateModalOpen: boolean;
   isEditModalOpen: boolean;
-  isViewModalOpen: boolean;
+  // isViewModalOpen: boolean;
+  viewModal: {
+    isOpen: boolean;
+    data?: CaseItem;
+  };
   editingCase: CaseItem | null;
   viewingCase: CaseItem | null;
   page: number;
   pageSize: number;
   visibleColumns: Record<ColumnKey, boolean>;
+
   setVisibleColumns: (columns: Record<ColumnKey, boolean>) => void;
   setFilters: (filters: Partial<CaseFilters>) => void;
   resetFilters: () => void;
@@ -54,11 +59,12 @@ interface CaseUIState {
   closeCreateModal: () => void;
   openEditModal: (caseItem: CaseItem) => void;
   closeEditModal: () => void;
-  openViewModal: (caseItem: CaseItem) => void;
+  openViewModal: (data: CaseItem) => void;
   closeViewModal: () => void;
   setSelectedParentCase: (data: CaseItem | null) => void;
   setPage: (page: number) => void;
   setPageSize: (size: number) => void;
+  
 
   statusPopup: {
     isOpen: boolean;
@@ -76,7 +82,7 @@ export const useCaseStore = create<CaseUIState>((set) => ({
   selectedParentCase: null,
   isCreateModalOpen: false,
   isEditModalOpen: false,
-  isViewModalOpen: false,
+  // isViewModalOpen: false,
   editingCase: null,
   viewingCase: null,
   page: 1,
@@ -85,7 +91,7 @@ export const useCaseStore = create<CaseUIState>((set) => ({
     caseNumber: true,
     issueDate: true,
     projectName: true,
-    issues: false,
+    issues: true,
     paidorNot: false,
     caseType: true,
     module: true,
@@ -97,7 +103,11 @@ export const useCaseStore = create<CaseUIState>((set) => ({
     status: true,
     releaseNote: false,
     startDate: false,
-    deadLine: true,
+    deadLine: false,
+  },
+  viewModal: {
+    isOpen: false,
+    data: undefined,
   },
 
   setVisibleColumns: (visibleColumns) =>
@@ -142,17 +152,12 @@ export const useCaseStore = create<CaseUIState>((set) => ({
     }),
 
   // VIEW
-  openViewModal: (caseItem) =>
-    set({
-      isViewModalOpen: true,
-      viewingCase: caseItem,
-    }),
-
-  closeViewModal: () =>
-    set({
-      isViewModalOpen: false,
-      viewingCase: null,
-    }),
+  openViewModal: (data) => set({ 
+    viewModal: { isOpen: true, data } 
+  }),
+  closeViewModal: () => set({ 
+    viewModal: { isOpen: false, data: undefined } 
+  }),
 
   // SUB CASE CONTEXT
   setSelectedParentCase: (data) =>

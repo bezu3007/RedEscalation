@@ -15,7 +15,7 @@ import {
 export function RowMenuCell(params: ICellRendererParams) {
   const data = params.data;
   const navigate = useNavigate();
-  const { openEditModal, openCreateModal } = useCaseStore();
+  const { openEditModal, openCreateModal, openViewModal } = useCaseStore();
   const [open, setOpen] = React.useState(false);
   const [pos, setPos] = React.useState<{ x: number; y: number } | null>(null);
   const btnRef = React.useRef<HTMLButtonElement>(null);
@@ -37,6 +37,12 @@ export function RowMenuCell(params: ICellRendererParams) {
 
   const handleEdit = () => {
     openEditModal(data);
+    setOpen(false);
+  };
+
+  const handleView = () => {
+    console.log("👁️ Opening view modal for:", data.caseNumber);
+    openViewModal(data);
     setOpen(false);
   };
 
@@ -96,10 +102,7 @@ export function RowMenuCell(params: ICellRendererParams) {
               {/* View */}
               <button
                 type="button"
-                onClick={() => {
-                  navigate(`/cases/${data.id}`);
-                  setOpen(false);
-                }}
+                onClick={handleView}
                 className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-100 text-sm transition-colors"
               >
                 <Eye className="h-4 w-4 text-cyan-500" />

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useEffect } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import { useCases } from "../hooks/useCases";
@@ -8,16 +8,14 @@ import { CaseTypeBadge } from "./CaseTypeBadge";
 import type { CaseItem } from "../types";
 import { formatDate } from "@/shared/utils/formatDate";
 import { Button } from "@/shared/components/ui/button";
-import { ChevronRight, ChevronDown,} from "lucide-react";
+import { ChevronRight, ChevronDown } from "lucide-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
 import { RowMenuCell } from "./RowMenuCell";
-import {StatusActionPopup} from "./StatusActionPopup";
+import { StatusActionPopup } from "./StatusActionPopup";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
 import { getAllowedTransitions } from "../utils/permissions";
-
-
 
 function ExpandCell() {
   const [expanded, setExpanded] = React.useState(false);
@@ -36,56 +34,94 @@ function ExpandCell() {
   );
 }
 
-export const CaseGrid = React.memo( function CaseGrid() {
+function StatusChangeCell(params: ICellRendererParams<CaseItem>) {
+  const [showPopup, setShowPopup] = React.useState(false);
+  const cellRef = React.useRef<HTMLDivElement>(null);
+  const data = params.data;
+  const userRole = useAuthStore.getState().getUserRole();
+
+  if (!data) return null;
+
+  const effectiveUserRole = userRole ?? UserRole.ADMIN;
+  const allowedTransitions = getAllowedTransitions(data.status, effectiveUserRole);
+  const hasActions = allowedTransitions.length > 0;
+
+  const canClick = userRole !== UserRole.FUNCTIONAL_CONSULTANT && hasActions;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!canClick) return;
+    setShowPopup(true);
+  };
+
+  return (
+    <div 
+      ref={cellRef} 
+      onClick={handleClick} 
+      className={`${canClick ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
+    >
+      <StatusBadge status={data.status} />
+      {showPopup && (
+        <StatusActionPopup
+          caseItem={data}
+          onClose={() => setShowPopup(false)}
+          anchorEl={cellRef.current}
+        />
+      )}
+    </div>
+  );
+}
+
+// Custom cell renderer for Issues column with auto-height
+function IssuesCellRenderer(params: ICellRendererParams<CaseItem>) {
+  const value = params.value;
+  
+  if (!value) {
+    return <span className="text-slate-400">—</span>;
+  }
+  
+  return (
+    <div 
+      className="whitespace-pre-wrap break-words py-1"
+      style={{ 
+        lineHeight: '1.5',
+        maxHeight: 'none',
+        overflow: 'visible'
+      }}
+    >
+      {value}
+    </div>
+  );
+}
+
+export const CaseGrid = React.memo(function CaseGrid() {
   const gridRef = useRef<AgGridReact<CaseItem>>(null);
   const { data, isLoading, isFetching } = useCases();
-  const { page, pageSize, setPage, visibleColumns, } = useCaseStore();
+  const { page, pageSize, setPage, visibleColumns, setVisibleColumns } = useCaseStore();
 
-  // const navigate = useNavigate();
-  // const onRowClicked = (params: any) => {
-  //   navigate(`/cases/${params.data.id}`);
-  // };
-  // Inside CaseGrid.tsx - Update StatusChangeCell
+  // Set default visibility for Issues column if not set
+  useEffect(() => {
+    if (visibleColumns.issues === undefined) {
+      setVisibleColumns({
+        ...visibleColumns,
+        issues: true,
+        caseNumber: visibleColumns.caseNumber ?? true,
+        projectName: visibleColumns.projectName ?? true,
+        module: visibleColumns.module ?? true,
+        status: visibleColumns.status ?? true,
+        caseType: visibleColumns.caseType ?? true,
+        paidorNot: visibleColumns.paidorNot ?? true,
+        developer: visibleColumns.developer ?? true,
+        issueDate: visibleColumns.issueDate ?? true,
+        deadLine: visibleColumns.deadLine ?? true,
+        reviewedBy: visibleColumns.reviewedBy ?? false,
+        functionalConsultant: visibleColumns.functionalConsultant ?? false,
+        department: visibleColumns.department ?? false,
+        releaseNote: visibleColumns.releaseNote ?? false,
+      });
+    }
+  }, [visibleColumns, setVisibleColumns]);
 
-  function StatusChangeCell(params: ICellRendererParams<CaseItem>) {
-    const [showPopup, setShowPopup] = React.useState(false);
-    const cellRef = React.useRef<HTMLDivElement>(null);
-    const data = params.data;
-    const userRole = useAuthStore.getState().getUserRole();
-
-    if (!data) return null;
-
-    // Check if user has any actions for this status
-    const effectiveUserRole = userRole ?? UserRole.ADMIN
-    const allowedTransitions = getAllowedTransitions(data.status, effectiveUserRole);
-    const hasActions = allowedTransitions.length > 0;
-
-    // FC should never be able to click
-    const canClick = userRole !== UserRole.FUNCTIONAL_CONSULTANT && hasActions;
-
-    const handleClick = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!canClick) return;
-      setShowPopup(true);
-    };
-
-    return (
-      <div 
-        ref={cellRef} 
-        onClick={handleClick} 
-        className={`${canClick ? 'cursor-pointer hover:opacity-80' : 'cursor-default'}`}
-      >
-        <StatusBadge status={data.status} />
-        {showPopup && (
-          <StatusActionPopup
-            caseItem={data}
-            onClose={() => setShowPopup(false)}
-            anchorEl={cellRef.current}
-          />
-        )}
-      </div>
-    );
-  }
   const colDefs = useMemo<ColDef<CaseItem>[]>(
     () => [
       {
@@ -96,8 +132,9 @@ export const CaseGrid = React.memo( function CaseGrid() {
         filter: false,
         resizable: false,
         cellRenderer: ExpandCell,
+        // Don't auto-height for this column
+        autoHeight: false,
       },
-
       {
         headerName: "",
         width: 30,
@@ -106,133 +143,129 @@ export const CaseGrid = React.memo( function CaseGrid() {
         filter: false,
         resizable: false,
         cellRenderer: RowMenuCell,
+        autoHeight: false,
       },
-
       {
         field: "caseNumber",
-        headerName: "Case Number",
-        width: 130,
+        headerName: "Case #",
+        width: 120,
         pinned: "left",
         cellClass: "font-mono text-xs",
         hide: !visibleColumns.caseNumber,
+        autoHeight: false,
       },
-
       {
         field: "projectName",
         headerName: "Project",
-        flex: 1,
-        minWidth: 150,
+        width: 220,
+        pinned: "left",
+        minWidth: 120,
         hide: !visibleColumns.projectName,
+        autoHeight: false,
+        cellClass: "truncate",
       },
-
       {
         field: "module",
         headerName: "Module",
+        width: 140,
         hide: !visibleColumns.module,
-        width: 150,
-        minWidth: 50,
+        minWidth: 120,
+        autoHeight: false,
       },
-
       {
         field: "issues",
         headerName: "Issues",
-        flex: 1,
-        minWidth: 150,
+        width: 300,
+        minWidth: 140,
         hide: !visibleColumns.issues,
+        cellRenderer: IssuesCellRenderer,
+        autoHeight: true,
+        wrapText: true,
+        cellClass: "align-top",
       },
-
       {
         field: "status",
         headerName: "Status",
         width: 120,
         hide: !visibleColumns.status,
         cellRenderer: StatusChangeCell,
+        autoHeight: false,
       },
-
       {
         field: "caseType",
         headerName: "Type",
         width: 150,
         hide: !visibleColumns.caseType,
-        cellRenderer: ({
-          value,
-        }: ICellRendererParams<CaseItem, string>) =>
-          value ? (
-            <CaseTypeBadge
-              type={value as CaseItem["caseType"]}
-            />
-          ) : null,
+        cellRenderer: ({ value }: ICellRendererParams<CaseItem, string>) =>
+          value ? <CaseTypeBadge type={value as CaseItem["caseType"]} /> : null,
+        autoHeight: false,
       },
-
       {
         field: "reviewedBy",
         headerName: "Reviewed By",
-        hide: !visibleColumns.reviewedBy,
-        flex: 1,
+        width: 180,
         minWidth: 150,
+        hide: !visibleColumns.reviewedBy,
+        autoHeight: false,
       },
-      
       {
         field: "paidorNot",
-        headerName: "Payement Status",
-        hide: !visibleColumns.paidorNot,
-        flex: 1,
+        headerName: "Payment Status",
+        width: 150,
         minWidth: 120,
+        hide: !visibleColumns.paidorNot,
+        autoHeight: false,
       },
-
       {
         field: "functionalConsultant",
-        headerName: "FunctionalConsultant",
+        headerName: "Functional Consultant",
         width: 250,
         minWidth: 140,
         hide: !visibleColumns.functionalConsultant,
+        autoHeight: false,
       },
-
       {
         field: "developer",
         headerName: "Developer",
-        width: 250,
-        minWidth: 140,
+        flex: 1,
+        minWidth: 180,
         hide: !visibleColumns.developer,
-        valueFormatter: ({ value }) =>
-          value ?? "—",
+        valueFormatter: ({ value }) => value ?? "—",
+        autoHeight: false,
       },
-
       {
         field: "department",
         headerName: "Department",
-        flex: 1,
+        width: 160,
         minWidth: 140,
         hide: !visibleColumns.department,
-        valueFormatter: ({ value }) =>
-          value ?? "—",
+        valueFormatter: ({ value }) => value ?? "—",
+        autoHeight: false,
       },
-
       {
         field: "releaseNote",
         headerName: "Release Note",
-        flex: 1,
+        width: 160,
         minWidth: 140,
         hide: !visibleColumns.releaseNote,
+        autoHeight: false,
       },
-
       {
         field: "issueDate",
         headerName: "Created",
         width: 130,
         hide: !visibleColumns.issueDate,
-        valueFormatter: ({ value }) =>
-          value ? formatDate(value) : "—",
+        valueFormatter: ({ value }) => (value ? formatDate(value) : "—"),
         sort: "desc",
+        autoHeight: false,
       },
-
       {
         field: "deadLine",
-        headerName: "DeadLine",
+        headerName: "Deadline",
         width: 130,
         hide: !visibleColumns.deadLine,
-        valueFormatter: ({ value }) =>
-          value ? formatDate(value) : "—",
+        valueFormatter: ({ value }) => (value ? formatDate(value) : "—"),
+        autoHeight: false,
       },
     ],
     [visibleColumns]
@@ -247,29 +280,31 @@ export const CaseGrid = React.memo( function CaseGrid() {
     []
   );
 
-  const totalPages = Math.max(1,data ? Math.ceil(data.totalCount / pageSize) : 1);
+  const totalPages = Math.max(1, data ? Math.ceil(data.totalCount / pageSize) : 1);
 
   return (
     <div className="flex flex-col gap-3">
-      <div
-        className="ag-theme-quartz w-full overflow-x-visible"
-        style={{ height: "calc(100vh - 280px)", minHeight: 400 }}
-      >
-        <AgGridReact
-          ref={gridRef}
-          rowData={data?.items ?? []}
-          columnDefs={colDefs}
-          defaultColDef={defaultColDef}
-          loading={isLoading}
-          rowHeight={44}
-          headerHeight={44}
-          suppressCellFocus
-          animateRows
-          getRowId={({ data: d }) => String(d.id)}
-          rowClass="hover:bg-slate-50"
-          // onRowClicked={onRowClicked}
-          // rowClass="cursor-pointer hover:bg-slate-50" 
-        />
+      <div className="case-grid-container" style={{ height: "calc(100vh - 300px)", minHeight: 400 }}>
+        <div className="ag-theme-quartz" style={{ minWidth: "max-content", width: "100%", height: "100%" }}>
+          <AgGridReact
+            ref={gridRef}
+            rowData={data?.items ?? []}
+            columnDefs={colDefs}
+            defaultColDef={defaultColDef}
+            loading={isLoading}
+            rowHeight={44}
+            headerHeight={44}
+            suppressCellFocus
+            animateRows
+            getRowId={({ data: d }) => String(d.id)}
+            rowClass="hover:bg-slate-50"
+            gridOptions={{
+              onGridReady: () => {
+                // Additional grid configuration if needed
+              },
+            }}
+          />
+        </div>
       </div>
 
       <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -287,11 +322,9 @@ export const CaseGrid = React.memo( function CaseGrid() {
           >
             Previous
           </Button>
-
           <span>
             Page {page} of {totalPages}
           </span>
-
           <Button
             variant="outline"
             size="sm"

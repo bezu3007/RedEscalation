@@ -5,11 +5,11 @@ import { cn } from "@/shared/lib/utils";
 const TYPE_CONFIG: Record<CaseType, { label: string; className: string }> = {
   Performance: {
     label: "Performance",
-    className: "bg-red-50 text-red-700 border-red-200",
+    className: "bg-indigo-50 text-indigo-700 border-indigo-200",
   },
   Error: {
     label: "Error",
-    className: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    className: "bg-red-50 text-red-700 border-red-200",
   },
   Report: {
     label: "Report",

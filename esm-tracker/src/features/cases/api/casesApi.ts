@@ -97,13 +97,6 @@ export const casesApi = {
       console.log("FC filter - Consignee2Id:", user.id);
     } 
     else if (userRole === UserRole.PROJECT_MANAGER || userRole === UserRole.ADMIN) {
-    //   // query.append("Consignee2Id", user.id.toString());
-    //   console.log("PM filter - Consignee2Id:", user.id);
-    // } 
-    // else if (userRole === UserRole.ADMIN) {
-    //   // if (!params.status) {
-    //   //   query.append("LastStateDescription", "Reviewed");
-    //   // }
       console.log("PM & Admin - no filter applied (viewing all)");
     }
 
@@ -244,27 +237,5 @@ export const casesApi = {
 
     return res.data;
   },
-
-  // transition: async ({
-  //   caseId,
-  //   targetStatus,
-  // }: {
-  //   caseId: string;
-  //   targetStatus: CaseStatus;
-  // }) => {
-
-  //   const voucher = await casesApi.getVoucherById(Number(caseId));
-  //   const currentStatusId = mapStatusToId(targetStatus);
-  //   // voucher.lastState = currentStatusId;
-
-  //   const response = await apiClient.post(
-  //     `/VoucherBuffer/${caseId}/transition`,
-  //     {
-  //       targetStatus,
-  //     }
-  //   );
-
-  //   return response.data;
-  // },
 
 };

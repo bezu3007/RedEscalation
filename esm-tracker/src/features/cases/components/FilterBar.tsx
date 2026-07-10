@@ -54,17 +54,15 @@ const FILTER_CONFIG: {
   { key: "toIssueDate", label: "To Date" },
 ];
 
+const today = new Date().toISOString().split("T")[0];
+
 const COLUMN_CONFIG: {
   key: ColumnKey;
   label: string;
 }[] = [
-  { key: "caseNumber", label: "Case #" },
   { key: "issueDate", label: "Created" },
-  { key: "projectName", label: "Project" },
-  { key: "issues", label: "Issue" },
   { key: "paidorNot", label: "Payment Status" },
   { key: "caseType", label: "Case Type" },
-  { key: "module", label: "Module" },
   { key: "functionalConsultant", label: "Functional Consultant" },
   { key: "reviewedBy", label: "Reviewed By" },
   { key: "developer", label: "Developer" },
@@ -214,7 +212,12 @@ const filteredModuleOptions = useMemo(() => {
     localStorage.setItem("visibleColumns", JSON.stringify(visibleColumns));
   }, [visibleColumns]);
 
-  const hasActiveFilters = Object.values(filters).some(Boolean);
+  const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
+    if (key === "fromIssueDate" || key === "toIssueDate") {
+      return value !== today;
+    }
+    return Boolean(value);
+  });
 
   const handleShow = useCallback(() => {
     if (!draftFilters.fromIssueDate || !draftFilters.toIssueDate) {
@@ -233,14 +236,14 @@ const filteredModuleOptions = useMemo(() => {
       module: "",
       projectName: "",
       paidorNot: "",
-      fromIssueDate: "",
-      toIssueDate: "",
+      fromIssueDate: today,
+      toIssueDate: today,
       developer: "",
     });
   }, [resetFilters]);
 
   return (
-    <div className="bg-white border rounded-lg p-4 shadow-sm space-y-3">
+    <div className="bg-white border rounded-lg p-6 shadow-sm space-y-3">
       {/* TOP */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2 flex-1">
@@ -305,7 +308,8 @@ const filteredModuleOptions = useMemo(() => {
           </DropdownMenu>
 
           {!isDeveloper && (
-            <Button onClick={openCreateModal} className="gap-2 shrink-0">
+            <Button onClick={openCreateModal} className="gap-2 shrink-0 ">
+            {/* <Button onClick={openCreateModal} className="gap-2 shrink-0 bg-emerald-100 text-emerald-800 border-emerald-200"> */}
               <Plus className="h-4 w-4" />
               Add Issue
             </Button>
@@ -475,16 +479,24 @@ const filteredModuleOptions = useMemo(() => {
           </div>
         )}
 
-        <Button size="sm" onClick={handleShow}>
-          Show
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          {hasActiveFilters && (
+            <Button
+              variant="danger-outline"
+              size="sm"
+              onClick={handleClear}
+              className="gap-1"
+            >
+              <X className="h-4 w-4" />
+              Clear
+            </Button>
+          )}
 
-        {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={handleClear} className="gap-1 text-muted-foreground">
-            <X className="h-4 w-4" />
-            Clear
+          <Button size="sm" onClick={handleShow}>
+            Show
           </Button>
-        )}
+
+        </div>
       </div>
     </div>
   );

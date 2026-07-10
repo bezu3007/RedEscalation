@@ -106,12 +106,47 @@
   overflow: hidden;
 }
 
-.ag-root-wrapper,
-.ag-root,
-.ag-body-viewport,
-.ag-center-cols-viewport,
-.ag-center-cols-container,
-.ag-row,
-.ag-cell {
-  overflow: visible !important;
+.case-grid-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  position: relative;
+}
+
+.case-grid-container .ag-theme-quartz {
+  min-width: max-content;
+  width: 100%;
+}
+
+/* Ensure AG Grid cells don't wrap unless specified */
+.ag-theme-quartz .ag-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Allow wrapping for issues column */
+.ag-theme-quartz .ag-cell[col-id="issues"] {
+  white-space: normal !important;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  padding: 4px 8px;
+}
+
+/* Custom scrollbar styling */
+.case-grid-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.case-grid-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.case-grid-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.case-grid-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }

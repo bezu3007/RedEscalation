@@ -9,6 +9,8 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number |
   const lastStatusId = mapStatusToId(values.status || "Prepared");
   console.log('lastStatusId:', lastStatusId);
   console.log("Dev: ", initialData?.developerId);
+  console.log(initialData?.functionalConsultantId);
+  console.log(personId);
 
   return {
     voucher: {
@@ -21,7 +23,7 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number |
       addCharge: 0,
       grandTotal: 0,
       consignee2: isEditing ? initialData?.functionalConsultantId : personId,
-      consignee3: initialData?.developerId || values.developer ||null,
+      consignee3: initialData?.developerId || values.developer || null,
       consignee4: null,
       issuedDate: now.toISOString(),
       note: values.issues,

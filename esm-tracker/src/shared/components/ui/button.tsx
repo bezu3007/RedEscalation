@@ -6,7 +6,9 @@ import clsx from "clsx";
 type ButtonVariant =
   | "primary"
   | "secondary"
+  | "success"
   | "danger"
+  | "danger-outline"
   | "ghost"
   | "outline";
 
@@ -52,8 +54,14 @@ export const Button = React.forwardRef<
           "bg-gray-200 text-gray-900 hover:bg-gray-300":
             variant === "secondary",
 
+          "bg-emerald-100 text-emerald-900 hover:bg-emerald-200":
+            variant === "success",
+
           "bg-red-600 text-white hover:bg-red-700":
             variant === "danger",
+
+          "border border-red-300 bg-red-50 text-red-700 hover:bg-red-100":
+            variant === "danger-outline",
 
           "bg-transparent hover:bg-gray-100":
             variant === "ghost",

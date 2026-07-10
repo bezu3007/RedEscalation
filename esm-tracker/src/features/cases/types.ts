@@ -206,7 +206,7 @@ export interface CaseFormValues {
   releaseNote: string;
   issues: string;
   developmentStatus: string;
-  status?: string; // Add this for status updates
+  status?: string;
   caseNumber?: string;
 }
 

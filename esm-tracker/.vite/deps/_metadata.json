@@ -1,0 +1,76 @@
+{
+  "hash": "5935e788",
+  "configHash": "0e61e8ff",
+  "lockfileHash": "cca552aa",
+  "browserHash": "d114cf73",
+  "optimized": {
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "c9fff8a0",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "90694cd9",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "895a4ea2",
+      "needsInterop": true
+    },
+    "@tanstack/react-query": {
+      "src": "../../node_modules/@tanstack/react-query/build/modern/index.js",
+      "file": "@tanstack_react-query.js",
+      "fileHash": "cf6093a8",
+      "needsInterop": false
+    },
+    "@tanstack/react-query-devtools": {
+      "src": "../../node_modules/@tanstack/react-query-devtools/build/modern/index.js",
+      "file": "@tanstack_react-query-devtools.js",
+      "fileHash": "407eff9c",
+      "needsInterop": false
+    },
+    "lucide-react": {
+      "src": "../../node_modules/lucide-react/dist/esm/lucide-react.js",
+      "file": "lucide-react.js",
+      "fileHash": "7cc0ac5a",
+      "needsInterop": false
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.js",
+      "file": "react-router-dom.js",
+      "fileHash": "5dace85f",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "C2NHY6T5-HREKREKS": {
+      "file": "C2NHY6T5-HREKREKS.js"
+    },
+    "chunk-NX3QQ7BT": {
+      "file": "chunk-NX3QQ7BT.js"
+    },
+    "chunk-PV7ZWGTI": {
+      "file": "chunk-PV7ZWGTI.js"
+    },
+    "chunk-2CLD7BNN": {
+      "file": "chunk-2CLD7BNN.js"
+    },
+    "I4EE2JD6-BYE7B5KD": {
+      "file": "I4EE2JD6-BYE7B5KD.js"
+    },
+    "chunk-W65F7TJ7": {
+      "file": "chunk-W65F7TJ7.js"
+    },
+    "chunk-LPTCPB3Q": {
+      "file": "chunk-LPTCPB3Q.js"
+    },
+    "chunk-WOOG5QLI": {
+      "file": "chunk-WOOG5QLI.js"
+    }
+  }
+}

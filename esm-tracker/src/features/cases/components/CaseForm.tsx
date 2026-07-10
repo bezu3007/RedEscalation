@@ -20,7 +20,7 @@ import { VoucherBuffer } from "../types";
 
 
 interface Props {
-  mode: "create" | "edit";
+  mode: "create" | "edit" | "view";
   initialData?: CaseItem;
   open: boolean;
   onClose: () => void;
@@ -41,14 +41,18 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   const userId = useAuthStore((s) => s.userId);
   const personId = useAuthStore((s) => s.personId);
   console.log("PERSONNNNNN: ", personId);
+  console.log(mode, "MODDDDDDDDDDDEEEEEEEEEEEEEE");
 
   const isCreator = useMemo(() => { 
     if (mode === "create") { return true; }
     if (!initialData || personId == null) 
       { return false; } 
     const creatorPersonId = Number( initialData.functionalConsultantId ); 
-    return creatorPersonId === Number(personId); }, [mode, initialData, personId]); 
-    const isReadOnly = mode === "edit" && !isCreator;
+    return creatorPersonId === Number(personId); 
+  }, [mode, initialData, personId]); 
+    
+  const isReadOnly = mode == "view" || (mode === "edit" && !isCreator);
+  console.log("🔍 isReadOnly:", isReadOnly);
 
   const projectOptions = useMemo(() => {
   const projects = initData?.projects ?? [];
@@ -113,13 +117,13 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       .slice(0, 250);
   }, [initData?.developers, developerQuery]);
 
-  useEffect(() => {
-    console.log("CaseForm option counts:", {
-      projects: projectOptions.length,
-      modules: moduleList.length,
-      developers: developerOptions.length,
-    });
-  }, [projectOptions, moduleList, developerOptions]);
+  // useEffect(() => {
+  //   console.log("CaseForm option counts:", {
+  //     projects: projectOptions.length,
+  //     modules: moduleList.length,
+  //     developers: developerOptions.length,
+  //   });
+  // }, [projectOptions, moduleList, developerOptions]);
 
   const { mutate: createCase, isPending: creating } = useCreateCase();
   const { mutate: updateCase, isPending: updating } = useUpdateCase();
@@ -145,12 +149,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
     },
   });
 
-  // FIXED: Removed 'form' from dependencies to prevent infinite loop
   useEffect(() => {
     if (!open) return;
     console.log('status:', initialData?.status);
     
-    if (mode === "edit" && initialData) {
+    if ((mode === "view" || mode === "edit") && initialData) {
       form.reset({
       caseNumber: initialData.caseNumber || "",
       projectName: initialData.projectName || "",
@@ -188,7 +191,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
         status: "Prepared", // Default status for new cases
       });
     }
-  }, [mode, initialData, open]); // REMOVED 'form' from dependencies
+  }, [mode, initialData, open]);
 
   const handleClose = useCallback(() => {
     form.reset();
@@ -256,9 +259,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-lg font-semibold">
-                {mode === "create"
-                  ? "Add Issue Voucher Proposal"
-                  : "Edit Issue Voucher"}
+                {mode === "view"
+                  ? "View Issue Voucher" 
+                  :mode === "create"
+                    ? "Add Issue Voucher Proposal"
+                    : "Edit Issue Voucher"}
               </h2>
               <p className="text-xs text-slate-300 mt-1">
                 Creating new root level project issue track
@@ -316,14 +321,15 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
               <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 p-6 min-h-[500px]">
                 {/* LEFT CARD */}
                 <div className="rounded-2xl border bg-slate-50 p-5 space-y-5 shadow-sm">
-                  {/* ROW 1 - Project & Module */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* ROW 1 - Project */}
+                  <div className=" gap-4">
                     <FormField
                       control={form.control}
                       name="projectNameId"
+                      rules={{ required: "Project is required" }}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Projects</FormLabel>
+                          <FormLabel>Projects <span className="text-red-500">*</span></FormLabel>
                           <Select
                             value={field.value ?? undefined}
                             onValueChange={field.onChange}
@@ -365,13 +371,17 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                         </FormItem>
                       )}
                     />
-
+                  </div>
+                    
+                  {/* ROW 2 - Module */}
+                  <div className="gap-4">
                     <FormField
                       control={form.control}
                       name="module"
+                      rules={{ required: "Module is required" }}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Module</FormLabel>
+                          <FormLabel>Module <span className="text-red-500">*</span></FormLabel>
                           <Select
                             value={field.value ?? undefined}
                             onValueChange={field.onChange}
@@ -395,14 +405,15 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                     />
                   </div>
 
-                  {/* ROW 2 - Case Type & Payment Status */}
+                  {/* ROW 3 - Case Type & Payment Status */}
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="caseType"
+                      rules={{ required: "Case Type is required" }}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Case Type</FormLabel>
+                          <FormLabel>Case Type <span className="text-red-500">*</span></FormLabel>
                           <Select value={field.value} onValueChange={field.onChange}
                             disabled={isReadOnly}>
                             <FormControl>
@@ -448,8 +459,8 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                     />
                   </div>
 
-                  {/* ROW 3 - Developer */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* ROW 4 - Developer */}
+                  <div className="gap-4">
                     <FormField
                       control={form.control}
                       name="developer"
@@ -498,7 +509,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                     />
                   </div>
 
-                  {/* ROW 4 - Dates */}
+                  {/* ROW 5 - Dates */}
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -535,12 +546,13 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                   <FormField
                     control={form.control}
                     name="issues"
+                    rules={{ required: "Issue details are required" }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Issue Details Log</FormLabel>
+                        <FormLabel>Issue Details Log <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
                           <Textarea
-                            rows={14}
+                            rows={20}
                             className="resize-none rounded-2xl border bg-slate-50 p-4"
                             placeholder="Enter issue descriptions here..."
                             {...field}
@@ -600,7 +612,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                 </Button>
               )}
               
-              {/* Show Close button for both modes */}
+              {/* Show Close button for all modes */}
               <Button
                 type="button"
                 variant="outline"
