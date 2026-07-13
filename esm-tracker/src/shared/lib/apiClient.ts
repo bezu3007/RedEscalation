@@ -1,8 +1,30 @@
 // shared/lib/apiClient.ts
 import axios from "axios";
 
+const preferredBase = import.meta.env.PROD
+  ? "http://196.191.244.130:7040/api"
+  : "/api";
+
+// Resolve the runtime API base URL. Preserve absolute URLs so requests can
+// target the intended backend host/port, while keeping relative values
+// normalized for local development and deployments behind a front-end proxy.
+const rawBase = (import.meta.env.VITE_API_BASE_URL ?? preferredBase).toString().trim();
+let baseURL = rawBase;
+
+try {
+  if (rawBase.startsWith("http://") || rawBase.startsWith("https://")) {
+    const u = new URL(rawBase);
+    const normalizedPath = u.pathname.replace(/\/+$/, "");
+    baseURL = `${u.protocol}//${u.host}${normalizedPath}`;
+  } else if (rawBase && !rawBase.startsWith("/")) {
+    baseURL = `/${rawBase.replace(/^\/+/, "")}`;
+  }
+} catch {
+  baseURL = rawBase || preferredBase;
+}
+
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "/api",
+  baseURL,
   headers: { "Content-Type": "application/json" },
   timeout: 30_000,
   withCredentials: false,

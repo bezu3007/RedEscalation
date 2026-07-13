@@ -2,13 +2,15 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 
+const apiProxyTarget = (process.env.VITE_API_PROXY_TARGET || "http://196.191.244.130:7040").trim();
+
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
 
   server: {
     proxy: {
       "/api": {
-        target: "http://196.191.244.130:7040",
+        target: apiProxyTarget,
         changeOrigin: true,
         secure: false,
       },
