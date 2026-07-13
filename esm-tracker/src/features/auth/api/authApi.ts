@@ -193,22 +193,6 @@ export const authApi = {
     _cachedCompany = null;
   },
 
-  me: async (): Promise<User | null> => {
-    try {
-      const response = await apiClient.get<User>("/auth/me");
-      if (response.data) {
-        localStorage.setItem('ems-user', JSON.stringify(response.data));
-      }
-      return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 401 || error.response?.status === 404) {
-        return null;
-      }
-      console.error("Fetch user error:", error);
-      throw new Error(error.response?.data?.message || "Failed to fetch user");
-    }
-  },
-
   logout: async (): Promise<void> => {
     try {
       await apiClient.post("/auth/logout");

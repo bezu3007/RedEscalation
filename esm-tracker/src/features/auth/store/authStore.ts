@@ -235,50 +235,6 @@ export const useAuthStore = create<AuthState>()(
           return true;
         }
 
-        set({ isLoading: true });
-
-        try {
-          const user = await authApi.me();
-
-          if (user) {
-            const role =
-              determineUserRole(user);
-
-            const rememberMe =
-              localStorage.getItem(
-                "ems-remember-me"
-              ) === "true";
-
-            set({
-              user,
-              userRole: role,
-              isAuthenticated: true,
-              isLoading: false,
-              _cachedUser: user,
-              rememberMe,
-            });
-
-            localStorage.setItem(
-              "ems-user",
-              JSON.stringify(user)
-            );
-
-            localStorage.setItem(
-              "ems-user-role",
-              role
-            );
-
-            await get().loadDynamicUser();
-
-            return true;
-          }
-        } catch (error) {
-          console.error(
-            "Auth check failed:",
-            error
-          );
-        }
-
         set({
           isLoading: false,
           isAuthenticated: false,
