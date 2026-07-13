@@ -84,37 +84,41 @@ export const casesApi = {
     console.log("Current user:", user);
     console.log("User role:", userRole);
 
-    query.append(":IssuedDate", params.fromIssueDate!);
-    query.append("IssuedDate:", params.toIssueDate!);
-
-    // ROLE-BASED FILTERING - Matches your C# logic
-    if (userRole === UserRole.DEVELOPER) {
-      query.append("Consignee3Id", user.id.toString());
-      console.log("Developer filter - Consignee3Id:", user.id);
-    } 
-    else if (userRole === UserRole.FUNCTIONAL_CONSULTANT) {
-      query.append("Consignee2Id", user.id.toString());
-      console.log("FC filter - Consignee2Id:", user.id);
-    } 
-    else if (userRole === UserRole.PROJECT_MANAGER || userRole === UserRole.ADMIN) {
-      console.log("PM & Admin - no filter applied (viewing all)");
+    if (params.code) {
+      query.append("code", params.code);
     }
 
-    // Additional filters (if provided by user)
-    if (params.caseType) {
-      query.append("Extension2", params.caseType);
-    }
-    if (params.status) {
-      query.append("LastStateDescription", params.status);
-    }
-    if (params.module) {
-      query.append("Extension3", params.module);
-    }
-    if (params.paidorNot) {
-      query.append("Extension1", params.paidorNot);
-    }
-    if (params.projectName) {
-      query.append("Consignee1Id", params.projectName);
+    else{
+      query.append(":IssuedDate", params.fromIssueDate!);
+      query.append("IssuedDate:", params.toIssueDate!);
+
+      // ROLE-BASED FILTERING - Matches your C# logic
+      if (userRole === UserRole.DEVELOPER) {
+        query.append("Consignee3Id", user.id.toString());
+        console.log("Developer filter - Consignee3Id:", user.id);
+      } 
+      else if (userRole === UserRole.FUNCTIONAL_CONSULTANT) {
+        query.append("Consignee2Id", user.id.toString());
+        console.log("FC filter - Consignee2Id:", user.id);
+      } 
+      else if (userRole === UserRole.PROJECT_MANAGER || userRole === UserRole.ADMIN) {
+        console.log("PM & Admin - no filter applied (viewing all)");
+      }
+      if (params.caseType) {
+        query.append("Extension2", params.caseType);
+      }
+      if (params.status) {
+        query.append("LastStateDescription", params.status);
+      }
+      if (params.module) {
+        query.append("Extension3", params.module);
+      }
+      if (params.paidorNot) {
+        query.append("Extension1", params.paidorNot);
+      }
+      if (params.projectName) {
+        query.append("Consignee1Id", params.projectName);
+      }
     }
 
     const url = `/EscalationView/dynamic/?${query.toString()}`;

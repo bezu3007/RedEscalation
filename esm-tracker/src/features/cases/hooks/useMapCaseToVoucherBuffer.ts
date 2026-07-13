@@ -4,13 +4,18 @@ import { mapStatusToId } from "../utils/statusMapping";
 export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number | null, personId: number | null, initialData?: CaseItem) {
   const now = new Date();
   const isEditing = !!initialData;
-  // const developerId = values.developer? parseInt(values.developer) : null;
-  console.log('laststatus:', values.status);
-  const lastStatusId = mapStatusToId(values.status || "Prepared");
-  console.log('lastStatusId:', lastStatusId);
-  console.log("Dev: ", initialData?.developerId);
-  console.log(initialData?.functionalConsultantId);
-  console.log(personId);
+
+  let finalStatus = values.status || "Prepared";
+  
+  if(finalStatus == "Returned"){
+    finalStatus="Prepared";
+  }
+  const lastStatusId = mapStatusToId(finalStatus);
+  // console.log('lastStatusId:', lastStatusId);
+  // console.log("Dev: ", initialData?.developerId);
+  // console.log(initialData?.functionalConsultantId);
+  // console.log(personId);
+  console.log(values.issueDate);
 
   return {
     voucher: {
@@ -25,16 +30,16 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number |
       consignee2: isEditing ? initialData?.functionalConsultantId : personId,
       consignee3: initialData?.developerId || values.developer || null,
       consignee4: null,
-      issuedDate: now.toISOString(),
+      issuedDate: values.issueDate,
       note: values.issues,
       originConsigneeUnit: 3,
       consigneeUnit1: 3,
       lastModified: now.toISOString(),
-      createdOn: now.toISOString(),
+      createdOn: values.issueDate,
       extension1: values.paidorNot,
       extension2: values.caseType,
       extension3: values.module,
-      extension4: values.status || "Prepared",
+      extension4: finalStatus,
       lastState: lastStatusId,
       startDate: values.issueDate,
       endDate: values.deadLine,

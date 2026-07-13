@@ -3,16 +3,16 @@ import { CaseStatus } from "../types";
 
 // Define what statuses each role can see in the grid
 export const ROLE_VISIBLE_STATUSES: Record<UserRole, CaseStatus[]> = {
-  [UserRole.FUNCTIONAL_CONSULTANT]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress", "Solved", "Not Solved"],
-  [UserRole.PROJECT_MANAGER]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress", "Solved", "Not Solved"],
-  [UserRole.ADMIN]: ["Prepared","Reviewed", "Accepted", "On Progress", "Solved", "Not Solved"], // Admin ONLY sees from Reviewed upward
-  [UserRole.DEVELOPER]: ["Accepted", "On Progress", "Solved", "Not Solved"],
+  [UserRole.FUNCTIONAL_CONSULTANT]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved"],
+  [UserRole.PROJECT_MANAGER]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved"],
+  [UserRole.ADMIN]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved"], // Admin ONLY sees from Reviewed upward
+  [UserRole.DEVELOPER]: ["Accepted", "On Progress", "Fixed", "Solved", "Not Solved"],
 };
 
 // Define allowed transitions for each role and status
 export const ROLE_TRANSITIONS: Record<UserRole, Partial<Record<CaseStatus, CaseStatus[]>>> = {
   [UserRole.FUNCTIONAL_CONSULTANT]: {
-    // FC has NO actions at all
+    "Fixed": ["Solved", "Not Solved"],
   },
   
   [UserRole.PROJECT_MANAGER]: {
@@ -21,12 +21,13 @@ export const ROLE_TRANSITIONS: Record<UserRole, Partial<Record<CaseStatus, CaseS
   
   [UserRole.ADMIN]: {
     "Reviewed": ["Accepted", "Returned", "Rejected"],
-    "Not Solved": ["Returned"], // Not solved goes back to admin
+    "Not Solved": ["Accepted", "Returned", "Rejected"],
+    "Accepted": ["Fixed"],
   },
   
   [UserRole.DEVELOPER]: {
-    "Accepted": ["On Progress"],
-    "On Progress": ["Solved", "Not Solved"],
+    "Accepted": ["On Progress", "Fixed"],
+    "On Progress": ["Fixed"],
   },
 };
 

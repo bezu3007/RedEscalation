@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
+import logo from "@/assets/logo.jpg";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -64,7 +65,7 @@ export function TopBar() {
           {/* Logo */}
           <div className="h-10 w-10 overflow-hidden rounded-xl border bg-white shadow-sm flex items-center justify-center">
             <img
-              src="src/assets/logo.jpg"
+              src={logo}
               alt="EMS Logo"
               className="h-full w-full object-cover"
             />

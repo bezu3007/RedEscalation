@@ -33,6 +33,7 @@ const TYPES: CaseType[] = [
 ];
 
 type FilterKey =
+  | "code"
   | "status"
   | "caseType"
   | "module"
@@ -230,6 +231,7 @@ const filteredModuleOptions = useMemo(() => {
   const handleClear = useCallback(() => {
     resetFilters();
     setDraftFilters({
+      code: "",
       search: "",
       status: "",
       caseType: "",
@@ -246,7 +248,36 @@ const filteredModuleOptions = useMemo(() => {
     <div className="bg-white border rounded-lg p-6 shadow-sm space-y-3">
       {/* TOP */}
       <div className="flex flex-wrap items-center justify-between gap-2">
+        {visibleFilters.code && (
+          <Select
+            value={draftFilters.code || "all"}
+            onValueChange={(v) =>
+              setDraftFilters({ ...draftFilters, code: v === "all" ? "" : (v as CaseType) })
+            }
+          >
+            <SelectTrigger className="w-[170px] bg-gray-50">
+              <SelectValue placeholder="Select Case Type" />
+            </SelectTrigger>
+            <SelectContent className="bg-white z-[100]">
+              <SelectItem value="all">All Types</SelectItem>
+              {TYPES.map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <div className="flex flex-wrap items-center gap-2 flex-1">
+          <div className="relative flex-1 min-w-[220px] max-w-4">
+            <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Search with case number..."
+              className="pl-8 h-8 text-sm bg-gray-50"
+              value={draftFilters.code}
+              onChange={(e) =>
+                setDraftFilters({ ...draftFilters, code: e.target.value })
+              }
+            />
+          </div>
           <div className="relative flex-1 min-w-[220px] max-w-sm">
             <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
@@ -261,6 +292,8 @@ const filteredModuleOptions = useMemo(() => {
         </div>
 
         <div className="flex items-center gap-2">
+
+          {/* filter Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -283,6 +316,7 @@ const filteredModuleOptions = useMemo(() => {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Column menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -307,8 +341,9 @@ const filteredModuleOptions = useMemo(() => {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Add Issue Button */}
           {!isDeveloper && (
-            <Button onClick={openCreateModal} className="gap-2 shrink-0 ">
+            <Button onClick={openCreateModal} className="bg-green-600 gap-2 shrink-0 ">
             {/* <Button onClick={openCreateModal} className="gap-2 shrink-0 bg-emerald-100 text-emerald-800 border-emerald-200"> */}
               <Plus className="h-4 w-4" />
               Add Issue
@@ -492,8 +527,12 @@ const filteredModuleOptions = useMemo(() => {
             </Button>
           )}
 
-          <Button size="sm" onClick={handleShow}>
+          <Button size="sm" onClick={handleShow} className="">
             Show
+          </Button>
+
+          <Button size="sm" onClick={handleShow} className="">
+            Show All
           </Button>
 
         </div>

@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { useCaseStore } from "../store/caseStore";
 import type { ICellRendererParams } from "ag-grid-community";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import { UserRole } from "@/features/auth/types";
 import { 
   Eye, 
   Pencil, 
@@ -16,11 +18,32 @@ export function RowMenuCell(params: ICellRendererParams) {
   const data = params.data;
   const navigate = useNavigate();
   const { openEditModal, openCreateModal, openViewModal } = useCaseStore();
+  const userRole = useAuthStore((state) => state.userRole);
   const [open, setOpen] = React.useState(false);
   const [pos, setPos] = React.useState<{ x: number; y: number } | null>(null);
   const btnRef = React.useRef<HTMLButtonElement>(null);
 
   if (!data) return null;
+
+  const isDeveloper = userRole === UserRole.DEVELOPER;
+  const isFunctionalConsultant = userRole === UserRole.FUNCTIONAL_CONSULTANT;
+  
+  let canEdit = false;
+
+  if(isDeveloper){
+    canEdit= false;
+  }
+
+  else if(isFunctionalConsultant){
+    canEdit = data.status === "Prepared" || data.status === "Returned";
+  }
+
+  else{
+    canEdit = true;
+  }
+  const canAddSubcase = !isDeveloper;
+  const canExtendDeadline = !isDeveloper;
+  
 
   const toggleMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -41,21 +64,17 @@ export function RowMenuCell(params: ICellRendererParams) {
   };
 
   const handleView = () => {
-    console.log("👁️ Opening view modal for:", data.caseNumber);
     openViewModal(data);
     setOpen(false);
   };
 
   const handleSubCase = () => {
-    // Set parent case and open create modal
     useCaseStore.getState().setSelectedParentCase(data);
     openCreateModal();
     setOpen(false);
   };
 
   const handleDeadlineExtend = () => {
-    // Open deadline extension modal
-    // You can either use a store action or navigate to a deadline page
     navigate(`/cases/${data.id}/extend-deadline`);
     setOpen(false);
   };
@@ -109,37 +128,43 @@ export function RowMenuCell(params: ICellRendererParams) {
                 View Details
               </button>
 
-              {/* Edit */}
-              <button
-                type="button"
-                onClick={handleEdit}
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-100 text-sm transition-colors"
-              >
-                <Pencil className="h-4 w-4 text-blue-500" />
-                Edit Case
-              </button>
+              {/* Edit - Hidden for developers */}
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={handleEdit}
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-100 text-sm transition-colors"
+                >
+                  <Pencil className="h-4 w-4 text-blue-500" />
+                  Edit Case
+                </button>
+              )}
 
-              <div className="my-2 border-t" />
+              {(canAddSubcase || canExtendDeadline) && <div className="my-2 border-t" />}
 
-              {/* Add Subcase */}
-              <button
-                type="button"
-                onClick={handleSubCase}
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-100 text-sm transition-colors"
-              >
-                <PlusCircle className="h-4 w-4 text-green-600" />
-                Add Subcase
-              </button>
+              {/* Add Subcase - Hidden for developers */}
+              {canAddSubcase && (
+                <button
+                  type="button"
+                  onClick={handleSubCase}
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-100 text-sm transition-colors"
+                >
+                  <PlusCircle className="h-4 w-4 text-green-600" />
+                  Add Subcase
+                </button>
+              )}
 
-              {/* Deadline Extension */}
-              <button
-                type="button"
-                onClick={handleDeadlineExtend}
-                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-100 text-sm transition-colors"
-              >
-                <Clock3 className="h-4 w-4 text-violet-600" />
-                Extend Deadline
-              </button>
+              {/* Deadline Extension - Hidden for developers */}
+              {canExtendDeadline && (
+                <button
+                  type="button"
+                  onClick={handleDeadlineExtend}
+                  className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-100 text-sm transition-colors"
+                >
+                  <Clock3 className="h-4 w-4 text-violet-600" />
+                  Extend Deadline
+                </button>
+              )}
             </div>
           </div>
         </>,

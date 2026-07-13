@@ -4,6 +4,7 @@ import type { CaseFilters, CaseItem } from "../types";
 const today =new Date().toISOString().split("T")[0];
 
 const defaultFilters: CaseFilters = {
+  code: "",
   search: "",
   status: "",
   caseType: "",

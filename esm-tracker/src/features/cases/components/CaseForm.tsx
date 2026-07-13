@@ -117,14 +117,6 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       .slice(0, 250);
   }, [initData?.developers, developerQuery]);
 
-  // useEffect(() => {
-  //   console.log("CaseForm option counts:", {
-  //     projects: projectOptions.length,
-  //     modules: moduleList.length,
-  //     developers: developerOptions.length,
-  //   });
-  // }, [projectOptions, moduleList, developerOptions]);
-
   const { mutate: createCase, isPending: creating } = useCreateCase();
   const { mutate: updateCase, isPending: updating } = useUpdateCase();
   const { files, addFiles, removeFile, reset: resetAttachments } = useAttachment();

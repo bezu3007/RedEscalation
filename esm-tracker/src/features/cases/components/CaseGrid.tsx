@@ -46,7 +46,8 @@ function StatusChangeCell(params: ICellRendererParams<CaseItem>) {
   const allowedTransitions = getAllowedTransitions(data.status, effectiveUserRole);
   const hasActions = allowedTransitions.length > 0;
 
-  const canClick = userRole !== UserRole.FUNCTIONAL_CONSULTANT && hasActions;
+  // const canClick = userRole !== UserRole.FUNCTIONAL_CONSULTANT && hasActions;
+  const canClick = hasActions;
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();

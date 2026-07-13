@@ -36,6 +36,7 @@ export type PaidorNot =
   (typeof PAID_OR_NOT)[number];
 
 export interface CaseFilters {
+  code: string,
   search: string;
   status: CaseStatus | "";
   caseType: CaseType | "";
