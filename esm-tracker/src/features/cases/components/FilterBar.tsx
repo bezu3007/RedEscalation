@@ -6,7 +6,7 @@ import {Plus,X,Search,Filter,Columns3} from "lucide-react";
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/shared/components/ui/select";
 import {DropdownMenu,DropdownMenuContent,DropdownMenuCheckboxItem,DropdownMenuTrigger} from "@/shared/components/ui/dropdown-menu";
 import { DateField } from "@/shared/components/DateField";
-import {PAID_OR_NOT, type CaseStatus,type CaseType, type Consignee, type Extension} from "../types";
+import {PAID_OR_NOT, type CaseFilters, type CaseStatus,type CaseType, type Consignee, type Extension} from "../types";
 import {useAuthStore} from "../../auth/store/authStore";
 
 const STATUSES: CaseStatus[] = [
@@ -55,7 +55,18 @@ const FILTER_CONFIG: {
   { key: "toIssueDate", label: "To Date" },
 ];
 
-const today = new Date().toISOString().split("T")[0];
+const emptyDraftFilters: CaseFilters = {
+  code: "",
+  search: "",
+  status: "",
+  caseType: "",
+  module: "",
+  projectName: "",
+  paidorNot: "",
+  developer: "",
+  fromIssueDate: "",
+  toIssueDate: "",
+};
 
 const COLUMN_CONFIG: {
   key: ColumnKey;
@@ -167,7 +178,7 @@ const filteredModuleOptions = useMemo(() => {
   // }, [initData?.developers, developerQuery]);
 
   const paymentOptions = useMemo(() => {
-    return [...PAID_OR_NOT]; // Convert readonly array to mutable array
+    return [...PAID_OR_NOT];
   }, []);
 
   const {
@@ -179,7 +190,7 @@ const filteredModuleOptions = useMemo(() => {
     setVisibleColumns,
   } = useCaseStore();
 
-  const [draftFilters, setDraftFilters] = useState(filters);
+  const [draftFilters, setDraftFilters] = useState<CaseFilters>(emptyDraftFilters);
 
   useEffect(() => {
     setDraftFilters(filters);
@@ -213,35 +224,15 @@ const filteredModuleOptions = useMemo(() => {
     localStorage.setItem("visibleColumns", JSON.stringify(visibleColumns));
   }, [visibleColumns]);
 
-  const hasActiveFilters = Object.entries(filters).some(([key, value]) => {
-    if (key === "fromIssueDate" || key === "toIssueDate") {
-      return value !== today;
-    }
-    return Boolean(value);
-  });
+  const hasActiveFilters = Object.entries(filters).some(([, value]) => Boolean(value));
 
   const handleShow = useCallback(() => {
-    if (!draftFilters.fromIssueDate || !draftFilters.toIssueDate) {
-      alert("Date range is required");
-      return;
-    }
     setFilters(draftFilters);
   }, [draftFilters, setFilters]);
 
   const handleClear = useCallback(() => {
     resetFilters();
-    setDraftFilters({
-      code: "",
-      search: "",
-      status: "",
-      caseType: "",
-      module: "",
-      projectName: "",
-      paidorNot: "",
-      fromIssueDate: today,
-      toIssueDate: today,
-      developer: "",
-    });
+    setDraftFilters(emptyDraftFilters);
   }, [resetFilters]);
 
   return (
@@ -266,8 +257,9 @@ const filteredModuleOptions = useMemo(() => {
             </SelectContent>
           </Select>
         )}
+
         <div className="flex flex-wrap items-center gap-2 flex-1">
-          <div className="relative flex-1 min-w-[220px] max-w-4">
+          {/* <div className="relative flex-1 min-w-[220px] max-w-5">
             <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               placeholder="Search with case number..."
@@ -277,7 +269,7 @@ const filteredModuleOptions = useMemo(() => {
                 setDraftFilters({ ...draftFilters, code: e.target.value })
               }
             />
-          </div>
+          </div> */}
           <div className="relative flex-1 min-w-[220px] max-w-sm">
             <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
@@ -293,7 +285,7 @@ const filteredModuleOptions = useMemo(() => {
 
         <div className="flex items-center gap-2">
 
-          {/* filter Menu */}
+          {/* filter Menu */}          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -343,7 +335,7 @@ const filteredModuleOptions = useMemo(() => {
 
           {/* Add Issue Button */}
           {!isDeveloper && (
-            <Button onClick={openCreateModal} className="bg-green-600 gap-2 shrink-0 ">
+            <Button onClick={openCreateModal} className="gap-2 shrink-0 ">
             {/* <Button onClick={openCreateModal} className="gap-2 shrink-0 bg-emerald-100 text-emerald-800 border-emerald-200"> */}
               <Plus className="h-4 w-4" />
               Add Issue
@@ -527,12 +519,8 @@ const filteredModuleOptions = useMemo(() => {
             </Button>
           )}
 
-          <Button size="sm" onClick={handleShow} className="">
+          <Button size="sm" onClick={handleShow}>
             Show
-          </Button>
-
-          <Button size="sm" onClick={handleShow} className="">
-            Show All
           </Button>
 
         </div>

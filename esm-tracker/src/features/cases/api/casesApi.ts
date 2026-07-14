@@ -84,13 +84,36 @@ export const casesApi = {
     console.log("Current user:", user);
     console.log("User role:", userRole);
 
+    const hasDateRange =
+      Boolean(params.fromIssueDate?.trim()) || Boolean(params.toIssueDate?.trim());
+    const hasOtherFilters = Boolean(
+      params.code?.trim() ||
+      params.search?.trim() ||
+      params.status?.trim() ||
+      params.caseType?.trim() ||
+      params.module?.trim() ||
+      params.paidorNot?.trim() ||
+      params.projectName?.trim() ||
+      params.developer?.trim()
+    );
+
     if (params.code) {
       query.append("code", params.code);
     }
 
     else{
-      query.append(":IssuedDate", params.fromIssueDate!);
-      query.append("IssuedDate:", params.toIssueDate!);
+      if (hasDateRange) {
+        if (params.fromIssueDate?.trim()) {
+          query.append(":IssuedDate", params.fromIssueDate.trim());
+        }
+        if (params.toIssueDate?.trim()) {
+          query.append("IssuedDate:", params.toIssueDate.trim());
+        }
+      } else if (!hasOtherFilters) {
+        const today = new Date().toISOString().split("T")[0];
+        query.append(":IssuedDate", today);
+        query.append("IssuedDate:", today);
+      }
 
       // ROLE-BASED FILTERING - Matches your C# logic
       if (userRole === UserRole.DEVELOPER) {

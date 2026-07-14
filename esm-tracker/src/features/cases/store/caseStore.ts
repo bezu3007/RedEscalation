@@ -1,9 +1,7 @@
 import { create } from "zustand";
 import type { CaseFilters, CaseItem } from "../types";
 
-const today =new Date().toISOString().split("T")[0];
-
-const defaultFilters: CaseFilters = {
+const createEmptyFilters = (): CaseFilters => ({
   code: "",
   search: "",
   status: "",
@@ -12,9 +10,11 @@ const defaultFilters: CaseFilters = {
   projectName: "",
   paidorNot: "",
   developer: "",
-  fromIssueDate: today,
-  toIssueDate: today,
-};
+  fromIssueDate: "",
+  toIssueDate: "",
+});
+
+const defaultFilters: CaseFilters = createEmptyFilters();
 
 export type ColumnKey =
   | "caseNumber"
@@ -78,7 +78,7 @@ interface CaseUIState {
 }
 
 export const useCaseStore = create<CaseUIState>((set) => ({
-  filters: defaultFilters,
+  filters: createEmptyFilters(),
   selectedCaseId: null,
   selectedParentCase: null,
   isCreateModalOpen: false,
