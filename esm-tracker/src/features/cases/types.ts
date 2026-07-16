@@ -198,7 +198,7 @@ export interface CaseFormValues {
   projectNameId: string;
   functionalConsultantId: Number | null;
   module: string;
-  caseType: CaseType;
+  caseType: CaseType | "";
   developer: string | null;
   paidorNot: string;
   department: string;

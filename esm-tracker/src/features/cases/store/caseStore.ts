@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { CaseFilters, CaseItem } from "../types";
+import type { CaseFilters, CaseItem, CaseStatus } from "../types";
 
 const createEmptyFilters = (): CaseFilters => ({
   code: "",
@@ -48,6 +48,7 @@ interface CaseUIState {
   };
   editingCase: CaseItem | null;
   viewingCase: CaseItem | null;
+  transitionTargetStatus: CaseStatus | null;
   page: number;
   pageSize: number;
   visibleColumns: Record<ColumnKey, boolean>;
@@ -60,6 +61,8 @@ interface CaseUIState {
   closeCreateModal: () => void;
   openEditModal: (caseItem: CaseItem) => void;
   closeEditModal: () => void;
+  setTransitionTargetStatus: (status: CaseStatus | null) => void;
+  clearTransitionTargetStatus: () => void;
   openViewModal: (data: CaseItem) => void;
   closeViewModal: () => void;
   setSelectedParentCase: (data: CaseItem | null) => void;
@@ -85,6 +88,7 @@ export const useCaseStore = create<CaseUIState>((set) => ({
   isEditModalOpen: false,
   // isViewModalOpen: false,
   editingCase: null,
+  transitionTargetStatus: null,
   viewingCase: null,
   page: 1,
   pageSize: 25,
@@ -150,8 +154,15 @@ export const useCaseStore = create<CaseUIState>((set) => ({
     set({
       isEditModalOpen: false,
       editingCase: null,
+      transitionTargetStatus: null,
     }),
 
+
+  setTransitionTargetStatus: (status) =>
+    set({ transitionTargetStatus: status }),
+
+  clearTransitionTargetStatus: () =>
+    set({ transitionTargetStatus: null }),
   // VIEW
   openViewModal: (data) => set({ 
     viewModal: { isOpen: true, data } 

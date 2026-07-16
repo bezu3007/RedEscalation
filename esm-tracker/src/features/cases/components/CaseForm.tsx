@@ -16,7 +16,9 @@ import { cn } from "@/shared/lib/utils";
 import type { Consignee, Extension, CaseFormValues } from "../types";
 import { mapCaseToVoucherBuffer } from "../hooks/useMapCaseToVoucherBuffer";
 import { useAuthStore } from "@/features/auth/store/authStore";
+// import { UserRole } from "@/features/auth/types";
 import { VoucherBuffer } from "../types";
+import { useCaseStore } from "../store/caseStore";
 
 
 interface Props {
@@ -40,6 +42,8 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
   const userId = useAuthStore((s) => s.userId);
   const personId = useAuthStore((s) => s.personId);
+  // const userRole = useAuthStore((s) => s.userRole);
+  const transitionTargetStatus = useCaseStore((s) => s.transitionTargetStatus);
   console.log("PERSONNNNNN: ", personId);
   console.log(mode, "MODDDDDDDDDDDEEEEEEEEEEEEEE");
 
@@ -51,7 +55,16 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
     return creatorPersonId === Number(personId); 
   }, [mode, initialData, personId]); 
     
-  const isReadOnly = mode == "view" || (mode === "edit" && !isCreator);
+  const isAdminAcceptanceReview = mode === "edit" && transitionTargetStatus === "Accepted";
+  // const isAdminAcceptanceReview = mode === "edit";
+  // const isReadOnly = mode == "view" || (mode === "edit" && !isCreator && !isAdminAcceptanceReview);
+  const isLimitedReviewEdit = mode === "edit" && isAdminAcceptanceReview;
+  const canEditDeadline = mode === "edit" && isAdminAcceptanceReview;
+  const canEditDeveloper = mode === "edit" && isAdminAcceptanceReview;
+
+const isReadOnly = mode == "view" || 
+                   (mode === "edit" && !isCreator && !isAdminAcceptanceReview);
+
   console.log("🔍 isReadOnly:", isReadOnly);
 
   const projectOptions = useMemo(() => {
@@ -90,7 +103,6 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
     return [...new Set(modules)];
   }, [initData?.modules]);
 
-  // Memoize developer options
   const developerOptions = useMemo(() => {
     const developers = initData?.developers ?? [];
     const query = developerQuery.trim().toLowerCase();
@@ -128,7 +140,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       projectName: "",
       projectNameId: "",
       module: "",
-      caseType: "Error",
+      caseType: "",
       developer: "",
       paidorNot: "Free",
       department: "",
@@ -137,9 +149,12 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       releaseNote: "",
       issues: "",
       developmentStatus: "",
-      status: "Prepared", // Default status for new cases
+      status: "",
     },
   });
+
+  const watchedDeveloper = form.watch("developer");
+  const watchedDeadline = form.watch("deadLine");
 
   useEffect(() => {
     if (!open) return;
@@ -151,7 +166,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       projectName: initialData.projectName || "",
       projectNameId: initialData.projectNameId ? String(initialData.projectNameId) : "",
       module: initialData.module || "",
-      caseType: initialData.caseType || "Error",
+      caseType: initialData.caseType || "",
       developer: initialData.developerId != null ? String(initialData.developerId) : null,
       paidorNot: initialData.paidorNot || "Free",
       department: initialData.department || "",
@@ -160,7 +175,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       releaseNote: initialData.releaseNote || "",
       issues: initialData.issues || "",
       developmentStatus: initialData.developmentStatus || "",
-      status: initialData.status || "Prepared", // Default status if not provided
+      status: initialData.status || "",
       });
       if (initialData.releaseNote) {
         setDeploymentNotes(initialData.releaseNote);
@@ -171,7 +186,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
         projectName: "",
         projectNameId: "",
         module: "",
-        caseType: "Error",
+        caseType: "",
         developer: "",
         paidorNot: "Free",
         department: "",
@@ -180,7 +195,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
         releaseNote: "",
         issues: "",
         developmentStatus: "",
-        status: "Prepared", // Default status for new cases
+        status: "",
       });
     }
   }, [mode, initialData, open]);
@@ -190,26 +205,38 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
     resetAttachments();
     setDeploymentNotes("");
     setActiveTab("general");
+    useCaseStore.getState().clearTransitionTargetStatus();
     onClose();
   }, [form, resetAttachments, onClose]);
 
   const onSubmit = useCallback((values: CaseFormValues) => {
     console.log("FORM VALUES", values);
 
-    const payload = mapCaseToVoucherBuffer(values, userId, personId, initialData);
+    const submitValues: CaseFormValues = {
+      ...values,
+      status:
+        mode === "edit" && isAdminAcceptanceReview
+          ? "Accepted"
+          : values.status,
+    };
+
+    const payload = mapCaseToVoucherBuffer(submitValues, userId, personId, initialData);
 
     const normalizedPayload = {
       ...payload,
       voucher: {
         ...payload.voucher,
-        consignee3: Number(payload.voucher.consignee3) || 0,
+        consignee1: Number(payload.voucher.consignee1) || null,
+        consignee2: Number(payload.voucher.consignee2) || null,
+        consignee3: Number(payload.voucher.consignee3) || null,
+        lastUser: Number(payload.voucher.lastUser) || null,
       },
     } as VoucherBuffer;
 
-    console.log("PAYLOAD", payload);
+    console.log("PAYLOAD", normalizedPayload);
 
     if (mode === "create") {
-      createCase(payload, {
+      createCase(normalizedPayload, {
         onSuccess: (data) => {
           console.log("CREATE SUCCESS", data);
           handleClose();
@@ -325,7 +352,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                           <Select
                             value={field.value ?? undefined}
                             onValueChange={field.onChange}
-                            disabled={isReadOnly}
+                            disabled={isReadOnly || isLimitedReviewEdit}
                           >
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white">
@@ -345,7 +372,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                                   onMouseDown={(e) => e.stopPropagation()}
                                   placeholder="Search project"
                                   className="h-8"
-                                  disabled={isReadOnly}
+                                  disabled={isReadOnly || isLimitedReviewEdit}
                                 />
                               </div>
                               <div className="px-2 pb-1 text-xs text-slate-500">
@@ -377,7 +404,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                           <Select
                             value={field.value ?? undefined}
                             onValueChange={field.onChange}
-                            disabled={isReadOnly}
+                            disabled={isReadOnly || isLimitedReviewEdit}
                           >
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white">
@@ -407,7 +434,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                         <FormItem>
                           <FormLabel>Case Type <span className="text-red-500">*</span></FormLabel>
                           <Select value={field.value} onValueChange={field.onChange}
-                            disabled={isReadOnly}>
+                            disabled={isReadOnly || isLimitedReviewEdit}>
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white">
                                 <SelectValue />
@@ -432,7 +459,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                         <FormItem>
                           <FormLabel>Payment Status</FormLabel>
                           <Select value={field.value} onValueChange={field.onChange}
-                            disabled={isReadOnly}>
+                            disabled={isReadOnly || isLimitedReviewEdit}>
                             <FormControl>
                               <SelectTrigger className="h-10 bg-white">
                                 <SelectValue />
@@ -451,86 +478,101 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                     />
                   </div>
 
-                  {/* ROW 4 - Developer */}
-                  <div className="gap-4">
-                    <FormField
-                      control={form.control}
-                      name="developer"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Developer</FormLabel>
-                          <Select
-                            value={field.value ?? undefined}
-                            onValueChange={field.onChange}
-                            disabled={isReadOnly}
-                          >
+                  {mode === "view" && (
+                    <div className="grid gap-4">
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
+                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Issue Date</p>
+                        <p className="mt-1 text-sm text-slate-700">{initialData?.issueDate ? initialData.issueDate.split("T")[0] : "Not Assigned"}</p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
+                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Developer</p>
+                        <p className="mt-1 text-sm text-slate-700">{watchedDeveloper ? (initData?.developers?.find((developer) => String(developer.id) === String(watchedDeveloper))?.fullName || initialData?.developer || "Not Assigned") : (initialData?.developer || "Not Assigned")}</p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
+                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Deadline</p>
+                        <p className="mt-1 text-sm text-slate-700">{watchedDeadline ? watchedDeadline : (initialData?.deadLine ? initialData.deadLine.split("T")[0] : "Not Assigned")}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {isAdminAcceptanceReview && (
+                    <div className="gap-4">
+                      <FormField
+                        control={form.control}
+                        name="developer"
+                        rules={{ required: "Developer is required before accepting" }}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Developer <span className="text-red-500">*</span></FormLabel>
+                            <Select value={field.value ?? undefined} onValueChange={field.onChange} disabled={!canEditDeveloper}>
+                              <FormControl>
+                                <SelectTrigger className="h-10 bg-white">
+                                  <SelectValue placeholder="Select developer" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent 
+                                className="bg-white z-[100] overflow-hidden"
+                                position="popper" // Add this
+                                sideOffset={4}    // Add this
+                              >
+                                <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
+                                  <Input
+                                    value={developerQuery}
+                                    onChange={(e) => setDeveloperQuery(e.target.value)}
+                                    onKeyDown={(e) => e.stopPropagation()}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    placeholder="Search developer"
+                                    className="h-8"
+                                  />
+                                </div>
+                                <div className="px-2 pb-1 text-xs text-slate-500">
+                                  Showing first 250 matches. Type to narrow the list.
+                                </div>
+                                <div className="h-[220px] overflow-y-auto">
+                                  {developerOptions.map((developer: Consignee) => (
+                                    <SelectItem key={developer.id} value={String(developer.id)}>
+                                      {developer.fullName}
+                                    </SelectItem>
+                                  ))}
+                                </div>
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+
+                  {mode === "edit" && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="issueDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Issue Date</FormLabel>
                             <FormControl>
-                              <SelectTrigger className="h-10 bg-white">
-                                <SelectValue placeholder="Select developer" />
-                              </SelectTrigger>
+                              <Input type="date" className="h-10 bg-white" {...field} readOnly disabled />
                             </FormControl>
-                            <SelectContent 
-                              className="bg-white z-[100] overflow-hidden"
-                              position="popper" // Add this
-                              sideOffset={4}    // Add this
-                            >
-                              <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
-                                <Input
-                                  value={developerQuery}
-                                  onChange={(e) => setDeveloperQuery(e.target.value)}
-                                  onKeyDown={(e) => e.stopPropagation()}
-                                  onMouseDown={(e) => e.stopPropagation()}
-                                  placeholder="Search developer"
-                                  className="h-8"
-                                />
-                              </div>
-                              <div className="px-2 pb-1 text-xs text-slate-500">
-                                Showing first 250 matches. Type to narrow the list.
-                              </div>
-                              <div className="h-[220px] overflow-y-auto">
-                                {developerOptions.map((developer: Consignee) => (
-                                  <SelectItem key={developer.id} value={String(developer.id)}>
-                                    {developer.fullName}
-                                  </SelectItem>
-                                ))}
-                              </div>
-                            </SelectContent>
-                          </Select>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                          </FormItem>
+                        )}
+                      />
 
-                  {/* ROW 5 - Dates */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="issueDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Start Date</FormLabel>
-                          <FormControl>
-                            <Input type="date" className="h-10 bg-white" {...field} 
-                            disabled={isReadOnly}/>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="deadLine"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Deadline</FormLabel>
-                          <FormControl>
-                            <Input type="date" className="h-10 bg-white" {...field} 
-                            disabled={isReadOnly}/>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                      <FormField
+                        control={form.control}
+                        name="deadLine"
+                        rules={{ required: "Deadline is required before accepting" }}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Deadline <span className="text-red-500">*</span></FormLabel>
+                            <FormControl>
+                              <Input type="date" className="h-10 bg-white" {...field} disabled={!canEditDeadline} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* RIGHT SIDE - Issues */}
@@ -548,7 +590,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                             className="resize-none rounded-2xl border bg-slate-50 p-4"
                             placeholder="Enter issue descriptions here..."
                             {...field}
-                            disabled={isReadOnly}
+                            disabled={isReadOnly || isLimitedReviewEdit}
                           />
                         </FormControl>
                       </FormItem>

@@ -1,7 +1,9 @@
-import React, { useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useEffect, useRef, useMemo, useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import { useUpdateCase } from "../hooks/useCases";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { UserRole } from "@/features/auth/types";
+import { useCaseStore } from "../store/caseStore";
 import { getAllowedTransitions } from "../utils/permissions";
 import type { CaseItem, CaseStatus, CaseFormValues } from "../types";
 import { mapCaseToVoucherBuffer } from "../hooks/useMapCaseToVoucherBuffer";
@@ -51,6 +53,7 @@ export function StatusActionPopup({
   const userRole = useAuthStore.getState().getUserRole();
   const userId = useAuthStore((s) => s.userId);
   const personId = useAuthStore((s) => s.personId);
+  const [transitionError, setTransitionError] = useState<string | null>(null);
   
   // Flag to prevent closing during status update
   const isUpdatingRef = useRef(false);
@@ -80,6 +83,23 @@ export function StatusActionPopup({
     const allowed = getAllowedTransitions(caseItem.status, userRole);
     if (!allowed.includes(targetStatus)) {
       console.error(`Transition to ${targetStatus} not allowed for role ${userRole}`);
+      return;
+    }
+
+    let transitionReason: string | null = null;
+    if (targetStatus === "Returned" || targetStatus === "Rejected") {
+      transitionReason = window.prompt(`Enter the reason for ${targetStatus.toLowerCase()}ing this case:`);
+      if (transitionReason === null || !transitionReason.trim()) {
+        setTransitionError(`A reason is required before ${targetStatus.toLowerCase()}ing this case.`);
+        return;
+      }
+      setTransitionError(null);
+    }
+
+    if (userRole === UserRole.ADMIN && (targetStatus === "Accepted") && (caseItem.status === "Reviewed" || caseItem.status === "Urgent")) {
+      useCaseStore.getState().setTransitionTargetStatus("Accepted");
+      useCaseStore.getState().openEditModal(caseItem);
+      handleClose();
       return;
     }
 

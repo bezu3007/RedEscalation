@@ -5,47 +5,51 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number |
   const now = new Date();
   const isEditing = !!initialData;
 
+  const issueDateValue = values.issueDate?.trim()
+    ? values.issueDate
+    : (isEditing
+        ? initialData?.issueDate?.split("T")[0] || ""
+        : now.toISOString().split("T")[0]);
+
   let finalStatus = values.status || "Prepared";
   
   if(finalStatus == "Returned"){
     finalStatus="Prepared";
   }
   const lastStatusId = mapStatusToId(finalStatus);
-  // console.log('lastStatusId:', lastStatusId);
-  // console.log("Dev: ", initialData?.developerId);
-  // console.log(initialData?.functionalConsultantId);
-  // console.log(personId);
-  console.log(values.issueDate);
+  const normalizedProjectId = Number(values.projectNameId) || 0;
+  const normalizedConsignee2 = Number(isEditing ? initialData?.functionalConsultantId : personId ?? userId ?? 0) || 0;
+  const normalizedConsignee3 = Number(initialData?.developerId ?? values.developer ?? 0) || 0;
 
   return {
     voucher: {
       id: isEditing ? initialData.id! : 0,
       code: initialData?.caseNumber || "",
       lastDevice: "",
-      consignee1: Number(values.projectNameId),
+      consignee1: normalizedProjectId,
       subTotal: 0,
       discount: 0,
       addCharge: 0,
       grandTotal: 0,
-      consignee2: isEditing ? initialData?.functionalConsultantId : personId,
-      consignee3: initialData?.developerId || values.developer || null,
+      consignee2: normalizedConsignee2,
+      consignee3: normalizedConsignee3,
       consignee4: null,
-      issuedDate: values.issueDate,
+      issuedDate: issueDateValue,
       note: values.issues,
       originConsigneeUnit: 3,
       consigneeUnit1: 3,
       lastModified: now.toISOString(),
-      createdOn: values.issueDate,
+      createdOn: issueDateValue,
       extension1: values.paidorNot,
       extension2: values.caseType,
       extension3: values.module,
       extension4: finalStatus,
       lastState: lastStatusId,
-      startDate: values.issueDate,
+      startDate: issueDateValue,
       endDate: values.deadLine,
       remark: values.releaseNote,
       type: 1917,
-      lastUser: userId,
+      lastUser: userId ?? 0,
       definition: 400,
     },
     activity: {
