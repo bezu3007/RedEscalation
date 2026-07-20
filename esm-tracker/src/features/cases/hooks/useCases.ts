@@ -116,7 +116,7 @@ export function useUpdateCase() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: ({body }: { id: number; body: VoucherBuffer }) =>
+    mutationFn: (body: any ) =>
       casesApi.update(body),
 
     onSuccess: () => {

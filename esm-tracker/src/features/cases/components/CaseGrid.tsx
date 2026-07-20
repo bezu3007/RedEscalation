@@ -43,7 +43,7 @@ function StatusChangeCell(params: ICellRendererParams<CaseItem>) {
   if (!data) return null;
 
   const effectiveUserRole = userRole ?? UserRole.ADMIN;
-  const allowedTransitions = getAllowedTransitions(data.status, effectiveUserRole);
+  const allowedTransitions = getAllowedTransitions(data.status, data.functionalConsultantId, effectiveUserRole);
   const hasActions = allowedTransitions.length > 0;
 
   // const canClick = userRole !== UserRole.FUNCTIONAL_CONSULTANT && hasActions;

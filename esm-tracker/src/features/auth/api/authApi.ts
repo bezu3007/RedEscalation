@@ -37,6 +37,7 @@ export const authApi = {
 
   login: async (body: LoginRequest): Promise<LoginResponse> => {
     const company = await authApi.getCompany();
+    console.log("Using login in authApi.ts with company:", company);
     if (!company) {
       throw new Error("Failed to get company information. Please try again.");
     }

@@ -91,7 +91,7 @@ export const useCaseStore = create<CaseUIState>((set) => ({
   transitionTargetStatus: null,
   viewingCase: null,
   page: 1,
-  pageSize: 25,
+  pageSize: 15,
   visibleColumns: {
     caseNumber: true,
     issueDate: true,

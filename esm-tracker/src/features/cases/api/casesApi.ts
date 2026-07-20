@@ -235,31 +235,32 @@ export const casesApi = {
     return mapped;
   },
 
-  getVoucherById: async (id: number): Promise<CaseItem> => {
-    const url = `/Voucher/dynamic?id=${id}`;
+  // getVoucherById: async (id: number): Promise<CaseItem> => {
+  //   const url = `/Voucher/dynamic?id=${id}`;
 
-    console.log("GET BY ID URL:", url);
+  //   console.log("GET BY ID URL:", url);
 
-    const response = await apiClient.get(url);
+  //   const response = await apiClient.get(url);
 
-    console.log("GET BY ID RESPONSE:", response.data);
+  //   console.log("GET BY ID RESPONSE:", response.data);
 
-    const item = response.data;
-    console.log("Fetched voucher1 item:", item);
+  //   const item = response.data;
+  //   console.log("Fetched voucher1 item:", item);
 
-    if (!item) {
-      throw new Error("Case not found");
-    }
+  //   if (!item) {
+  //     throw new Error("Case not found");
+  //   }
 
-    return item;
-  },
+  //   return item;
+  // },
 
   create: async (body: any) => {
     const res = await apiClient.post("/VoucherBuffer", body);
     return res.data;
   },
 
-  update: async (body: VoucherBuffer) => {
+  update: async (body: any) => {
+    console.log("Noteeeeeeeeeeeeeeeeee", body.activity.remark);
     const res = await apiClient.put(`/VoucherBuffer`, body);
 
     return res.data;

@@ -91,6 +91,7 @@ export const useAuthStore = create<AuthState>()(
         }
 
         const role = determineUserRole(user);
+        console.log("using signin in authStore.ts", user, role);
 
         set({
           user,

@@ -60,17 +60,17 @@ export function StatusActionPopup({
 
   const allowedStatuses = useMemo(() => {
     if (!userRole) return [];
-    return getAllowedTransitions(caseItem.status, userRole);
+    return getAllowedTransitions(caseItem.status,caseItem.functionalConsultantId, userRole);
   }, [caseItem.status, userRole]);
 
   // Memoized close handler
   const handleClose = useCallback(() => {
     console.log('🔴 Closing popup');
     // Don't close if updating
-    if (isUpdatingRef.current) {
-      console.log('⏳ Update in progress, delaying close');
-      return;
-    }
+    // if (isUpdatingRef.current) {
+    //   console.log('⏳ Update in progress, delaying close');
+    //   return;
+    // }
     onClose();
   }, [onClose]);
 
@@ -80,7 +80,7 @@ export function StatusActionPopup({
       return;
     }
 
-    const allowed = getAllowedTransitions(caseItem.status, userRole);
+    const allowed = getAllowedTransitions(caseItem.status, caseItem.functionalConsultantId, userRole);
     if (!allowed.includes(targetStatus)) {
       console.error(`Transition to ${targetStatus} not allowed for role ${userRole}`);
       return;
@@ -106,6 +106,8 @@ export function StatusActionPopup({
     // Set updating flag
     isUpdatingRef.current = true;
 
+    console.log("Functional Consultant ID status update:", caseItem.functionalConsultantId);
+
     // Construct form values from existing case data
     const formValues: CaseFormValues = {
       projectName: caseItem.projectName || "",
@@ -127,6 +129,8 @@ export function StatusActionPopup({
       status: targetStatus,
     };
 
+    console.log("Form values prepared for status update:", formValues);
+
     const payload = mapCaseToVoucherBuffer(formValues, userId, personId, caseItem);
 
     const normalizedPayload = {
@@ -135,32 +139,34 @@ export function StatusActionPopup({
         ...payload.voucher,
         consignee3: Number(payload.voucher.consignee3) || null,
       },
+      activity: {
+        ...payload.activity,
+        remark: transitionReason || "",
+      }
     } as VoucherBuffer;
+
+    // Attach transition reason to payload so API receives it
+    // if (transitionReason) {
+    //   // append or overwrite voucher remark
+    //   normalizedPayload.voucher.remark = (normalizedPayload.voucher.remark || "") + (normalizedPayload.voucher.remark ? "\n" : "") + transitionReason;
+    //   // include in activity remark as well
+    //   if (normalizedPayload.activity) {
+    //     normalizedPayload.activity.remark = (normalizedPayload.activity.remark || "") + (normalizedPayload.activity.remark ? "\n" : "") + transitionReason;
+    //   }
+    // }
 
     console.log("Status Update Payload:", normalizedPayload);
 
-    updateCase(
-      {
-        id: caseItem.id!,
-        body: normalizedPayload,
+    updateCase(normalizedPayload, {
+      onSuccess: (data) => {
+        console.log("UPDATE SUCCESS", data);
+        handleClose();
       },
-      {
-        onSuccess: () => {
-          console.log(`✅ Status updated to: ${targetStatus}`);
-          isUpdatingRef.current = false;
-          if (onStatusUpdate) {
-            onStatusUpdate(targetStatus);
-          }
-          // Close after successful update
-          handleClose();
-        },
         onError: (err) => {
-          console.error("❌ Status update error:", err);
-          isUpdatingRef.current = false;
-          // Don't close on error - let user retry
+          console.error("UPDATE ERROR", err);
         },
       }
-    );
+      );
   };
 
   // Click outside to close - with delay to prevent immediate close

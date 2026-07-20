@@ -46,6 +46,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   const transitionTargetStatus = useCaseStore((s) => s.transitionTargetStatus);
   console.log("PERSONNNNNN: ", personId);
   console.log(mode, "MODDDDDDDDDDDEEEEEEEEEEEEEE");
+  console.log("Intial Data: ", initialData);
 
   const isCreator = useMemo(() => { 
     if (mode === "create") { return true; }
@@ -53,7 +54,9 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       { return false; } 
     const creatorPersonId = Number( initialData.functionalConsultantId ); 
     return creatorPersonId === Number(personId); 
-  }, [mode, initialData, personId]); 
+  }, [mode, initialData, personId]);
+
+  console.log("isCreator:", isCreator);
     
   const isAdminAcceptanceReview = mode === "edit" && transitionTargetStatus === "Accepted";
   // const isAdminAcceptanceReview = mode === "edit";
@@ -62,8 +65,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   const canEditDeadline = mode === "edit" && isAdminAcceptanceReview;
   const canEditDeveloper = mode === "edit" && isAdminAcceptanceReview;
 
-const isReadOnly = mode == "view" || 
-                   (mode === "edit" && !isCreator && !isAdminAcceptanceReview);
+  const isReadOnly = mode == "view" || (mode === "edit" && !isCreator && !isAdminAcceptanceReview);
 
   console.log("🔍 isReadOnly:", isReadOnly);
 
@@ -161,7 +163,8 @@ const isReadOnly = mode == "view" ||
     console.log('status:', initialData?.status);
     
     if ((mode === "view" || mode === "edit") && initialData) {
-      form.reset({
+    console.log("🔄 Resetting form with initialData:", initialData);
+    const resetValues = {
       caseNumber: initialData.caseNumber || "",
       projectName: initialData.projectName || "",
       projectNameId: initialData.projectNameId ? String(initialData.projectNameId) : "",
@@ -176,7 +179,10 @@ const isReadOnly = mode == "view" ||
       issues: initialData.issues || "",
       developmentStatus: initialData.developmentStatus || "",
       status: initialData.status || "",
-      });
+    };
+    console.log("📋 Reset values:", resetValues);
+    form.reset(resetValues);
+
       if (initialData.releaseNote) {
         setDeploymentNotes(initialData.releaseNote);
       }
@@ -199,6 +205,13 @@ const isReadOnly = mode == "view" ||
       });
     }
   }, [mode, initialData, open]);
+  console.log("Form state after reset:", form.getValues());
+const { errors } = form.formState;
+useEffect(() => {
+  if (Object.keys(errors).length > 0) {
+    console.log("❌ Form Validation Failed! Current errors:", errors);
+  }
+}, [errors]);
 
   const handleClose = useCallback(() => {
     form.reset();
@@ -208,19 +221,39 @@ const isReadOnly = mode == "view" ||
     useCaseStore.getState().clearTransitionTargetStatus();
     onClose();
   }, [form, resetAttachments, onClose]);
+  
+console.log("Button state - isPending:", isPending);
+console.log("Button state - isReadOnly:", isReadOnly);
 
   const onSubmit = useCallback((values: CaseFormValues) => {
-    console.log("FORM VALUES", values);
+    console.log("🚀 Form submitted with values:", values);
+console.log("INITIAL DATA:", initialData);
+// console.log("FINAL PAYLOAD:", mappedData);
+    console.log("📝 Current form state:", form.getValues());
+    console.log("🎯 Mode:", mode);
+    console.log("🔍 isAdminAcceptanceReview:", isAdminAcceptanceReview);
+
+    console.log("Validation check:", {
+      projectNameId: values.projectNameId,
+      module: values.module,
+      caseType: values.caseType,
+      issues: values.issues,
+    });
+
+
+    const currentStatus = form.getValues("status");
 
     const submitValues: CaseFormValues = {
       ...values,
       status:
         mode === "edit" && isAdminAcceptanceReview
           ? "Accepted"
-          : values.status,
+          : currentStatus || values.status,
     };
 
+    console.log("Preparing to map case to voucher buffer with submitValues:", submitValues);
     const payload = mapCaseToVoucherBuffer(submitValues, userId, personId, initialData);
+    console.log("Mapped payload for submission:", payload);
 
     const normalizedPayload = {
       ...payload,
@@ -249,15 +282,11 @@ const isReadOnly = mode == "view" ||
       });
     } else if (initialData) {
       console.log("Updating case with ID:", initialData.id);
-      updateCase(
-        {
-          id: initialData.id!,
-          body: normalizedPayload,
+      updateCase(normalizedPayload, {
+        onSuccess: (data) => {
+          console.log("UPDATE SUCCESS", data);
+          handleClose();
         },
-        {
-          onSuccess: () => {
-            handleClose();
-          },
           onError: (err) => {
             console.error("UPDATE ERROR", err);
           },
@@ -335,7 +364,13 @@ const isReadOnly = mode == "view" ||
 
         {/* FORM */}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
+          <form
+            onSubmit={form.handleSubmit(
+              onSubmit,
+              (errors) => console.log("❌ Form Validation Failed on Submit!", errors) // <-- ADD THIS
+            )}
+            className="flex flex-col"
+          >
             {activeTab === "general" && (
               <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 p-6 min-h-[500px]">
                 {/* LEFT CARD */}
@@ -561,7 +596,7 @@ const isReadOnly = mode == "view" ||
                       <FormField
                         control={form.control}
                         name="deadLine"
-                        rules={{ required: "Deadline is required before accepting" }}
+                        rules={isAdminAcceptanceReview ? { required: "Deadline is required before accepting" } : {}}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Deadline <span className="text-red-500">*</span></FormLabel>
@@ -634,7 +669,13 @@ const isReadOnly = mode == "view" ||
 
             {/* FOOTER */}
             <div className="flex items-center gap-3 border-t bg-slate-50 px-6 py-4">
-            <input type="hidden" {...form.register("status")} />
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <input type="hidden" {...field} />
+                )}
+              />
               {!isReadOnly && (
                 <Button
                   type="submit"

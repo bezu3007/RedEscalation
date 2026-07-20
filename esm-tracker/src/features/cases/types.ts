@@ -176,7 +176,7 @@ export interface CaseItem {
   caseType: CaseType;
   module: string;
   functionalConsultant: string;
-  functionalConsultantId: Number;
+  functionalConsultantId: Number | null;
   reviewedBy: string | null;
   developer: string | null;
   developerId: string | null;

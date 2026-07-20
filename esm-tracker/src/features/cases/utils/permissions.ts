@@ -34,8 +34,15 @@ export const ROLE_TRANSITIONS: Record<UserRole, Partial<Record<CaseStatus, CaseS
 // Get allowed transitions for a specific role and status
 export function getAllowedTransitions(
   status: CaseStatus,
+  functionalConsultantId: Number | null,
   role: UserRole
 ): CaseStatus[] {
+
+  if(role === UserRole.ADMIN && functionalConsultantId === 37453 && status === "Fixed"){
+    console.log("Admin as FC: ", role, functionalConsultantId, status);
+    role = UserRole.FUNCTIONAL_CONSULTANT;
+  }
+
   const roleTransitions = ROLE_TRANSITIONS[role];
   if (!roleTransitions) return [];
   

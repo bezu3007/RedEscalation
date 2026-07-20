@@ -10,6 +10,7 @@ export default function CaseListPage() {
   // const {userRole } = useAuthStore();
   
   const { data: initData } = useVoucherInit();
+  console.log("Voucher init data:", initData);
   
   // Get all needed store values
   const {
