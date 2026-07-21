@@ -63,7 +63,7 @@ export function RowMenuCell(params: ICellRendererParams) {
     const menuHeight = getMenuHeight();
     const viewportHeight = window.innerHeight;
     const spaceBelow = viewportHeight - rect.bottom;
-    const spaceAbove = rect.top;
+    // const spaceAbove = rect.top;
     
     // Check if there's enough space below, if not, position above
     const showBelow = spaceBelow >= menuHeight;

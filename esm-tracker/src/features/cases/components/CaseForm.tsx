@@ -19,6 +19,7 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 // import { UserRole } from "@/features/auth/types";
 import { VoucherBuffer } from "../types";
 import { useCaseStore } from "../store/caseStore";
+import { FormError, FormErrorSummary } from "@/shared/components/ui/form-error";
 
 
 interface Props {
@@ -39,14 +40,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   const [deploymentNotes, setDeploymentNotes] = useState("");
   const [projectQuery, setProjectQuery] = useState("");
   const [developerQuery, setDeveloperQuery] = useState("");
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const userId = useAuthStore((s) => s.userId);
   const personId = useAuthStore((s) => s.personId);
-  // const userRole = useAuthStore((s) => s.userRole);
   const transitionTargetStatus = useCaseStore((s) => s.transitionTargetStatus);
-  console.log("PERSONNNNNN: ", personId);
-  console.log(mode, "MODDDDDDDDDDDEEEEEEEEEEEEEE");
-  console.log("Intial Data: ", initialData);
 
   const isCreator = useMemo(() => { 
     if (mode === "create") { return true; }
@@ -56,22 +54,16 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
     return creatorPersonId === Number(personId); 
   }, [mode, initialData, personId]);
 
-  console.log("isCreator:", isCreator);
     
   const isAdminAcceptanceReview = mode === "edit" && transitionTargetStatus === "Accepted";
-  // const isAdminAcceptanceReview = mode === "edit";
-  // const isReadOnly = mode == "view" || (mode === "edit" && !isCreator && !isAdminAcceptanceReview);
   const isLimitedReviewEdit = mode === "edit" && isAdminAcceptanceReview;
   const canEditDeadline = mode === "edit" && isAdminAcceptanceReview;
   const canEditDeveloper = mode === "edit" && isAdminAcceptanceReview;
-
   const isReadOnly = mode == "view" || (mode === "edit" && !isCreator && !isAdminAcceptanceReview);
 
-  console.log("🔍 isReadOnly:", isReadOnly);
-
   const projectOptions = useMemo(() => {
-  const projects = initData?.projects ?? [];
-  const query = projectQuery.trim().toLowerCase();
+    const projects = initData?.projects ?? [];
+    const query = projectQuery.trim().toLowerCase();
 
     if (!query) {
       return projects.slice(0, 250);
@@ -95,7 +87,6 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       .slice(0, 250);
   }, [initData?.projects, projectQuery]);
 
-  // Memoize module list with duplicate removal
   const moduleList = useMemo(() => {
     if (!initData?.modules?.remark) return [];
     const modules = initData.modules.remark
@@ -153,17 +144,17 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       developmentStatus: "",
       status: "",
     },
+    mode: "onChange",
   });
 
   const watchedDeveloper = form.watch("developer");
-  const watchedDeadline = form.watch("deadLine");
+  // const watchedDeadline = form.watch("deadLine");
+  const { errors } = form.formState;
 
   useEffect(() => {
     if (!open) return;
-    console.log('status:', initialData?.status);
     
     if ((mode === "view" || mode === "edit") && initialData) {
-    console.log("🔄 Resetting form with initialData:", initialData);
     const resetValues = {
       caseNumber: initialData.caseNumber || "",
       projectName: initialData.projectName || "",
@@ -180,12 +171,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       developmentStatus: initialData.developmentStatus || "",
       status: initialData.status || "",
     };
-    console.log("📋 Reset values:", resetValues);
     form.reset(resetValues);
 
-      if (initialData.releaseNote) {
-        setDeploymentNotes(initialData.releaseNote);
-      }
+    if (initialData.releaseNote) {
+      setDeploymentNotes(initialData.releaseNote);
+    }
       
     } else if (mode === "create") {
       form.reset({
@@ -204,42 +194,23 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
         status: "",
       });
     }
-  }, [mode, initialData, open]);
-  console.log("Form state after reset:", form.getValues());
-const { errors } = form.formState;
-useEffect(() => {
-  if (Object.keys(errors).length > 0) {
-    console.log("❌ Form Validation Failed! Current errors:", errors);
-  }
-}, [errors]);
+    setSubmitAttempted(false);
+  }, [mode, initialData, open, form]);
 
   const handleClose = useCallback(() => {
     form.reset();
     resetAttachments();
     setDeploymentNotes("");
     setActiveTab("general");
+    setSubmitAttempted(false);
     useCaseStore.getState().clearTransitionTargetStatus();
     onClose();
   }, [form, resetAttachments, onClose]);
   
-console.log("Button state - isPending:", isPending);
-console.log("Button state - isReadOnly:", isReadOnly);
 
   const onSubmit = useCallback((values: CaseFormValues) => {
+    console.log("✅ Form validation passed!");
     console.log("🚀 Form submitted with values:", values);
-console.log("INITIAL DATA:", initialData);
-// console.log("FINAL PAYLOAD:", mappedData);
-    console.log("📝 Current form state:", form.getValues());
-    console.log("🎯 Mode:", mode);
-    console.log("🔍 isAdminAcceptanceReview:", isAdminAcceptanceReview);
-
-    console.log("Validation check:", {
-      projectNameId: values.projectNameId,
-      module: values.module,
-      caseType: values.caseType,
-      issues: values.issues,
-    });
-
 
     const currentStatus = form.getValues("status");
 
@@ -251,9 +222,7 @@ console.log("INITIAL DATA:", initialData);
           : currentStatus || values.status,
     };
 
-    console.log("Preparing to map case to voucher buffer with submitValues:", submitValues);
     const payload = mapCaseToVoucherBuffer(submitValues, userId, personId, initialData);
-    console.log("Mapped payload for submission:", payload);
 
     const normalizedPayload = {
       ...payload,
@@ -266,8 +235,6 @@ console.log("INITIAL DATA:", initialData);
       },
     } as VoucherBuffer;
 
-    console.log("PAYLOAD", normalizedPayload);
-
     if (mode === "create") {
       createCase(normalizedPayload, {
         onSuccess: (data) => {
@@ -276,8 +243,6 @@ console.log("INITIAL DATA:", initialData);
         },
         onError: (err: any) => {
           console.error("CREATE ERROR", err);
-          console.log("STATUS", err?.response?.status);
-          console.log("RESPONSE DATA", err?.response?.data);
         },
       });
     } else if (initialData) {
@@ -293,11 +258,43 @@ console.log("INITIAL DATA:", initialData);
         }
       );
     }
-  }, [mode, initialData, createCase, updateCase, handleClose]);
+  }, [mode, initialData, createCase, updateCase, handleClose, userId, personId, form]);
+
+  const handleSubmitAttempt = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitAttempted(true);
+    
+    // Trigger validation
+    const isValid = await form.trigger();
+    
+    if (!isValid) {
+      console.log("❌ Form validation failed");
+      
+      // Find first error and scroll to it
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) {
+        const element = document.querySelector(`[name="${firstErrorField}"]`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          (element as HTMLElement).focus();
+        }
+      }
+      return;
+    }
+    
+    form.handleSubmit(onSubmit)();
+  }, [form, onSubmit, errors]);
 
   if (!initData) {
     return null;
   }
+
+  const getFieldErrorClass = (fieldState: any) => {
+    if (submitAttempted && fieldState.error) {
+      return 'border-red-500 focus:ring-red-500';
+    }
+    return '';
+  };
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -334,7 +331,11 @@ console.log("INITIAL DATA:", initialData);
               )}
             >
               General Definition
+              {submitAttempted && Object.keys(errors).length > 0 && (
+                <span className="ml-2 text-xs text-red-500">⚠️</span>
+              )}
             </button>
+
             <button
               type="button"
               onClick={() => setActiveTab("attachments")}
@@ -347,6 +348,7 @@ console.log("INITIAL DATA:", initialData);
             >
               Related Attachments ({files.length})
             </button>
+
             <button
               type="button"
               onClick={() => setActiveTab("notes")}
@@ -365,12 +367,19 @@ console.log("INITIAL DATA:", initialData);
         {/* FORM */}
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(
-              onSubmit,
-              (errors) => console.log("❌ Form Validation Failed on Submit!", errors) // <-- ADD THIS
-            )}
+            // onSubmit={form.handleSubmit(
+            //   onSubmit,
+            //   (errors) => console.log("❌ Form Validation Failed on Submit!", errors) 
+            // )}
+            onSubmit={handleSubmitAttempt}
             className="flex flex-col"
           >
+            {submitAttempted && (
+              <div className="px-6 pt-4">
+                <FormErrorSummary errors={errors} />
+              </div>
+            )}
+            
             {activeTab === "general" && (
               <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 p-6 min-h-[500px]">
                 {/* LEFT CARD */}
@@ -381,7 +390,7 @@ console.log("INITIAL DATA:", initialData);
                       control={form.control}
                       name="projectNameId"
                       rules={{ required: "Project is required" }}
-                      render={({ field }) => (
+                      render={({ field, fieldState }) => (
                         <FormItem>
                           <FormLabel>Projects <span className="text-red-500">*</span></FormLabel>
                           <Select
@@ -390,14 +399,20 @@ console.log("INITIAL DATA:", initialData);
                             disabled={isReadOnly || isLimitedReviewEdit}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-10 bg-white">
+                              <SelectTrigger 
+                                className={cn(
+                                  "h-10 bg-white",
+                                  getFieldErrorClass(fieldState)
+                                )}
+                              >
                                 <SelectValue placeholder="Select project" />
                               </SelectTrigger>
                             </FormControl>
+
                             <SelectContent 
                               className="bg-white z-[100] max-h-[320px] overflow-hidden"
-                              position="popper" // Add this
-                              sideOffset={4}    // Add this
+                              position="popper"
+                              sideOffset={4}
                             >
                               <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
                                 <Input
@@ -422,6 +437,7 @@ console.log("INITIAL DATA:", initialData);
                               </div>
                             </SelectContent>
                           </Select>
+                          <FormError message={fieldState.error?.message} />
                         </FormItem>
                       )}
                     />
@@ -433,7 +449,7 @@ console.log("INITIAL DATA:", initialData);
                       control={form.control}
                       name="module"
                       rules={{ required: "Module is required" }}
-                      render={({ field }) => (
+                      render={({ field, fieldState }) => (
                         <FormItem>
                           <FormLabel>Module <span className="text-red-500">*</span></FormLabel>
                           <Select
@@ -442,7 +458,12 @@ console.log("INITIAL DATA:", initialData);
                             disabled={isReadOnly || isLimitedReviewEdit}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-10 bg-white">
+                              <SelectTrigger 
+                                className={cn(
+                                  "h-10 bg-white",
+                                  getFieldErrorClass(fieldState)
+                                )}
+                              >
                                 <SelectValue placeholder="Select module" />
                               </SelectTrigger>
                             </FormControl>
@@ -454,6 +475,7 @@ console.log("INITIAL DATA:", initialData);
                               ))}
                             </SelectContent>
                           </Select>
+                          <FormError message={fieldState.error?.message} />
                         </FormItem>
                       )}
                     />
@@ -465,13 +487,16 @@ console.log("INITIAL DATA:", initialData);
                       control={form.control}
                       name="caseType"
                       rules={{ required: "Case Type is required" }}
-                      render={({ field }) => (
+                      render={({ field, fieldState }) => (
                         <FormItem>
                           <FormLabel>Case Type <span className="text-red-500">*</span></FormLabel>
                           <Select value={field.value} onValueChange={field.onChange}
                             disabled={isReadOnly || isLimitedReviewEdit}>
                             <FormControl>
-                              <SelectTrigger className="h-10 bg-white">
+                              <SelectTrigger className={cn(
+                                "h-10 bg-white",
+                                getFieldErrorClass(fieldState)
+                              )}>
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
@@ -483,6 +508,7 @@ console.log("INITIAL DATA:", initialData);
                               ))}
                             </SelectContent>
                           </Select>
+                          <FormError message={fieldState.error?.message} />
                         </FormItem>
                       )}
                     />
@@ -490,13 +516,16 @@ console.log("INITIAL DATA:", initialData);
                     <FormField
                       control={form.control}
                       name="paidorNot"
-                      render={({ field }) => (
+                      render={({ field, fieldState }) => (
                         <FormItem>
                           <FormLabel>Payment Status</FormLabel>
                           <Select value={field.value} onValueChange={field.onChange}
                             disabled={isReadOnly || isLimitedReviewEdit}>
                             <FormControl>
-                              <SelectTrigger className="h-10 bg-white">
+                              <SelectTrigger className={cn(
+                                "h-10 bg-white",
+                                getFieldErrorClass(fieldState)
+                              )}>
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
@@ -508,6 +537,7 @@ console.log("INITIAL DATA:", initialData);
                               ))}
                             </SelectContent>
                           </Select>
+                          <FormError message={fieldState.error?.message} />
                         </FormItem>
                       )}
                     />
@@ -515,18 +545,44 @@ console.log("INITIAL DATA:", initialData);
 
                   {mode === "view" && (
                     <div className="grid gap-4">
-                      <div className="rounded-xl border border-slate-200 bg-white p-3">
-                        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Issue Date</p>
-                        <p className="mt-1 text-sm text-slate-700">{initialData?.issueDate ? initialData.issueDate.split("T")[0] : "Not Assigned"}</p>
-                      </div>
+                      
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="issueDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Issue Date</FormLabel>
+                            <FormControl>
+                              <Input type="date" className="h-10 bg-white" {...field} readOnly disabled />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="deadLine"
+                        rules={isAdminAcceptanceReview ? { required: "Deadline is required before accepting" } : {}}
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <FormLabel>Deadline <span className="text-red-500">*</span></FormLabel>
+                            <FormControl>
+                              <Input type="date" className="h-10 bg-white" {...field} disabled={!canEditDeadline} />
+                            </FormControl>
+                            <FormError message={fieldState.error?.message} />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                       <div className="rounded-xl border border-slate-200 bg-white p-3">
                         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Developer</p>
                         <p className="mt-1 text-sm text-slate-700">{watchedDeveloper ? (initData?.developers?.find((developer) => String(developer.id) === String(watchedDeveloper))?.fullName || initialData?.developer || "Not Assigned") : (initialData?.developer || "Not Assigned")}</p>
                       </div>
-                      <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      {/* <div className="rounded-xl border border-slate-200 bg-white p-3">
                         <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Deadline</p>
                         <p className="mt-1 text-sm text-slate-700">{watchedDeadline ? watchedDeadline : (initialData?.deadLine ? initialData.deadLine.split("T")[0] : "Not Assigned")}</p>
-                      </div>
+                      </div> */}
                     </div>
                   )}
 
@@ -536,12 +592,17 @@ console.log("INITIAL DATA:", initialData);
                         control={form.control}
                         name="developer"
                         rules={{ required: "Developer is required before accepting" }}
-                        render={({ field }) => (
+                        render={({ field, fieldState }) => (
                           <FormItem>
                             <FormLabel>Developer <span className="text-red-500">*</span></FormLabel>
                             <Select value={field.value ?? undefined} onValueChange={field.onChange} disabled={!canEditDeveloper}>
                               <FormControl>
-                                <SelectTrigger className="h-10 bg-white">
+                                <SelectTrigger 
+                                  className={cn(
+                                    "h-10 bg-white",
+                                    getFieldErrorClass(fieldState)
+                                  )}
+                                >
                                   <SelectValue placeholder="Select developer" />
                                 </SelectTrigger>
                               </FormControl>
@@ -572,6 +633,7 @@ console.log("INITIAL DATA:", initialData);
                                 </div>
                               </SelectContent>
                             </Select>
+                            <FormError message={fieldState.error?.message} />
                           </FormItem>
                         )}
                       />
@@ -597,12 +659,13 @@ console.log("INITIAL DATA:", initialData);
                         control={form.control}
                         name="deadLine"
                         rules={isAdminAcceptanceReview ? { required: "Deadline is required before accepting" } : {}}
-                        render={({ field }) => (
+                        render={({ field, fieldState }) => (
                           <FormItem>
                             <FormLabel>Deadline <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
                               <Input type="date" className="h-10 bg-white" {...field} disabled={!canEditDeadline} />
                             </FormControl>
+                            <FormError message={fieldState.error?.message} />
                           </FormItem>
                         )}
                       />
@@ -616,7 +679,7 @@ console.log("INITIAL DATA:", initialData);
                     control={form.control}
                     name="issues"
                     rules={{ required: "Issue details are required" }}
-                    render={({ field }) => (
+                    render={({ field, fieldState }) => (
                       <FormItem>
                         <FormLabel>Issue Details Log <span className="text-red-500">*</span></FormLabel>
                         <FormControl>
@@ -628,6 +691,7 @@ console.log("INITIAL DATA:", initialData);
                             disabled={isReadOnly || isLimitedReviewEdit}
                           />
                         </FormControl>
+                        <FormError message={fieldState.error?.message} />
                       </FormItem>
                     )}
                   />

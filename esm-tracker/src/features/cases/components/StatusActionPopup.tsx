@@ -46,7 +46,7 @@ export function StatusActionPopup({
   caseItem, 
   onClose, 
   anchorEl,
-  onStatusUpdate 
+  // onStatusUpdate 
 }: StatusActionPopupProps) {
   const { mutate: updateCase, isPending } = useUpdateCase();
   const popupRef = useRef<HTMLDivElement>(null);
@@ -252,6 +252,12 @@ export function StatusActionPopup({
         </button>
       </div>
 
+      {transitionError && (
+        <div className="mx-2 mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-xs text-red-600">{transitionError}</p>
+        </div>
+      )}
+      
       <div className="p-2 max-h-[300px] overflow-y-auto space-y-0.5">
         {allowedStatuses.map((status) => {
           const config = STATUS_CONFIG[status];

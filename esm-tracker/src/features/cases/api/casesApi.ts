@@ -1,5 +1,5 @@
 import { apiClient } from "@/shared/lib/apiClient";
-import type {CasesResponse, CaseItem, CaseFilters, CaseStatus, CaseType, VoucherBuffer,
+import type {CasesResponse, CaseItem, CaseFilters, CaseStatus, CaseType,
   // Developer,
   // AiSuggestDevelopersResponse,
 } from "../types";

@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { casesApi, type CasesQueryParams } from "../api/casesApi";
 import { useCaseStore } from "../store/caseStore";
-import type { VoucherBuffer } from "../types";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
 import { CaseItem } from "../types";
