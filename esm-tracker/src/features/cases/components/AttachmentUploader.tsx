@@ -1,6 +1,6 @@
 import { Button } from "@/shared/components/ui/button";
 import { useEffect, useState } from "react";
-import { Upload, FileText, X, AlertCircle } from "lucide-react";
+import { Upload, FileText, X, AlertCircle, CheckCircle } from "lucide-react";
 import type { AttachmentFile } from "../hooks/useAttachment";
 
 interface Props {
@@ -135,16 +135,27 @@ export function AttachmentUploader({
                     : "hover:bg-slate-50"
                 }`}
               >
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {file.file.name}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium truncate">
+                      {file.file.name}
+                    </p>
+                    {file.uploadStatus === 'uploading' && (
+                      <div className="animate-spin h-4 w-4 border-2 border-violet-500 border-t-transparent rounded-full" />
+                    )}
+                    {file.uploadStatus === 'success' && (
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                    )}
+                    {file.uploadStatus === 'error' && (
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                    )}
+                  </div>
                   <p className="text-xs text-slate-500">
                     {Math.round(file.file.size / 1024)} KB
                   </p>
-                  <p className="text-xs text-slate-400 truncate">
-                    {file.file.type || "Unknown type"}
-                  </p>
+                  {file.uploadError && (
+                    <p className="text-xs text-red-500">{file.uploadError}</p>
+                  )}
                 </div>
 
                 <Button

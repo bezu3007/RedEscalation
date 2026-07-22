@@ -42,6 +42,16 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   const [developerQuery, setDeveloperQuery] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
+  const { 
+    files, 
+    addFiles, 
+    removeFile, 
+    reset: resetAttachments,
+    uploadFiles,
+    getAttachments,
+    isUploading 
+  } = useAttachment();
+
   const userId = useAuthStore((s) => s.userId);
   const personId = useAuthStore((s) => s.personId);
   const transitionTargetStatus = useCaseStore((s) => s.transitionTargetStatus);
@@ -124,7 +134,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
   const { mutate: createCase, isPending: creating } = useCreateCase();
   const { mutate: updateCase, isPending: updating } = useUpdateCase();
-  const { files, addFiles, removeFile, reset: resetAttachments } = useAttachment();
+  // const { files, addFiles, removeFile, reset: resetAttachments } = useAttachment();
 
   const isPending = creating || updating;
 
@@ -197,6 +207,16 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
     setSubmitAttempted(false);
   }, [mode, initialData, open, form]);
 
+    useEffect(() => {
+    if ((mode === "edit" || mode === "view") && initialData?.id != null) {
+      const loadAttachments = async () => {
+        const attachments = await getAttachments(initialData.id as number);
+        console.log('Loaded attachments:', attachments);
+      };
+      loadAttachments();
+    }
+  }, [mode, initialData, getAttachments]);
+
   const handleClose = useCallback(() => {
     form.reset();
     resetAttachments();
@@ -208,7 +228,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   }, [form, resetAttachments, onClose]);
   
 
-  const onSubmit = useCallback((values: CaseFormValues) => {
+  const onSubmit = useCallback(async(values: CaseFormValues) => {
     console.log("✅ Form validation passed!");
     console.log("🚀 Form submitted with values:", values);
 
@@ -235,30 +255,60 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       },
     } as VoucherBuffer;
 
-    if (mode === "create") {
-      createCase(normalizedPayload, {
-        onSuccess: (data) => {
-          console.log("CREATE SUCCESS", data);
-          handleClose();
-        },
-        onError: (err: any) => {
-          console.error("CREATE ERROR", err);
-        },
-      });
-    } else if (initialData) {
-      console.log("Updating case with ID:", initialData.id);
-      updateCase(normalizedPayload, {
-        onSuccess: (data) => {
-          console.log("UPDATE SUCCESS", data);
-          handleClose();
-        },
-          onError: (err) => {
-            console.error("UPDATE ERROR", err);
-          },
+    const saveCase = async () => {
+      if (mode === "create") {
+        return new Promise((resolve, reject) => {
+          createCase(normalizedPayload, {
+            onSuccess: (data) => {
+              console.log("CREATE SUCCESS", data);
+              resolve(data);
+            },
+            onError: (err: any) => {
+              console.error("CREATE ERROR", err);
+              reject(err);
+            },
+          });
+        });
+      }
+
+      if (initialData) {
+        return new Promise((resolve, reject) => {
+          console.log("Updating case with ID:", initialData.id);
+          updateCase(normalizedPayload, {
+            onSuccess: (data) => {
+              console.log("UPDATE SUCCESS", data);
+              resolve(data);
+            },
+            onError: (err) => {
+              console.error("UPDATE ERROR", err);
+              reject(err);
+            },
+          });
+        });
+      }
+
+      return null;
+    };
+
+    try {
+      const response = await saveCase();
+      const referenceId = typeof (response as { caseNumber?: number } | null)?.caseNumber === "number"
+        ? (response as { caseNumber: number }).caseNumber
+        : initialData?.caseNumber;
+
+      if (referenceId != null && files.some((f) => f.uploadStatus === "pending")) {
+        const uploadResult = await uploadFiles(referenceId, 1451, 1461, "400");
+
+        if (!uploadResult.success) {
+          console.warn("Some attachments failed to upload:", uploadResult.message);
         }
-      );
+      }
+
+      handleClose();
+    } catch (error) {
+      console.error("Error saving case:", error);
     }
-  }, [mode, initialData, createCase, updateCase, handleClose, userId, personId, form]);
+  }, [mode, initialData, createCase, updateCase, handleClose, userId, personId, form, files, uploadFiles, isAdminAcceptanceReview]);
 
   const handleSubmitAttempt = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -295,6 +345,8 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
     }
     return '';
   };
+
+  const isSubmitDisabled = isPending || isUploading;
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
@@ -743,11 +795,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
               {!isReadOnly && (
                 <Button
                   type="submit"
-                  disabled={isPending}
+                  disabled={isSubmitDisabled}
                   className="rounded-xl bg-slate-900 px-6 hover:bg-slate-800"
                 >
-                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {mode === "create" ? "Create Case" : "Save Changes"}
+                  {(isPending || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isUploading ? "Uploading Attachments..." : mode === "create" ? "Create Case" : "Save Changes"}
                 </Button>
               )}
               
