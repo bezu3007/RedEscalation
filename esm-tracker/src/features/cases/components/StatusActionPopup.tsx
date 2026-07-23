@@ -40,6 +40,7 @@ const STATUS_CONFIG: Record<CaseStatus, { label: string; icon: React.ReactNode; 
   Accepted: { label: "Accept", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-green-600" },
   Fixed: { label: "Fixed", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-blue-500" },
   "Re Journal": { label: "Re Journal", icon: <RefreshCw className="h-4 w-4" />, color: "text-violet-600" },
+  "Closed": { label: "Closed", icon: <RefreshCw className="h-4 w-4" />, color: "text-gray-800" },
 };
 
 export function StatusActionPopup({ 
@@ -102,6 +103,13 @@ export function StatusActionPopup({
       handleClose();
       return;
     }
+
+    // if ((userRole === UserRole.ADMIN || userRole=== UserRole.DEVELOPER) && (targetStatus === "Fixed") && (caseItem.status === "Accepted" || caseItem.status === "On Progress")) {
+    //   useCaseStore.getState().setTransitionTargetStatus("Fixed");
+    //   useCaseStore.getState().openEditModal(caseItem);
+    //   handleClose();
+    //   return;
+    // }
 
     // Set updating flag
     isUpdatingRef.current = true;
@@ -257,7 +265,7 @@ export function StatusActionPopup({
           <p className="text-xs text-red-600">{transitionError}</p>
         </div>
       )}
-      
+
       <div className="p-2 max-h-[300px] overflow-y-auto space-y-0.5">
         {allowedStatuses.map((status) => {
           const config = STATUS_CONFIG[status];

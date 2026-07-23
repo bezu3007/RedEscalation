@@ -9,6 +9,7 @@ export const Case_Status =[
    "Reviewed",
    "Not Solved",
    "On Progress",
+   "Closed"
 ]
 export type CaseStatus =
   (typeof Case_Status)[number];

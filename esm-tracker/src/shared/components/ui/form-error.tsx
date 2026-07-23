@@ -34,11 +34,11 @@ export function FormErrorSummary({ errors, className }: FormErrorSummaryProps) {
         <div className="flex items-start gap-2">
           <span className="font-medium">⚠️ Please fix the following errors:</span>
         </div>
-        <ul className="mt-1.5 list-disc list-inside space-y-0.5">
+        {/* <ul className="mt-1.5 list-disc list-inside space-y-0.5">
           {errorMessages.map((message, index) => (
             <li key={index}>{message}</li>
           ))}
-        </ul>
+        </ul> */}
       </AlertDescription>
     </Alert>
   );

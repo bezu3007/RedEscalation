@@ -16,6 +16,7 @@ import { StatusActionPopup } from "./StatusActionPopup";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
 import { getAllowedTransitions } from "../utils/permissions";
+import { getPlainTextFromHtml } from "../utils/htmlUtils";
 
 function ExpandCell() {
   const [expanded, setExpanded] = React.useState(false);
@@ -80,6 +81,10 @@ function IssuesCellRenderer(params: ICellRendererParams<CaseItem>) {
   if (!value) {
     return <span className="text-slate-400">—</span>;
   }
+
+  //use DOMPurify if we want to see the format too in the grid
+
+  const plainText = getPlainTextFromHtml(value);
   
   return (
     <div 
@@ -90,7 +95,7 @@ function IssuesCellRenderer(params: ICellRendererParams<CaseItem>) {
         overflow: 'visible'
       }}
     >
-      {value}
+      {plainText || <span className="text-slate-400">—</span>}
     </div>
   );
 }

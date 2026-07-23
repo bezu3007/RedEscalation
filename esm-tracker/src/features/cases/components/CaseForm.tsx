@@ -7,7 +7,6 @@ import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/shared/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
 import { Input } from "@/shared/components/ui/input";
-import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useAttachment } from "../hooks/useAttachment";
@@ -20,7 +19,9 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 import { VoucherBuffer } from "../types";
 import { useCaseStore } from "../store/caseStore";
 import { FormError, FormErrorSummary } from "@/shared/components/ui/form-error";
-
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { getPlainTextFromHtml } from '../utils/htmlUtils'; 
 
 interface Props {
   mode: "create" | "edit" | "view";
@@ -37,10 +38,20 @@ interface Props {
 
 export function CaseForm({ mode, initialData, open, onClose, initData }: Props) {
   const [activeTab, setActiveTab] = useState<"general" | "attachments" | "notes">("general");
-  const [deploymentNotes, setDeploymentNotes] = useState("");
   const [projectQuery, setProjectQuery] = useState("");
   const [developerQuery, setDeveloperQuery] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const MAX_CHAR_LIMIT = 300;
+
+  const deploymentModules = {
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link'],
+      ['clean'],
+    ],
+  };
 
   const userId = useAuthStore((s) => s.userId);
   const personId = useAuthStore((s) => s.personId);
@@ -56,10 +67,39 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
     
   const isAdminAcceptanceReview = mode === "edit" && transitionTargetStatus === "Accepted";
+  // const isFixedTransition = mode === "edit" && transitionTargetStatus === "Fixed";
   const isLimitedReviewEdit = mode === "edit" && isAdminAcceptanceReview;
   const canEditDeadline = mode === "edit" && isAdminAcceptanceReview;
   const canEditDeveloper = mode === "edit" && isAdminAcceptanceReview;
+
+  // const PRE_FIXED_STATUSES : CaseStatus[] = ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress"]
+  // const POST_FIXED_STATUSES : CaseStatus[] = ["Solved", "Not Solved"]
+
   const isReadOnly = mode == "view" || (mode === "edit" && !isCreator && !isAdminAcceptanceReview);
+
+//   const isReleaseNoteEditable = useMemo(() => {
+//     if (mode === "view") return false;
+//     if (mode === "create") return false;
+//     // For edit mode, check the transition target status
+//     if (transitionTargetStatus) {
+//       if (transitionTargetStatus === "Fixed") return true;
+//       if (POST_FIXED_STATUSES.includes(transitionTargetStatus)) return true;
+//       if (PRE_FIXED_STATUSES.includes (transitionTargetStatus)) return false;
+//     }
+//     //  for existing cases, check current status
+//     if (initialData?.status) {
+//       if (initialData.status === "fixed") return true;
+//       if (POST_FIXED_STATUSES.includes(initialData.status)) return true;
+//       if (PRE_FIXED_STATUSES.includes (initialData.status)) return false;
+//     }
+//     return false;
+//  }, [mode, transitionTargetStatus, initialData?.status]);
+ 
+  // const isReleaseNoteRequired = useMemo(() => {
+  //   if (mode === "view" || mode === "create") return false;
+  //   if (transitionTargetStatus === "Fixed") return true;
+  //   return false;
+  // }, [mode, transitionTargetStatus]);
 
   const projectOptions = useMemo(() => {
     const projects = initData?.projects ?? [];
@@ -124,7 +164,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
   const { mutate: createCase, isPending: creating } = useCreateCase();
   const { mutate: updateCase, isPending: updating } = useUpdateCase();
-  const { files, addFiles, removeFile, reset: resetAttachments } = useAttachment();
+  const { files, addFiles, removeFile,uploadSingleFile, uploadAllFiles, reset: resetAttachments } = useAttachment();
 
   const isPending = creating || updating;
 
@@ -172,10 +212,6 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       status: initialData.status || "",
     };
     form.reset(resetValues);
-
-    if (initialData.releaseNote) {
-      setDeploymentNotes(initialData.releaseNote);
-    }
       
     } else if (mode === "create") {
       form.reset({
@@ -200,7 +236,6 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   const handleClose = useCallback(() => {
     form.reset();
     resetAttachments();
-    setDeploymentNotes("");
     setActiveTab("general");
     setSubmitAttempted(false);
     useCaseStore.getState().clearTransitionTargetStatus();
@@ -211,6 +246,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   const onSubmit = useCallback((values: CaseFormValues) => {
     console.log("✅ Form validation passed!");
     console.log("🚀 Form submitted with values:", values);
+    console.log(values.releaseNote);
 
     const currentStatus = form.getValues("status");
 
@@ -658,12 +694,34 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                       <FormField
                         control={form.control}
                         name="deadLine"
-                        rules={isAdminAcceptanceReview ? { required: "Deadline is required before accepting" } : {}}
+                        // rules={isAdminAcceptanceReview ? { required: "Deadline is required before accepting" } : {}}
+                        rules={{
+                          required: isAdminAcceptanceReview ? "Deadline is required before accepting" : undefined,
+                          validate: (value) => {
+                            if (!value) return true;
+                        
+                            const issueDate = form.getValues("issueDate");
+                            
+                            if (issueDate && value < issueDate) {
+                              return "Deadline cannot be before the Issue Date";
+                            }
+                            
+                            return true;
+                          }
+                        }}
                         render={({ field, fieldState }) => (
                           <FormItem>
                             <FormLabel>Deadline <span className="text-red-500">*</span></FormLabel>
                             <FormControl>
-                              <Input type="date" className="h-10 bg-white" {...field} disabled={!canEditDeadline} />
+                              <Input 
+                                type="date" 
+                                className={cn(
+                                  "h-10 bg-white",
+                                  getFieldErrorClass(fieldState)
+                                )} 
+                                {...field} 
+                                disabled={!canEditDeadline} 
+                              />
                             </FormControl>
                             <FormError message={fieldState.error?.message} />
                           </FormItem>
@@ -678,22 +736,54 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                   <FormField
                     control={form.control}
                     name="issues"
-                    rules={{ required: "Issue details are required" }}
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel>Issue Details Log <span className="text-red-500">*</span></FormLabel>
-                        <FormControl>
-                          <Textarea
-                            rows={20}
-                            className="resize-none rounded-2xl border bg-slate-50 p-4"
-                            placeholder="Enter issue descriptions here..."
-                            {...field}
-                            disabled={isReadOnly || isLimitedReviewEdit}
-                          />
-                        </FormControl>
-                        <FormError message={fieldState.error?.message} />
-                      </FormItem>
-                    )}
+                    rules={{ 
+                      required: "Issue details are required",
+                      validate: (value) => {
+                        const plainText = getPlainTextFromHtml(value);
+                        if (plainText.length > MAX_CHAR_LIMIT) {
+                          return `Maximum ${MAX_CHAR_LIMIT} characters allowed`;
+                        }
+                        return true;
+                      }
+                    }}
+                    render={({ field, fieldState }) => {
+                      const currentLength = getPlainTextFromHtml(field.value || "").length;
+
+                      return (
+                        <FormItem>
+                          <div className="flex justify-between items-center mb-2">
+                            <FormLabel>
+                              Issue Details Log <span className="text-red-500">*</span>
+                            </FormLabel>
+                            <span className={`text-sm font-medium ${currentLength > MAX_CHAR_LIMIT ? 'text-red-500' : 'text-slate-500'}`}>
+                              {currentLength} / {MAX_CHAR_LIMIT}
+                            </span>
+                          </div>
+                          
+                          <FormControl>
+                            <ReactQuill
+                              theme="snow"
+                              value={field.value || ""}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              className="rounded-2xl border shadow-sm bg-slate-50 overflow-hidden [&_.ql-editor]:min-h-[400px]"
+                              modules={{
+                                toolbar: [
+                                  [{ header: [1, 2, false] }],
+                                  ['bold', 'italic', 'underline', 'strike'],
+                                  [{ list: 'ordered' }, { list: 'bullet' }],
+                                  ['link'],
+                                  ['clean'] // Removes formatting
+                                ],
+                              }}
+                              placeholder="Enter issue descriptions here..."
+                              readOnly={isReadOnly || isLimitedReviewEdit}
+                            />
+                          </FormControl>
+                          <FormError message={fieldState.error?.message} />
+                        </FormItem>
+                      );
+                    }}
                   />
                 </div>
               </div>
@@ -705,11 +795,14 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                   files={files}
                   addFiles={addFiles}
                   removeFile={removeFile}
+                  uploadSingleFile={uploadSingleFile}
+                  uploadAllFiles={uploadAllFiles}
                   disabled={isReadOnly}
-                  maxFileSize={20} // 20MB limit
+                  maxFileSize={5}
+                  subDirectory="0076217301/Transaction"
                   acceptedTypes={[
-                    "image/*", 
-                    "application/pdf", 
+                    "image/*",
+                    "application/pdf",
                     "application/msword",
                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   ]}
@@ -719,14 +812,53 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
             {/* NOTES TAB */}
             {activeTab === "notes" && (
-              <div className="p-6 min-h-[500px]">
-                <Textarea
-                  rows={18}
-                  value={deploymentNotes}
-                  onChange={(e) => setDeploymentNotes(e.target.value)}
-                  placeholder="Write deployment notes..."
-                  className="resize-none rounded-2xl border bg-slate-50 p-4"
-                  disabled={isReadOnly}
+              
+            // {activeTab === "notes" && canAddReleaseNote && (
+              <div className="p-6 min-h-[500px] flex flex-col">
+                <FormField
+                  control={form.control}
+                  name="releaseNote"
+                  rules={{
+                    validate: (value) => {
+                      const plainText = getPlainTextFromHtml(value || "");
+                      if (plainText.length > MAX_CHAR_LIMIT) {
+                        return `Maximum ${MAX_CHAR_LIMIT} characters allowed`;
+                      }
+                      return true;
+                    }
+                  }}
+                  render={({ field, fieldState }) => {
+                    const currentLength = getPlainTextFromHtml(field.value || "").length;
+                    
+                    return (
+                      <>
+                        <div className="flex justify-end mb-2">
+                          <span className={`text-sm font-medium ${currentLength > MAX_CHAR_LIMIT ? 'text-red-500' : 'text-slate-500'}`}>
+                            {currentLength} / {MAX_CHAR_LIMIT}
+                          </span>
+                        </div>
+                        
+                        <ReactQuill
+                          theme="snow"
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          className="rounded-2xl border bg-slate-50 overflow-hidden flex-1 [&_.ql-editor]:min-h-[400px]"
+                          modules={deploymentModules}
+                          placeholder="Write deployment notes..."
+                          readOnly={isReadOnly}
+                        />
+                        
+                        {currentLength > MAX_CHAR_LIMIT && (
+                          <p className="mt-2 text-sm text-red-500">
+                            Deployment notes exceed the maximum {MAX_CHAR_LIMIT} characters.
+                          </p>
+                        )}
+                        
+                        <FormError message={fieldState.error?.message} />
+                      </>
+                    );
+                  }}
                 />
               </div>
             )}

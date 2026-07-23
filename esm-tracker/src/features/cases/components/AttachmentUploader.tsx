@@ -1,29 +1,39 @@
 import { Button } from "@/shared/components/ui/button";
 import { useEffect, useState } from "react";
-import { Upload, FileText, X, AlertCircle } from "lucide-react";
+import { Upload, FileText, X, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import type { AttachmentFile } from "../hooks/useAttachment";
 
 interface Props {
   files: AttachmentFile[];
   addFiles: (files: FileList | null) => void;
   removeFile: (id: string) => void;
+  uploadSingleFile?: (id: string, subDirectory?: string) => Promise<any>;
+  uploadAllFiles?: (subDirectory?: string) => Promise<any>;
   disabled?: boolean;
-  maxFileSize?: number; // in MB
+  maxFileSize?: number;
   acceptedTypes?: string[];
+  subDirectory?: string;
+  showUploadButtons?: boolean;
 }
 
 export function AttachmentUploader({
   files,
   addFiles,
   removeFile,
+  uploadSingleFile,
+  uploadAllFiles,
   disabled = false,
-  maxFileSize = 10, // default 10MB
-  acceptedTypes = ["*/*"]
+  maxFileSize = 10,
+  acceptedTypes = ["*/*"],
+  subDirectory = "",
+  showUploadButtons = true,
 }: Props) {
   const [selectedFile, setSelectedFile] = useState<AttachmentFile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
+    console.log(files.length, "files length");
     if (files.length > 0 && !selectedFile) {
       setSelectedFile(files[0]);
     }
@@ -33,11 +43,11 @@ export function AttachmentUploader({
   }, [files, selectedFile]);
 
   const handleFileUpload = (fileList: FileList | null) => {
+    console.log("Handling file upload with fileList:", fileList);
     setError(null);
     
     if (!fileList) return;
     
-    // Validate file sizes
     const oversizedFiles = Array.from(fileList).filter(
       file => file.size > maxFileSize * 1024 * 1024
     );
@@ -64,6 +74,28 @@ export function AttachmentUploader({
     addFiles(fileList);
   };
 
+  const handleUploadSingle = async (file: AttachmentFile) => {
+    console.log("Handling single file upload for file:", file, "to subDirectory:", subDirectory);
+
+    if (!uploadSingleFile) return;
+    const result = await uploadSingleFile(file.id, subDirectory);
+    if (!result.success) {
+      setError(`Upload failed: ${result.message}`);
+    }
+  };
+
+  const handleUploadAll = async () => {
+    console.log("Handling upload for all files to subDirectory:", subDirectory);
+    
+    if (!uploadAllFiles) return;
+    setUploading(true);
+    const result = await uploadAllFiles(subDirectory);
+    setUploading(false);
+    if (!result.success) {
+      setError('Some files failed to upload');
+    }
+  };
+
   const canPreview = (file: AttachmentFile) => {
     const previewableTypes = [
       'image/',
@@ -73,6 +105,32 @@ export function AttachmentUploader({
       'audio/'
     ];
     return previewableTypes.some(type => file.file.type.startsWith(type));
+  };
+
+  const getStatusIcon = (status?: AttachmentFile['uploadStatus']) => {
+    switch (status) {
+      case 'uploading':
+        return <Loader2 className="h-3 w-3 animate-spin text-blue-500" />;
+      case 'success':
+        return <CheckCircle className="h-3 w-3 text-green-500" />;
+      case 'error':
+        return <AlertCircle className="h-3 w-3 text-red-500" />;
+      default:
+        return null;
+    }
+  };
+
+  const getStatusColor = (status?: AttachmentFile['uploadStatus']) => {
+    switch (status) {
+      case 'uploading':
+        return 'text-blue-500';
+      case 'success':
+        return 'text-green-500';
+      case 'error':
+        return 'text-red-500';
+      default:
+        return 'text-slate-400';
+    }
   };
 
   return (
@@ -85,15 +143,19 @@ export function AttachmentUploader({
           </h3>
         </div>
 
-        {/* ERROR MESSAGE */}
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
+            <button
+              onClick={() => setError(null)}
+              className="ml-auto text-red-500 hover:text-red-700"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         )}
 
-        {/* UPLOAD BUTTON */}
         <label className={`block ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}>
           <input
             type="file"
@@ -101,11 +163,11 @@ export function AttachmentUploader({
             className="hidden"
             accept={acceptedTypes.join(",")}
             onChange={(e) => handleFileUpload(e.target.files)}
-            disabled={disabled}
+            disabled={disabled || uploading}
           />
 
           <div className={`flex items-center justify-center gap-2 rounded-xl border border-dashed bg-violet-50 hover:bg-violet-100 transition-colors h-12 text-sm font-medium text-violet-700 ${
-            disabled ? 'cursor-not-allowed' : 'cursor-pointer'
+            disabled || uploading ? 'cursor-not-allowed' : 'cursor-pointer'
           }`}>
             <Upload className="h-4 w-4" />
             Select Local File Attachment
@@ -116,6 +178,30 @@ export function AttachmentUploader({
             )}
           </div>
         </label>
+
+        {showUploadButtons && files.length > 0 && (
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              onClick={handleUploadAll}
+              disabled={uploading || disabled}
+              className="flex-1"
+              size="sm"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload All
+                </>
+              )}
+            </Button>
+          </div>
+        )}
 
         {/* FILE LIST */}
         <div className="rounded-xl border bg-white min-h-[250px] p-2 space-y-2 overflow-auto">
@@ -135,7 +221,7 @@ export function AttachmentUploader({
                     : "hover:bg-slate-50"
                 }`}
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">
                     {file.file.name}
                   </p>
@@ -145,33 +231,58 @@ export function AttachmentUploader({
                   <p className="text-xs text-slate-400 truncate">
                     {file.file.type || "Unknown type"}
                   </p>
+                  {file.uploadStatus && (
+                    <div className={`flex items-center gap-1 text-xs ${getStatusColor(file.uploadStatus)}`}>
+                      {getStatusIcon(file.uploadStatus)}
+                      <span className="capitalize">{file.uploadStatus}</span>
+                    </div>
+                  )}
                 </div>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 shrink-0"
-                  disabled={disabled}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (selectedFile?.id === file.id) {
-                      setSelectedFile(null);
-                    }
-                    removeFile(file.id);
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  {showUploadButtons && uploadSingleFile && file.uploadStatus !== 'success' && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      disabled={file.uploadStatus === 'uploading' || disabled}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUploadSingle(file);
+                      }}
+                    >
+                      <Upload className="h-3 w-3" />
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0"
+                    disabled={disabled || file.uploadStatus === 'uploading'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (selectedFile?.id === file.id) {
+                        setSelectedFile(null);
+                      }
+                      removeFile(file.id);
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))
           )}
         </div>
 
-        {/* FILE COUNT */}
         {files.length > 0 && (
           <div className="text-xs text-slate-500 text-center">
-            {files.length} file{files.length > 1 ? 's' : ''} uploaded
+            {files.length} file{files.length > 1 ? 's' : ''} 
+            {files.some(f => f.uploadStatus === 'success') && (
+              <> • {files.filter(f => f.uploadStatus === 'success').length} uploaded</>
+            )}
           </div>
         )}
       </div>

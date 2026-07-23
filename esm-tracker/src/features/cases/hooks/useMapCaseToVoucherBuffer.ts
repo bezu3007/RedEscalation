@@ -2,7 +2,6 @@ import { CaseFormValues } from "../types";
 import {  CaseItem } from "../types";
 import { mapStatusToId } from "../utils/statusMapping";
 export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number | null, personId: number | null, initialData?: CaseItem) {
-  console.log("reacheddddddddddddddddd...", values, userId, personId, initialData);
   const now = new Date();
   const isEditing = !!initialData;
 
@@ -17,18 +16,11 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number |
   if(finalStatus == "Returned"){
     finalStatus="Prepared";
   }
-  console.log("Functional Consultant ID:", initialData?.functionalConsultantId);
+
   const lastStatusId = mapStatusToId(finalStatus);
   const normalizedProjectId = Number(values.projectNameId) || 0;
   const normalizedConsignee2 = Number(isEditing ? initialData?.functionalConsultantId : personId ?? userId ?? 0) || null;
   const normalizedConsignee3 = Number(values.developer ?? initialData?.developerId ?? null);
-
-  console.log("Mapping case to voucher buffer with values:", {
-    values,
-    userId,
-    personId,
-    initialData
-  });
 
   return {
     voucher: {

@@ -16,15 +16,15 @@ const TYPE_CONFIG: Record<CaseType, { label: string; className: string }> = {
     className: "bg-cyan-50 text-cyan-700 border-cyan-200",
   },
   "Intermitant Case": {
-    label: "Intermitant",
+    label: "Intermitant Case",
     className: "bg-yellow-50 text-yellow-700 border-yellow-200",
   },
   "New Functionality": {
-    label: "Feature",
+    label: "New Functionality",
     className: "bg-emerald-50 text-emerald-700 border-emerald-200",
   },
   Customization: {
-    label: "Custom",
+    label: "Customization",
     className: "bg-orange-50 text-orange-700 border-orange-200",
   },
   "Not Implemented": {

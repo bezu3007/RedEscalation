@@ -20,6 +20,7 @@ const STATUSES: CaseStatus[] = [
   "Reviewed",
   "Not Solved",
   "On Progress",
+  "Closed"
 ];
 
 const TYPES: CaseType[] = [

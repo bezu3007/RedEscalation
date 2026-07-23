@@ -29,6 +29,7 @@ function normalizeStatus(apiStatus: string): CaseStatus {
     Reviewed: "Reviewed",
     "Not Solved": "Not Solved",
     "On Progress": "On Progress",
+    Closed: "Closed",
   };
 
   return map[apiStatus] ?? "Accepted";
@@ -260,7 +261,6 @@ export const casesApi = {
   },
 
   update: async (body: any) => {
-    console.log("Noteeeeeeeeeeeeeeeeee", body.activity.remark);
     const res = await apiClient.put(`/VoucherBuffer`, body);
 
     return res.data;
