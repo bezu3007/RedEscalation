@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useCreateCase, useUpdateCase } from "../hooks/useCases";
-import type { CaseItem } from "../types";
+import type { CaseItem, CaseStatus } from "../types";
 import { CASE_TYPES, PAID_OR_NOT } from "../types";
 import { Dialog, DialogContent } from "@/shared/components/ui/dialog";
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/shared/components/ui/form";
@@ -15,16 +15,18 @@ import { cn } from "@/shared/lib/utils";
 import type { Consignee, Extension, CaseFormValues } from "../types";
 import { mapCaseToVoucherBuffer } from "../hooks/useMapCaseToVoucherBuffer";
 import { useAuthStore } from "@/features/auth/store/authStore";
-// import { UserRole } from "@/features/auth/types";
+import { UserRole } from "@/features/auth/types";
 import { VoucherBuffer } from "../types";
 import { useCaseStore } from "../store/caseStore";
 import { FormError, FormErrorSummary } from "@/shared/components/ui/form-error";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { getPlainTextFromHtml } from '../utils/htmlUtils'; 
+// import { persistAttachments } from "../hooks/useAttachment";
 
 interface Props {
   mode: "create" | "edit" | "view";
+  initialTab?: "general" | "attachments" | "notes";
   initialData?: CaseItem;
   open: boolean;
   onClose: () => void;
@@ -36,11 +38,12 @@ interface Props {
 }
 
 
-export function CaseForm({ mode, initialData, open, onClose, initData }: Props) {
-  const [activeTab, setActiveTab] = useState<"general" | "attachments" | "notes">("general");
+export function CaseForm({ mode, initialData, open, onClose, initData, initialTab }: Props) {
+  const [activeTab, setActiveTab] = useState<"general" | "attachments" | "notes">(initialTab ?? "general");
   const [projectQuery, setProjectQuery] = useState("");
   const [developerQuery, setDeveloperQuery] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [activeCaseId, setActiveCaseId] = useState<number | null>(initialData?.id ?? null);
   const MAX_CHAR_LIMIT = 300;
 
   const deploymentModules = {
@@ -55,6 +58,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
   const userId = useAuthStore((s) => s.userId);
   const personId = useAuthStore((s) => s.personId);
+  const userRole = useAuthStore((s) => s.userRole);
   const transitionTargetStatus = useCaseStore((s) => s.transitionTargetStatus);
 
   const isCreator = useMemo(() => { 
@@ -67,39 +71,53 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
     
   const isAdminAcceptanceReview = mode === "edit" && transitionTargetStatus === "Accepted";
-  // const isFixedTransition = mode === "edit" && transitionTargetStatus === "Fixed";
-  const isLimitedReviewEdit = mode === "edit" && isAdminAcceptanceReview;
-  const canEditDeadline = mode === "edit" && isAdminAcceptanceReview;
-  const canEditDeveloper = mode === "edit" && isAdminAcceptanceReview;
+  const isAcceptedCaseEdit =
+    mode === "edit" &&
+    (isAdminAcceptanceReview ||
+      (userRole === UserRole.ADMIN && initialData?.status === "Accepted"));
+  const isLimitedReviewEdit = mode === "edit" && isAcceptedCaseEdit;
+  const canEditDeadline = mode === "edit" && isAcceptedCaseEdit;
+  const canEditDeveloper = mode === "edit" && isAcceptedCaseEdit;
 
-  // const PRE_FIXED_STATUSES : CaseStatus[] = ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress"]
-  // const POST_FIXED_STATUSES : CaseStatus[] = ["Solved", "Not Solved"]
+  const PRE_FIXED_STATUSES: CaseStatus[] = ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress"];
+  const POST_FIXED_STATUSES: CaseStatus[] = ["Solved", "Not Solved", "Closed"];
 
-  const isReadOnly = mode == "view" || (mode === "edit" && !isCreator && !isAdminAcceptanceReview);
+  const isReleaseNoteEditable = useMemo(() => {
+    if (mode === "view" || mode === "create") return false;
 
-//   const isReleaseNoteEditable = useMemo(() => {
-//     if (mode === "view") return false;
-//     if (mode === "create") return false;
-//     // For edit mode, check the transition target status
-//     if (transitionTargetStatus) {
-//       if (transitionTargetStatus === "Fixed") return true;
-//       if (POST_FIXED_STATUSES.includes(transitionTargetStatus)) return true;
-//       if (PRE_FIXED_STATUSES.includes (transitionTargetStatus)) return false;
-//     }
-//     //  for existing cases, check current status
-//     if (initialData?.status) {
-//       if (initialData.status === "fixed") return true;
-//       if (POST_FIXED_STATUSES.includes(initialData.status)) return true;
-//       if (PRE_FIXED_STATUSES.includes (initialData.status)) return false;
-//     }
-//     return false;
-//  }, [mode, transitionTargetStatus, initialData?.status]);
- 
-  // const isReleaseNoteRequired = useMemo(() => {
-  //   if (mode === "view" || mode === "create") return false;
-  //   if (transitionTargetStatus === "Fixed") return true;
-  //   return false;
-  // }, [mode, transitionTargetStatus]);
+    const requestedStatus = transitionTargetStatus ?? initialData?.status;
+
+    if (requestedStatus === "Fixed") {
+      return userRole === UserRole.ADMIN || userRole === UserRole.DEVELOPER;
+    }
+    if (requestedStatus && POST_FIXED_STATUSES.includes(requestedStatus as CaseStatus)) {
+      return userRole === UserRole.ADMIN || userRole === UserRole.DEVELOPER;
+    }
+    if (requestedStatus && PRE_FIXED_STATUSES.includes(requestedStatus as CaseStatus)) {
+      return false;
+    }
+
+    return false;
+  }, [mode, transitionTargetStatus, initialData?.status, userRole]);
+
+  const isReleaseNoteRequired = useMemo(() => {
+    if (mode === "view" || mode === "create") return false;
+    return transitionTargetStatus === "Fixed";
+  }, [mode, transitionTargetStatus]);
+
+  const shouldOpenNotesTab = useMemo(() => {
+    if (mode !== "edit") return false;
+    if (transitionTargetStatus === "Fixed") return true;
+    return Boolean(
+      transitionTargetStatus &&
+      POST_FIXED_STATUSES.includes(transitionTargetStatus as CaseStatus) &&
+      (userRole === UserRole.ADMIN || userRole === UserRole.DEVELOPER)
+    );
+  }, [mode, transitionTargetStatus, userRole]);
+
+  const isReadOnly = mode === "view" || (mode === "edit" && !isCreator && !isAcceptedCaseEdit);
+  const isReleaseNoteReadOnly = mode === "view" || mode === "create" || !isReleaseNoteEditable;
+  const canSubmitChanges = mode === "create" || isCreator || isAcceptedCaseEdit || isReleaseNoteEditable;
 
   const projectOptions = useMemo(() => {
     const projects = initData?.projects ?? [];
@@ -164,7 +182,17 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
   const { mutate: createCase, isPending: creating } = useCreateCase();
   const { mutate: updateCase, isPending: updating } = useUpdateCase();
-  const { files, addFiles, removeFile,uploadSingleFile, uploadAllFiles, reset: resetAttachments } = useAttachment();
+  const { files, loaded, addFiles, removeFile, uploadSingleFile, uploadAllFiles, reset: resetAttachments, persistAttachments, updateAttachments, loadAttachments } = useAttachment();
+
+  useEffect(() => {
+    if (
+      activeTab === "attachments" &&
+      initialData?.id &&
+      !loaded
+    ) {
+      loadAttachments(initialData.id);
+    }
+  }, [activeTab, initialData?.id, loaded]);
 
   const isPending = creating || updating;
 
@@ -193,6 +221,12 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
   useEffect(() => {
     if (!open) return;
+
+    setActiveCaseId(initialData?.id ?? null);
+
+    if (shouldOpenNotesTab && mode === "edit") {
+      setActiveTab("notes");
+    }
     
     if ((mode === "view" || mode === "edit") && initialData) {
     const resetValues = {
@@ -231,7 +265,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       });
     }
     setSubmitAttempted(false);
-  }, [mode, initialData, open, form]);
+  }, [mode, initialData, open, form, shouldOpenNotesTab]);
 
   const handleClose = useCallback(() => {
     form.reset();
@@ -243,18 +277,20 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
   }, [form, resetAttachments, onClose]);
   
 
-  const onSubmit = useCallback((values: CaseFormValues) => {
+  // const onSubmit = useCallback((values: CaseFormValues) => {
+   const onSubmit = useCallback(async (values: CaseFormValues) => {
     console.log("✅ Form validation passed!");
     console.log("🚀 Form submitted with values:", values);
     console.log(values.releaseNote);
 
     const currentStatus = form.getValues("status");
+    const targetStatus = transitionTargetStatus ?? currentStatus ?? values.status;
 
     const submitValues: CaseFormValues = {
       ...values,
       status:
-        mode === "edit" && isAdminAcceptanceReview
-          ? "Accepted"
+        mode === "edit" && targetStatus
+          ? targetStatus
           : currentStatus || values.status,
     };
 
@@ -273,8 +309,21 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
 
     if (mode === "create") {
       createCase(normalizedPayload, {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           console.log("CREATE SUCCESS", data);
+          const caseId = Number(data?.id ?? 0);
+          console.log("New case ID:", caseId);
+
+          setActiveCaseId(caseId || null);
+
+          if (files.length > 0 && caseId) {
+            try {
+              await persistAttachments(caseId);
+            } catch (err) {
+              console.error("Attachment persistence failed after case creation", err);
+            }
+          }
+
           handleClose();
         },
         onError: (err: any) => {
@@ -284,29 +333,38 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
     } else if (initialData) {
       console.log("Updating case with ID:", initialData.id);
       updateCase(normalizedPayload, {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           console.log("UPDATE SUCCESS", data);
+
+          const caseId = Number(data?.id ?? 0);
+          console.log("updating file with case ID:", caseId);
+
+          setActiveCaseId(caseId || null);
+
+          const hasAttachmentChanges =files.some(f => !f.isExisting) || files.some(f => f.isDeleted);
+
+          if (caseId && hasAttachmentChanges) {
+            await updateAttachments(caseId);
+          }
+          
           handleClose();
         },
-          onError: (err) => {
-            console.error("UPDATE ERROR", err);
-          },
-        }
-      );
+        onError: (err) => {
+          console.error("UPDATE ERROR", err);
+        },
+      });
     }
-  }, [mode, initialData, createCase, updateCase, handleClose, userId, personId, form]);
+  }, [mode, initialData, createCase, updateCase, handleClose, userId, personId, form, transitionTargetStatus, files, uploadAllFiles, persistAttachments, updateAttachments]);
 
   const handleSubmitAttempt = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitAttempted(true);
-    
-    // Trigger validation
+
     const isValid = await form.trigger();
-    
+
     if (!isValid) {
       console.log("❌ Form validation failed");
-      
-      // Find first error and scroll to it
+
       const firstErrorField = Object.keys(errors)[0];
       if (firstErrorField) {
         const element = document.querySelector(`[name="${firstErrorField}"]`);
@@ -317,13 +375,9 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
       }
       return;
     }
-    
-    form.handleSubmit(onSubmit)();
-  }, [form, onSubmit, errors]);
 
-  if (!initData) {
-    return null;
-  }
+    await form.handleSubmit(onSubmit)();
+  }, [form, onSubmit, errors]);
 
   const getFieldErrorClass = (fieldState: any) => {
     if (submitAttempted && fieldState.error) {
@@ -797,9 +851,10 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                   removeFile={removeFile}
                   uploadSingleFile={uploadSingleFile}
                   uploadAllFiles={uploadAllFiles}
+                  caseId={activeCaseId ?? initialData?.id ?? null}
                   disabled={isReadOnly}
                   maxFileSize={5}
-                  subDirectory="0076217301/Transaction"
+                  subDirectory="0076217301/Transaction/ESMTracker"
                   acceptedTypes={[
                     "image/*",
                     "application/pdf",
@@ -821,6 +876,9 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                   rules={{
                     validate: (value) => {
                       const plainText = getPlainTextFromHtml(value || "");
+                      if (isReleaseNoteRequired && plainText.trim().length === 0) {
+                        return "Release deployment notes are required before proceeding";
+                      }
                       if (plainText.length > MAX_CHAR_LIMIT) {
                         return `Maximum ${MAX_CHAR_LIMIT} characters allowed`;
                       }
@@ -846,7 +904,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                           className="rounded-2xl border bg-slate-50 overflow-hidden flex-1 [&_.ql-editor]:min-h-[400px]"
                           modules={deploymentModules}
                           placeholder="Write deployment notes..."
-                          readOnly={isReadOnly}
+                          readOnly={isReleaseNoteReadOnly}
                         />
                         
                         {currentLength > MAX_CHAR_LIMIT && (
@@ -872,7 +930,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData }: Props) 
                   <input type="hidden" {...field} />
                 )}
               />
-              {!isReadOnly && (
+              {canSubmitChanges && (
                 <Button
                   type="submit"
                   disabled={isPending}

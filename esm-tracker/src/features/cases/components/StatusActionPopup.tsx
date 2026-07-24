@@ -104,12 +104,12 @@ export function StatusActionPopup({
       return;
     }
 
-    // if ((userRole === UserRole.ADMIN || userRole=== UserRole.DEVELOPER) && (targetStatus === "Fixed") && (caseItem.status === "Accepted" || caseItem.status === "On Progress")) {
-    //   useCaseStore.getState().setTransitionTargetStatus("Fixed");
-    //   useCaseStore.getState().openEditModal(caseItem);
-    //   handleClose();
-    //   return;
-    // }
+    if ((userRole === UserRole.ADMIN || userRole === UserRole.DEVELOPER) && (targetStatus === "Fixed" || targetStatus === "Solved" || targetStatus === "Not Solved")) {
+      useCaseStore.getState().setTransitionTargetStatus(targetStatus);
+      useCaseStore.getState().openEditModal(caseItem);
+      handleClose();
+      return;
+    }
 
     // Set updating flag
     isUpdatingRef.current = true;

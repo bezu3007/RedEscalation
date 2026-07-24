@@ -350,3 +350,16 @@ export interface VoucherInitResult {
   developers: Consignee[];
   modules: Extension | undefined;
 }
+
+export interface AttachmentDTO {
+  id: number;
+  reference: number;
+  category: number;
+  description: string;
+  url: string;
+  type: number;
+  index: number;
+  pointer: number;
+  isActive: boolean;
+  remark: string | null;
+}

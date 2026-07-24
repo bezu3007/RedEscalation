@@ -1,5 +1,5 @@
 import { apiClient } from "@/shared/lib/apiClient";
-import type {CasesResponse, CaseItem, CaseFilters, CaseStatus, CaseType,
+import type {CasesResponse, CaseItem, CaseFilters, CaseStatus, CaseType, AttachmentDTO
   // Developer,
   // AiSuggestDevelopersResponse,
 } from "../types";
@@ -173,7 +173,7 @@ export const casesApi = {
       status: normalizeStatus(item.lastStateDescription),
       releaseNote: item.remark || "",
       startDate: item.startDate || "",
-      deadLine: item.deadLine || "",
+      deadLine: item.deadLine || item.DeadLine || item.endDate || item.EndDate || "",
       referencedID: item.id || "",
       attachmentUrl: item.attachmentUrl || "",
     }));
@@ -228,7 +228,7 @@ export const casesApi = {
       status: normalizeStatus(item.LastStateDescription),
       releaseNote: item.Remark || "",
       startDate: item.StartDate || "",
-      deadLine: item.DeadLine || "",
+      deadLine: item.DeadLine || item.deadLine || item.EndDate || item.endDate || "",
       referencedId: item.Id || "",
       attachmentUrl: item.attachmentUrl || "",
     };
@@ -236,32 +236,39 @@ export const casesApi = {
     return mapped;
   },
 
-  // getVoucherById: async (id: number): Promise<CaseItem> => {
-  //   const url = `/Voucher/dynamic?id=${id}`;
-
-  //   console.log("GET BY ID URL:", url);
-
-  //   const response = await apiClient.get(url);
-
-  //   console.log("GET BY ID RESPONSE:", response.data);
-
-  //   const item = response.data;
-  //   console.log("Fetched voucher1 item:", item);
-
-  //   if (!item) {
-  //     throw new Error("Case not found");
-  //   }
-
-  //   return item;
-  // },
-
   create: async (body: any) => {
     const res = await apiClient.post("/VoucherBuffer", body);
-    return res.data;
+    return res.data.data.voucher;
   },
 
   update: async (body: any) => {
     const res = await apiClient.put(`/VoucherBuffer`, body);
+
+    return res.data.data.voucher
+  },
+
+  createAttachment: async (attachment: AttachmentDTO) => {
+    console.log("Creating attachment with data:", attachment);
+    const res = await apiClient.post("/Attachment", attachment);
+    console.log("Attachment creation response:", res.data);
+    return res.data;
+  },
+
+  updateAttachment: async (attachment: AttachmentDTO) => {
+    console.log("Updating attachment with data:", attachment);
+    const res = await apiClient.put("/Attachment", attachment);
+    console.log("Attachment update response:", res.data);
+    return res.data;
+  },
+
+  getAttachments: async (reference: number): Promise<AttachmentDTO[]> => {
+    console.log("Fetching attachments for reference:", reference);
+    const res = await apiClient.get("/Attachment/filter", {
+      params: {
+        Reference: reference,
+        Pointer: 767,
+      },
+    });
 
     return res.data;
   },

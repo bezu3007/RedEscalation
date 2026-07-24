@@ -96,15 +96,27 @@ export function useCase(id: number | null) {
 
 
 
+// export function useCreateCase() {
+//   const qc = useQueryClient();
+
+//   return useMutation({
+//     mutationFn: (body: any) =>
+//       casesApi.create(body),
+
+//     onSuccess: () => {
+//       qc.invalidateQueries({queryKey: [CASES_KEY],});
+//     },
+//   });
+// }
+
 export function useCreateCase() {
   const qc = useQueryClient();
 
-  return useMutation({
-    mutationFn: (body: any) =>
-      casesApi.create(body),
+  return useMutation<CaseItem, Error, any>({
+    mutationFn: (body) => casesApi.create(body),
 
     onSuccess: () => {
-      qc.invalidateQueries({queryKey: [CASES_KEY],});
+      qc.invalidateQueries({ queryKey: [CASES_KEY] });
     },
   });
 }

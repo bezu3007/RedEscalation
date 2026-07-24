@@ -27,14 +27,21 @@ export function RowMenuCell(params: ICellRendererParams) {
 
   const isDeveloper = userRole === UserRole.DEVELOPER;
   const isFunctionalConsultant = userRole === UserRole.FUNCTIONAL_CONSULTANT;
+  const isProjectManager = userRole === UserRole.PROJECT_MANAGER;
   
   let canEdit = false;
 
   if(isDeveloper){
     canEdit = false;
+  }else if(data.status === "Closed"){
+    canEdit = false;
   }
   else if(isFunctionalConsultant){
     canEdit = data.status === "Prepared" || data.status === "Returned";
+  }else if(isFunctionalConsultant || isProjectManager){
+    if(data.status === "Accepted" || data.status === "On Progress" || data.status === "Fixed" || data.status === "Solved" || data.status === "Not Solved"){
+      canEdit = false;
+    }
   }
   else{
     canEdit = true;
@@ -43,15 +50,12 @@ export function RowMenuCell(params: ICellRendererParams) {
   const canAddSubcase = !isDeveloper;
   const canExtendDeadline = !isDeveloper;
   
-  // Calculate menu height based on visible items
   const getMenuHeight = () => {
-    let itemCount = 1; // View is always visible
+    let itemCount = 1;
     if (canEdit) itemCount++;
     if (canAddSubcase) itemCount++;
     if (canExtendDeadline) itemCount++;
-    
-    // Add spacing for header, borders, and padding
-    // Each item ~40px, header ~50px, padding ~16px, borders ~2px
+  
     return (itemCount * 40) + 50 + 16 + 2;
   };
 
@@ -63,9 +67,6 @@ export function RowMenuCell(params: ICellRendererParams) {
     const menuHeight = getMenuHeight();
     const viewportHeight = window.innerHeight;
     const spaceBelow = viewportHeight - rect.bottom;
-    // const spaceAbove = rect.top;
-    
-    // Check if there's enough space below, if not, position above
     const showBelow = spaceBelow >= menuHeight;
     
     setPos({

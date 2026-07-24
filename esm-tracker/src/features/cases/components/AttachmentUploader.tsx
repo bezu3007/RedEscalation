@@ -9,6 +9,7 @@ interface Props {
   removeFile: (id: string) => void;
   uploadSingleFile?: (id: string, subDirectory?: string) => Promise<any>;
   uploadAllFiles?: (subDirectory?: string) => Promise<any>;
+  caseId?: number | null;
   disabled?: boolean;
   maxFileSize?: number;
   acceptedTypes?: string[];
@@ -22,6 +23,7 @@ export function AttachmentUploader({
   removeFile,
   uploadSingleFile,
   uploadAllFiles,
+  caseId,
   disabled = false,
   maxFileSize = 10,
   acceptedTypes = ["*/*"],
@@ -31,6 +33,8 @@ export function AttachmentUploader({
   const [selectedFile, setSelectedFile] = useState<AttachmentFile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  console.log("Attachment uploader caseId:", caseId, "subDirectory:", subDirectory, "files:", files);
 
   useEffect(() => {
     console.log(files.length, "files length");
@@ -104,7 +108,7 @@ export function AttachmentUploader({
       'video/',
       'audio/'
     ];
-    return previewableTypes.some(type => file.file.type.startsWith(type));
+    return previewableTypes.some(type => !!file.file?.type && file.file.type.startsWith(type));
   };
 
   const getStatusIcon = (status?: AttachmentFile['uploadStatus']) => {
@@ -223,13 +227,13 @@ export function AttachmentUploader({
               >
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">
-                    {file.file.name}
+                    {file.file?.name ?? file.description ?? 'Attachment'}
                   </p>
                   <p className="text-xs text-slate-500">
-                    {Math.round(file.file.size / 1024)} KB
+                    {file.file ? `${Math.round(file.file.size / 1024)} KB` : ''}
                   </p>
                   <p className="text-xs text-slate-400 truncate">
-                    {file.file.type || "Unknown type"}
+                    {file.file?.type || file.url || "Unknown type"}
                   </p>
                   {file.uploadStatus && (
                     <div className={`flex items-center gap-1 text-xs ${getStatusColor(file.uploadStatus)}`}>
@@ -299,29 +303,29 @@ export function AttachmentUploader({
         ) : selectedFile ? (
           canPreview(selectedFile) ? (
             <div className="w-full h-full p-6">
-              {selectedFile.file.type.startsWith('image/') ? (
+              {selectedFile.file?.type?.startsWith('image/') ? (
                 <img 
                   src={selectedFile.preview} 
-                  alt={selectedFile.file.name}
+                  alt={selectedFile.file?.name ?? selectedFile.description}
                   className="w-full h-[400px] object-contain rounded-xl border"
                 />
-              ) : selectedFile.file.type.startsWith('video/') ? (
+              ) : selectedFile.file?.type?.startsWith('video/') ? (
                 <video 
                   controls 
                   className="w-full h-[400px] rounded-xl border"
                   src={selectedFile.preview}
                 />
-              ) : selectedFile.file.type.startsWith('audio/') ? (
+              ) : selectedFile.file?.type?.startsWith('audio/') ? (
                 <div className="flex flex-col items-center justify-center h-[400px]">
                   <FileText className="h-16 w-16 text-slate-400 mb-4" />
-                  <p className="text-lg font-medium">{selectedFile.file.name}</p>
+                  <p className="text-lg font-medium">{selectedFile.file?.name ?? selectedFile.description}</p>
                   <audio controls className="mt-4 w-full max-w-md" src={selectedFile.preview} />
                 </div>
               ) : (
                 <iframe
                   src={selectedFile.preview}
                   className="w-full h-[400px] rounded-xl border"
-                  title={selectedFile.file.name}
+                  title={selectedFile.file?.name ?? selectedFile.description}
                 />
               )}
             </div>
@@ -331,7 +335,7 @@ export function AttachmentUploader({
               <p className="text-sm">
                 Preview not available for this file type
               </p>
-              <p className="text-xs mt-1">{selectedFile.file.name}</p>
+              <p className="text-xs mt-1">{selectedFile.file?.name ?? selectedFile.description}</p>
             </div>
           )
         ) : null}
