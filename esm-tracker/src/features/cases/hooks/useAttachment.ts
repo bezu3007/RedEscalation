@@ -1,17 +1,20 @@
 import { useState } from "react";
 import { uploadFileToFtp, type ResponseModel } from "../utils/uploadService";
 import { casesApi } from "../api/casesApi";
+import { getMimeType } from "../utils/mimeTypeUtils";
 import type { AttachmentDTO } from "../types";
 
 export interface AttachmentFile {
   id: string;
-  attachmentId?: number;
+  // attachmentId?: number;
   file?: File;
   preview?: string;
   description?: string;
   url?: string;
   isExisting?: boolean;
-  isDeleted?: boolean; // We'll keep this flag but won't actually delete
+  isDeleted?: boolean; 
+  mimeType?: string;
+  fileName?: string; 
   uploadStatus?: 'idle' | 'uploading' | 'success' | 'error';
   uploadResult?: string;
   uploadError?: string;
@@ -172,42 +175,53 @@ export function useAttachment() {
     return file?.uploadStatus || 'idle';
   };
 
-  const loadAttachments = async (caseId: number) => {
+const loadAttachments = async (caseId: number) => {
     try {
-      console.log("Loading attachments for caseId:", caseId);
-      const attachments = await casesApi.getAttachments(caseId);
+        console.log("Loading attachments for caseId:", caseId);
+        const attachments = await casesApi.getAttachments(caseId);
+        console.log("Loaded attachments:", attachments);
 
-      const mapped = attachments.map(a => ({
-        id: crypto.randomUUID(),
-        attachmentId: a.id,
-        description: a.description,
-        url: a.url,
-        isExisting: true,
-        isDeleted: false,
-        uploadStatus: "success" as const,
-        // Create a fake file object for display purposes
-        file: new File([], a.description || a.url || 'attachment'),
-        // Use the URL as preview for existing files
-        preview: a.url,
-      }));
+        const mapped = attachments.map(a => {
+            const mimeType = getMimeType(a.url);
+            const previewFile = "ftp://192.168.1.8:21" + a.url;
+            
+            console.log(`Attachment URL: ${a.url}, Preview File: ${previewFile}, MIME Type: ${mimeType}`); // Debug log
+            console.log(`File: ${a.description}, MIME: ${mimeType}`); // Debug log
+            
+            return {
+                id: String(a.id),
+                description: a.description,
+                url: a.url,
+                mimeType: mimeType,
+                isExisting: true,
+                isDeleted: false,
+                uploadStatus: "success" as const,
+                file: new File([], a.description || a.url || 'attachment'),
+                preview: previewFile,
+            };
+        });
 
-      setFiles(mapped);
-      setLoaded(true);
+        setFiles(mapped);
+        setLoaded(true);
     } catch (err) {
-      console.error("Failed to load attachments:", err);
+        console.error("Failed to load attachments:", err);
     }
-  };
+};
 
   const persistAttachments = async (caseId: number) => {
     const successfulUploads = files.filter(f => f.uploadResult && !f.isExisting && !f.isDeleted);
 
     for (const fileEntry of successfulUploads) {
+      const ftpUrl = fileEntry.uploadResult;
+      const url = ftpUrl?.substring(ftpUrl.indexOf("/", 7));
+
+      console.log("Persisting attachment for file:", fileEntry.file?.name, "with upload result:", fileEntry.uploadResult);
       const attachment: AttachmentDTO = {
         id: 0,
         reference: caseId,
         category: 1451,
         description: fileEntry.file?.name || fileEntry.description || "Attachment",
-        url: fileEntry.uploadResult!,
+        url: url || fileEntry.uploadResult || "",
         type: 1461,
         index: 0,
         pointer: 767,
@@ -218,6 +232,7 @@ export function useAttachment() {
       try {
         await casesApi.createAttachment(attachment);
         console.log("Attachment created successfully:", fileEntry.file?.name);
+        console.log("Attachment data sent to API:", attachment);
       } catch (err) {
         console.error("Failed to persist attachment:", err);
       }

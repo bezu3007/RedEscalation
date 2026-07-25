@@ -182,17 +182,15 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
 
   const { mutate: createCase, isPending: creating } = useCreateCase();
   const { mutate: updateCase, isPending: updating } = useUpdateCase();
-  const { files, loaded, addFiles, removeFile, uploadSingleFile, uploadAllFiles, reset: resetAttachments, persistAttachments, updateAttachments, loadAttachments } = useAttachment();
+  const { files, addFiles, removeFile, uploadSingleFile, uploadAllFiles, reset: resetAttachments, persistAttachments, updateAttachments, loadAttachments } = useAttachment();
 
   useEffect(() => {
     if (
-      activeTab === "attachments" &&
-      initialData?.id &&
-      !loaded
+      open && initialData?.id && (mode === "edit" || mode === "view")
     ) {
       loadAttachments(initialData.id);
     }
-  }, [activeTab, initialData?.id, loaded]);
+  }, [open, initialData?.id, mode]);
 
   const isPending = creating || updating;
 

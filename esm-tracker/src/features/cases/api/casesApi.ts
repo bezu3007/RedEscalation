@@ -270,6 +270,8 @@ export const casesApi = {
       },
     });
 
+    console.log("Fetched attachments:", res.data);
+
     return res.data;
   },
 

@@ -100,15 +100,34 @@ export function AttachmentUploader({
     }
   };
 
+  // const canPreview = (file: AttachmentFile) => {
+  //   const previewableTypes = [
+  //     'image/',
+  //     'application/pdf',
+  //     'text/',
+  //     'video/',
+  //     'audio/'
+  //   ];
+  //   return previewableTypes.some(type => 
+  //     !!file.file?.type && 
+  //     file.file.type.startsWith(type)
+  //   );
+  // };
+
   const canPreview = (file: AttachmentFile) => {
     const previewableTypes = [
-      'image/',
-      'application/pdf',
-      'text/',
-      'video/',
-      'audio/'
+      "image/",
+      "application/pdf",
+      "text/",
+      "video/",
+      "audio/",
     ];
-    return previewableTypes.some(type => !!file.file?.type && file.file.type.startsWith(type));
+
+    const type = file.file?.type || file.mimeType || "";
+
+    return previewableTypes.some(previewType =>
+      type.startsWith(previewType)
+    );
   };
 
   const getStatusIcon = (status?: AttachmentFile['uploadStatus']) => {
@@ -136,6 +155,9 @@ export function AttachmentUploader({
         return 'text-slate-400';
     }
   };
+
+  const previewType = selectedFile?.file?.type || selectedFile?.mimeType || "";
+  const previewUrl = selectedFile?.preview || selectedFile?.url || "";
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-5 min-h-[420px]">
@@ -303,27 +325,27 @@ export function AttachmentUploader({
         ) : selectedFile ? (
           canPreview(selectedFile) ? (
             <div className="w-full h-full p-6">
-              {selectedFile.file?.type?.startsWith('image/') ? (
+              {previewType.startsWith("image/") ? (
                 <img 
-                  src={selectedFile.preview} 
+                  src={previewUrl} 
                   alt={selectedFile.file?.name ?? selectedFile.description}
                   className="w-full h-[400px] object-contain rounded-xl border"
                 />
-              ) : selectedFile.file?.type?.startsWith('video/') ? (
+              ) : previewType.startsWith('video/') ? (
                 <video 
                   controls 
                   className="w-full h-[400px] rounded-xl border"
-                  src={selectedFile.preview}
+                  src={previewUrl}
                 />
-              ) : selectedFile.file?.type?.startsWith('audio/') ? (
+              ) : previewType.startsWith('audio/') ? (
                 <div className="flex flex-col items-center justify-center h-[400px]">
                   <FileText className="h-16 w-16 text-slate-400 mb-4" />
                   <p className="text-lg font-medium">{selectedFile.file?.name ?? selectedFile.description}</p>
-                  <audio controls className="mt-4 w-full max-w-md" src={selectedFile.preview} />
+                  <audio controls className="mt-4 w-full max-w-md" src={previewUrl} />
                 </div>
               ) : (
                 <iframe
-                  src={selectedFile.preview}
+                  src={previewUrl}
                   className="w-full h-[400px] rounded-xl border"
                   title={selectedFile.file?.name ?? selectedFile.description}
                 />
