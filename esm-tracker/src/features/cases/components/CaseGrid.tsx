@@ -39,6 +39,7 @@ function StatusChangeCell(params: ICellRendererParams<CaseItem>) {
   const [showPopup, setShowPopup] = React.useState(false);
   const cellRef = React.useRef<HTMLDivElement>(null);
   const data = params.data;
+  console.log("Paramsssssssssssssssssssssssssssss", params);
   const userRole = useAuthStore.getState().getUserRole();
 
   if (!data) return null;
@@ -207,7 +208,7 @@ export const CaseGrid = React.memo(function CaseGrid() {
         autoHeight: false,
       },
       {
-        field: "reviewedBy",
+        field: "reviewer",
         headerName: "Reviewed By",
         width: 180,
         minWidth: 150,
@@ -287,6 +288,8 @@ export const CaseGrid = React.memo(function CaseGrid() {
   );
 
   const totalPages = Math.max(1, data ? Math.ceil(data.totalCount / pageSize) : 1);
+  console.log("ITEMSSSSSSSSSSSSSSSSSSSSSS", data);
+  // console.log("isUrgenttttttttttttttttt", data?.items?.filter(item => item.isUrgent === "1364").length);
 
   return (
     <div className="flex flex-col gap-3">
@@ -303,7 +306,28 @@ export const CaseGrid = React.memo(function CaseGrid() {
             suppressCellFocus
             animateRows
             getRowId={({ data: d }) => String(d.id)}
-            rowClass="hover:bg-slate-50"
+            getRowClass={(params: any) => (
+              params.data?.isSubcase === "true" 
+                ? "subcase-row" 
+                : params.data?.isUrgent
+                  ? "urgent-row" 
+                  : ""
+            )}
+            getRowStyle={(params: any) => {
+              if (params.data?.isSubcase === "true"){
+                return {
+                  background: "#fef3c7",
+                  borderLeft: "3px solid #f59e0b",
+                };
+              }else if (params.data?.isUrgent === true) {
+                return {
+                  background: "#fee2e2",
+                  borderLeft: "3px solid #ef4444",
+                };
+              }
+
+              else return undefined;
+            }}
             gridOptions={{
               onGridReady: () => {
                 // Additional grid configuration if needed

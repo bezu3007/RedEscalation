@@ -20,7 +20,8 @@ const STATUSES: CaseStatus[] = [
   "Reviewed",
   "Not Solved",
   "On Progress",
-  "Closed"
+  "Closed",
+  "Urgent",
 ];
 
 const TYPES: CaseType[] = [
@@ -243,6 +244,23 @@ const filteredModuleOptions = useMemo(() => {
   };
 
   const handleShow = useCallback(() => {
+    console.log("Applying filters:", draftFilters);
+    const search = draftFilters.search?.trim();
+    console.log("Search input:", search);
+
+    if (/^EDV-\d{5}-\d{2}$/i.test(search)) {
+      draftFilters.code = search.toUpperCase();
+      draftFilters.search = "";
+    }else if (/^\d{5}-\d{2}$/.test(search)) {
+      draftFilters.code = `EDV-${search}`;
+      draftFilters.search = "";
+    }else if (/^\d{5}$/.test(search)) {
+      draftFilters.code = `EDV-${search}-26`;
+      draftFilters.search = "";
+    }
+
+    console.log("Final draftFilters before applying:", draftFilters);
+    
     setFilters(draftFilters);
   }, [draftFilters, setFilters]);
 
@@ -307,6 +325,11 @@ const filteredModuleOptions = useMemo(() => {
               onChange={(e) =>
                 setDraftFilters({ ...draftFilters, search: e.target.value })
               }
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleShow();
+                }
+              }}
             />
           </div>
         </div>

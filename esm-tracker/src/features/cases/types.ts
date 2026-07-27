@@ -9,7 +9,8 @@ export const Case_Status =[
    "Reviewed",
    "Not Solved",
    "On Progress",
-   "Closed"
+   "Closed",
+   "Urgent",
 ]
 export type CaseStatus =
   (typeof Case_Status)[number];
@@ -205,8 +206,8 @@ export interface CaseItem {
   caseType: CaseType;
   module: string;
   status: CaseStatus;
-  isUrgent: string | null;//extension5 is used for urgency indicator
-  isSubcase: string | null;//extension6 is used for subcase indicator
+  isUrgent: boolean;//extension5 is used for urgency indicator
+  isSubcase: string;
   functionalConsultantId: Number | null;
   functionalConsultant: string;
   developerId: string | null;
@@ -216,12 +217,9 @@ export interface CaseItem {
   department: string | null;
   departmentId: Number | null;
   developmentStatus: string;
-  // UATStatus: string | null;
   releaseNote: string;
   startDate: string;
   deadLine: string;
-  // referencedId: string;
-  // attachmentUrl: string;
 //aiSuggestedDeveloper?: string | null;
 }
 
@@ -241,6 +239,8 @@ export interface CaseFormValues {
   developmentStatus: string;
   status?: string;
   caseNumber?: string;
+  isUrgent?: boolean;
+  isSubcase?: string;
 }
 
 // Main interface matching the API response structure

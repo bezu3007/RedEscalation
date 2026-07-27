@@ -33,10 +33,11 @@ export function RowMenuCell(params: ICellRendererParams) {
 
   if(isDeveloper){
     canEdit = false;
-  }else if(data.status === "Closed"){
+  }
+  if(data.status === "Closed"){
     canEdit = false;
   }
-  else if(isFunctionalConsultant){
+  if(isFunctionalConsultant){
     canEdit = data.status === "Prepared" || data.status === "Returned";
   }else if(isFunctionalConsultant || isProjectManager){
     if(data.status === "Accepted" || data.status === "On Progress" || data.status === "Fixed" || data.status === "Solved" || data.status === "Not Solved"){

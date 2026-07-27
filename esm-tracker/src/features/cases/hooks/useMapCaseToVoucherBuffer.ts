@@ -24,6 +24,10 @@ export function mapCaseToVoucherBuffer(
     finalStatus="Prepared";
   }
 
+  // if(finalStatus == "Rejected"){
+  //   finalStatus="Closed";
+  // }
+
   const lastStatusId = mapStatusToId(finalStatus);
   const normalizedProjectId = Number(values.projectNameId) || 0;
   const normalizedConsignee2 = Number(isEditing ? initialData?.functionalConsultantId : personId ?? userId ?? 0) || null;
@@ -50,9 +54,21 @@ export function mapCaseToVoucherBuffer(
         ]
       : [];
 
+  if(referencedId && referencedId === 0){
+    values.isSubcase = "false";
+  }
+
 
   console.log("Transaction References Buffer:", transactionReferencesBuffer);
   console.log(referencedId && referencedId > 0 ? "Referenced ID is valid" : "Referenced ID is not valid or not provided");
+  console.log("Final Status isUrgentttttttttttttttttt:", finalStatus);
+  
+  const urgentValue =
+  isEditing && initialData?.isUrgent
+    ? "1364" // keep it urgent forever once saved
+    : values.isUrgent
+      ? "1364"
+      : "0";
 
   return {
     voucher: {
@@ -66,7 +82,7 @@ export function mapCaseToVoucherBuffer(
       grandTotal: 0,
       consignee2: normalizedConsignee2,
       consignee3: normalizedConsignee3,
-      consignee4: null,
+      consignee4: finalStatus === "Reviewed" ? personId ?? null : null,
       issuedDate: issueDateValue,
       note: values.issues,
       originConsigneeUnit: 3,
@@ -77,8 +93,8 @@ export function mapCaseToVoucherBuffer(
       extension2: values.caseType,
       extension3: values.module,
       extension4: finalStatus,
-      // extension5: values.isUrgent ? "Yes" : "No",
-      // extension6: values.isSubcase ? 2 : 1,
+      extension5: urgentValue,
+      extension6: values.isSubcase === "true" ? "true" : "false",
       lastState: lastStatusId,
       startDate: issueDateValue,
       endDate: values.deadLine || null,

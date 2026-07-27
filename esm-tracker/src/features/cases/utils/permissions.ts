@@ -3,9 +3,9 @@ import { CaseStatus } from "../types";
 
 // Define what statuses each role can see in the grid
 export const ROLE_VISIBLE_STATUSES: Record<UserRole, CaseStatus[]> = {
-  [UserRole.FUNCTIONAL_CONSULTANT]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"],
-  [UserRole.PROJECT_MANAGER]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"],
-  [UserRole.ADMIN]: ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"], // Admin ONLY sees from Reviewed upward
+  [UserRole.FUNCTIONAL_CONSULTANT]: ["Prepared", "Returned", "Rejected", "Reviewed", "Urgent", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"],
+  [UserRole.PROJECT_MANAGER]: ["Prepared", "Returned", "Rejected", "Reviewed", "Urgent", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"],
+  [UserRole.ADMIN]: ["Prepared", "Returned", "Rejected", "Reviewed", "Urgent", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"], // Admin ONLY sees from Reviewed upward
   [UserRole.DEVELOPER]: ["Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"],
 };
 
@@ -22,6 +22,7 @@ export const ROLE_TRANSITIONS: Record<UserRole, Partial<Record<CaseStatus, CaseS
   [UserRole.ADMIN]: {
     "Reviewed": ["Accepted", "Returned", "Rejected"],
     "Not Solved": ["Accepted", "Returned", "Rejected"],
+    "Urgent": ["Accepted", "Returned", "Rejected"],
     "Accepted": ["Fixed"],
     "Solved": ["Closed"],
   },

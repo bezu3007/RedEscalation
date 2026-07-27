@@ -22,7 +22,7 @@ import { FormError, FormErrorSummary } from "@/shared/components/ui/form-error";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { getPlainTextFromHtml } from '../utils/htmlUtils'; 
-// import { persistAttachments } from "../hooks/useAttachment";
+import { Checkbox } from "@/shared/components/ui/checkbox";
 
 interface Props {
   mode: "create" | "edit" | "view";
@@ -203,6 +203,8 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
       projectName: "",
       projectNameId: "",
       module: "",
+      isSubcase: "false",
+      isUrgent: false,
       caseType: "",
       developer: "",
       paidorNot: "Free",
@@ -237,18 +239,20 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
     if ((mode === "view" || mode === "edit") && initialData) {
     const resetValues = {
       caseNumber: initialData.caseNumber || "",
+      issueDate: initialData.issueDate ? initialData.issueDate.split('T')[0] : "", 
       projectName: initialData.projectName || "",
       projectNameId: initialData.projectNameId ? String(initialData.projectNameId) : "",
-      module: initialData.module || "",
-      caseType: initialData.caseType || "",
-      developer: initialData.developerId != null ? String(initialData.developerId) : null,
+      issues: initialData.issues || "",
       paidorNot: initialData.paidorNot || "Free",
+      caseType: initialData.caseType || "",
+      module: initialData.module || "",
+      developmentStatus: initialData.developmentStatus || "",
+      isSubcase: initialData.isSubcase === "true" ? "true" : "false",
+      isUrgent: initialData.isUrgent ? true : false,
+      developer: initialData.developerId != null ? String(initialData.developerId) : null,
       department: initialData.department || "",
-      issueDate: initialData.issueDate ? initialData.issueDate.split('T')[0] : "", 
       deadLine: initialData.deadLine ? initialData.deadLine.split('T')[0] : "",
       releaseNote: initialData.releaseNote || "",
-      issues: initialData.issues || "",
-      developmentStatus: initialData.developmentStatus || "",
       status: initialData.status || "",
     };
     form.reset(resetValues);
@@ -258,6 +262,8 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
         projectName: parentProjectName,
         projectNameId: parentProjectId,
         module: parentModule,
+        isSubcase: "false",
+        isUrgent: false,
         caseType: "",
         developer: "",
         paidorNot: "Free",
@@ -288,11 +294,27 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
     console.log("✅ Form validation passed!");
     console.log("🚀 Form submitted with values:", values);
     console.log(values.releaseNote);
+    values.isSubcase = isSubCaseCreateMode ? "true" : values.isSubcase ?? "false";
+    values.isUrgent = values.isUrgent ?? false;
 
     if (isSubCaseBlocked) {
       console.warn("Sub-case creation is blocked for the selected parent case status.");
       return;
+    }else{
+      console.log("Sub-case creation is allowed for the selected parent case status.", values.isSubcase);
     }
+
+    console.log("Status value before checking isUrgent:", values.status);
+    if(values.isUrgent){
+      values.status = "Urgent";
+      console.log("Status value set to Urgent due to isUrgent being true:", values.status);
+    }
+
+    values.isSubcase = isSubCaseCreateMode
+      ? "true"
+      : values.isSubcase === "true"
+        ? "true"
+        : "false";
 
     const currentStatus = form.getValues("status");
     const targetStatus = transitionTargetStatus ?? currentStatus ?? values.status;
@@ -656,6 +678,30 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                             </SelectContent>
                           </Select>
                           <FormError message={fieldState.error?.message} />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="isUrgent"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center space-x-3 rounded-md border p-3 bg-white">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value === true}
+                              onCheckedChange={(checked) =>
+                                field.onChange(checked ? true : false)
+                              }
+                              disabled={isReadOnly || isLimitedReviewEdit}
+                            />
+                          </FormControl>
+
+                          <label className="!mt-0 cursor-pointer text-sm font-medium">
+                            Urgent Issue
+                          </label>
                         </FormItem>
                       )}
                     />

@@ -30,6 +30,9 @@ function normalizeStatus(apiStatus: string): CaseStatus {
     "Not Solved": "Not Solved",
     "On Progress": "On Progress",
     Closed: "Closed",
+    Urgent: "Urgent",
+    Removed: "Removed",
+    // DeadlineExtension: "DeadlineExtension",
   };
 
   return map[apiStatus] ?? "Accepted";
@@ -169,8 +172,8 @@ export const casesApi = {
       caseType: normalizeCaseType(item.extension2),
       module: item.extension3 || "",
       developmentStatus: item.extension4 || "",
-      isUrgent: item.Extension5 || null,
-      isSubcase: item.Extension6 || null,
+      isUrgent: (item.extension5 === "1364") ? true : false,
+      isSubcase: item.extension6,
       functionalConsultantId: item.consignee2Id || "",
       functionalConsultant: item.consignee2FullName || "",
       developerId: item.consignee3Id || "",
@@ -185,7 +188,7 @@ export const casesApi = {
       deadLine: item.deadLine || item.DeadLine || item.endDate || item.EndDate || "",
     }));
 
-    console.log("Mapped Case Items:", mapped);
+    console.log("Mapped Case Items from getAll:", mapped);
 
     const page = params.page ?? 1;
     const pageSize = params.pageSize ?? 25;
@@ -226,8 +229,8 @@ export const casesApi = {
       caseType: normalizeCaseType(item.Extension2),
       module: item.Extension3 || "",
       developmentStatus: item.Extension4 || "",
-      isUrgent: item.Extension5 || null,
-      isSubcase: item.Extension6 || null,
+      isUrgent: (item.extension5 === "1364") ? true : false,
+      isSubcase: item.extension6,
       functionalConsultantId: item.consignee2Id || "",
       functionalConsultant: item.consignee2FullName || "",
       developerId: item.consignee3Id || "",

@@ -11,7 +11,9 @@ export function mapStatusToId(status: CaseStatus): number {
     "Not Solved": 1340,
     "Accepted": 1342,
     "Fixed": 1345,
-    "Closed": 1319
+    "Closed": 1319,
+    "Urgent": 1364,
+    "Removed": 1309,
     // DeadlineExtension: 1323,
   };
   
@@ -29,7 +31,9 @@ export function mapIdToStatus(id: number): CaseStatus {
     1340: "Not Solved",
     1342: "Accepted",
     1345: "Fixed",
-    1319: "Closed"
+    1319: "Closed",
+    1364: "Urgent",
+    1309: "Removed",
     // 1323: "DeadlineExtension",
   };
   
