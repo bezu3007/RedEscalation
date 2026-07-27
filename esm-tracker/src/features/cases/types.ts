@@ -95,6 +95,34 @@ export interface ActivityDTO {
   remark: string;
 }
 
+export interface TransactionReferenceDTO {
+  id: number;
+  referring: number | null;
+  referencingVoucherDefn: number | null;
+  referenced: number | null;
+  referencedVoucherDefn: number | null;
+  value: number | null;
+  relationType: number | null;
+  remark: string | null;
+}
+
+export interface ClosedRelationDTO {
+  id: number;
+  voucher: number;
+  timeStamp: string;
+  referredVouherDefn: number;
+  referringVoucherDefn: number;
+  remark: string | null;
+}
+
+export interface TransactionReferenceBuffer {
+  transactionReference: TransactionReferenceDTO;
+  referencedActivity: ActivityDTO | null;
+  referencedVoucherLastState: number | null;
+  referencedVoucherVoid: boolean;
+  closedRelation: ClosedRelationDTO | null;
+}
+
 export interface VoucherBuffer {
   voucher: VoucherDTO;
   activity: ActivityDTO;
@@ -102,7 +130,7 @@ export interface VoucherBuffer {
     isWeb: boolean;
     consigneeUnitId: number;
   };
-  transactionReferencesBuffer: any[];
+  transactionReferencesBuffer: TransactionReferenceBuffer[];
 }
 
 export interface CreateCaseRequest {
@@ -170,27 +198,30 @@ export interface CaseItem {
   id: number | null;
   caseNumber: string | "";
   issueDate: string;
-  projectName: string;
   projectNameId: string;
+  projectName: string;
   issues: string;
   paidorNot: string;
   caseType: CaseType;
   module: string;
-  functionalConsultant: string;
+  status: CaseStatus;
+  isUrgent: string | null;//extension5 is used for urgency indicator
+  isSubcase: string | null;//extension6 is used for subcase indicator
   functionalConsultantId: Number | null;
-  reviewedBy: string | null;
-  developer: string | null;
+  functionalConsultant: string;
   developerId: string | null;
+  developer: string | null;
+  reviewerId: string | null;//consignee4Id
+  reviewer: string | null;//consignee4FullName
   department: string | null;
   departmentId: Number | null;
   developmentStatus: string;
-  UATStatus: string | null;
-  status: CaseStatus;
+  // UATStatus: string | null;
   releaseNote: string;
   startDate: string;
   deadLine: string;
-  referencedId: string;
-  attachmentUrl: string;
+  // referencedId: string;
+  // attachmentUrl: string;
 //aiSuggestedDeveloper?: string | null;
 }
 

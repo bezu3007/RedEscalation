@@ -47,7 +47,8 @@ export function RowMenuCell(params: ICellRendererParams) {
     canEdit = true;
   }
   
-  const canAddSubcase = !isDeveloper;
+  const isBlockedSubcase = ["Solved", "Rejected"].includes(data.status);
+  const canAddSubcase = !isDeveloper && !isBlockedSubcase;
   const canExtendDeadline = !isDeveloper;
   
   const getMenuHeight = () => {
@@ -89,7 +90,13 @@ export function RowMenuCell(params: ICellRendererParams) {
   };
 
   const handleSubCase = () => {
+    if (isBlockedSubcase) {
+      setOpen(false);
+      return;
+    }
+
     useCaseStore.getState().setSelectedParentCase(data);
+    console.log("Selected Parent Case:", useCaseStore.getState().selectedParentCase);
     openCreateModal();
     setOpen(false);
   };

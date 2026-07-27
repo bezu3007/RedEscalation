@@ -60,6 +60,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
   const personId = useAuthStore((s) => s.personId);
   const userRole = useAuthStore((s) => s.userRole);
   const transitionTargetStatus = useCaseStore((s) => s.transitionTargetStatus);
+  const selectedParentCase = useCaseStore((s) => s.selectedParentCase);
 
   const isCreator = useMemo(() => { 
     if (mode === "create") { return true; }
@@ -115,6 +116,9 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
     );
   }, [mode, transitionTargetStatus, userRole]);
 
+  const isSubCaseCreateMode = mode === "create" && Boolean(selectedParentCase?.id);
+  const isSubCaseBlocked = isSubCaseCreateMode && ["Solved", "Rejected"].includes(selectedParentCase?.status ?? "");
+  const isParentValueLocked = isSubCaseCreateMode && Boolean(selectedParentCase);
   const isReadOnly = mode === "view" || (mode === "edit" && !isCreator && !isAcceptedCaseEdit);
   const isReleaseNoteReadOnly = mode === "view" || mode === "create" || !isReleaseNoteEditable;
   const canSubmitChanges = mode === "create" || isCreator || isAcceptedCaseEdit || isReleaseNoteEditable;
@@ -221,6 +225,10 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
     if (!open) return;
 
     setActiveCaseId(initialData?.id ?? null);
+    const parentContext = selectedParentCase ?? (mode === "create" ? initialData : undefined);
+    const parentProjectId = parentContext?.projectNameId ? String(parentContext.projectNameId) : "";
+    const parentProjectName = parentContext?.projectName || "";
+    const parentModule = parentContext?.module || "";
 
     if (shouldOpenNotesTab && mode === "edit") {
       setActiveTab("notes");
@@ -247,9 +255,9 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
       
     } else if (mode === "create") {
       form.reset({
-        projectName: "",
-        projectNameId: "",
-        module: "",
+        projectName: parentProjectName,
+        projectNameId: parentProjectId,
+        module: parentModule,
         caseType: "",
         developer: "",
         paidorNot: "Free",
@@ -263,7 +271,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
       });
     }
     setSubmitAttempted(false);
-  }, [mode, initialData, open, form, shouldOpenNotesTab]);
+  }, [mode, initialData, open, form, shouldOpenNotesTab, selectedParentCase]);
 
   const handleClose = useCallback(() => {
     form.reset();
@@ -281,6 +289,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
     console.log("🚀 Form submitted with values:", values);
     console.log(values.releaseNote);
 
+    if (isSubCaseBlocked) {
+      console.warn("Sub-case creation is blocked for the selected parent case status.");
+      return;
+    }
+
     const currentStatus = form.getValues("status");
     const targetStatus = transitionTargetStatus ?? currentStatus ?? values.status;
 
@@ -292,7 +305,13 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
           : currentStatus || values.status,
     };
 
-    const payload = mapCaseToVoucherBuffer(submitValues, userId, personId, initialData);
+    const payload = mapCaseToVoucherBuffer(
+      submitValues,
+      userId,
+      personId,
+      initialData,
+      isSubCaseCreateMode ? Number(selectedParentCase?.id ?? 0) : undefined,
+    );
 
     const normalizedPayload = {
       ...payload,
@@ -304,6 +323,8 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
         lastUser: Number(payload.voucher.lastUser) || null,
       },
     } as VoucherBuffer;
+
+    console.log("Normalized Payload:", normalizedPayload);
 
     if (mode === "create") {
       createCase(normalizedPayload, {
@@ -352,7 +373,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
         },
       });
     }
-  }, [mode, initialData, createCase, updateCase, handleClose, userId, personId, form, transitionTargetStatus, files, uploadAllFiles, persistAttachments, updateAttachments]);
+  }, [mode, initialData, createCase, updateCase, handleClose, userId, personId, form, transitionTargetStatus, files, uploadAllFiles, persistAttachments, updateAttachments, isSubCaseBlocked, isSubCaseCreateMode, selectedParentCase]);
 
   const handleSubmitAttempt = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -395,11 +416,15 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                 {mode === "view"
                   ? "View Issue Voucher" 
                   :mode === "create"
-                    ? "Add Issue Voucher Proposal"
+                    ? (isSubCaseCreateMode
+                        ? `Issue ${selectedParentCase?.caseNumber || selectedParentCase?.id || "New"}`
+                        : "Add Issue Voucher Proposal")
                     : "Edit Issue Voucher"}
               </h2>
               <p className="text-xs text-slate-300 mt-1">
-                Creating new root level project issue track
+                {isSubCaseCreateMode
+                  ? `Creating a sub-case for ${selectedParentCase?.caseNumber || "the selected parent case"}`
+                  : "Creating new root level project issue track"}
               </p>
             </div>
           </div>
@@ -484,7 +509,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                           <Select
                             value={field.value ?? undefined}
                             onValueChange={field.onChange}
-                            disabled={isReadOnly || isLimitedReviewEdit}
+                            disabled={isReadOnly || isLimitedReviewEdit || isParentValueLocked}
                           >
                             <FormControl>
                               <SelectTrigger 
@@ -510,7 +535,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                                   onMouseDown={(e) => e.stopPropagation()}
                                   placeholder="Search project"
                                   className="h-8"
-                                  disabled={isReadOnly || isLimitedReviewEdit}
+                                  disabled={isReadOnly || isLimitedReviewEdit || isParentValueLocked}
                                 />
                               </div>
                               <div className="px-2 pb-1 text-xs text-slate-500">
@@ -543,7 +568,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                           <Select
                             value={field.value ?? undefined}
                             onValueChange={field.onChange}
-                            disabled={isReadOnly || isLimitedReviewEdit}
+                            disabled={isReadOnly || isLimitedReviewEdit || isParentValueLocked}
                           >
                             <FormControl>
                               <SelectTrigger 
@@ -563,6 +588,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                               ))}
                             </SelectContent>
                           </Select>
+                          {isParentValueLocked && (
+                            <p className="mt-2 text-xs text-slate-500">
+                              Project and module are locked to the parent case values.
+                            </p>
+                          )}
                           <FormError message={fieldState.error?.message} />
                         </FormItem>
                       )}
@@ -929,10 +959,15 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                   <input type="hidden" {...field} />
                 )}
               />
+              {isSubCaseBlocked && (
+                <p className="text-sm text-red-600">
+                  Sub-case creation is not allowed for Solved or Rejected parent cases.
+                </p>
+              )}
               {canSubmitChanges && (
                 <Button
                   type="submit"
-                  disabled={isPending}
+                  disabled={isPending || isSubCaseBlocked}
                   className="rounded-xl bg-slate-900 px-6 hover:bg-slate-800"
                 >
                   {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

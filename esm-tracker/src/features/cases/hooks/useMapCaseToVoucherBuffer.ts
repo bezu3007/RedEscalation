@@ -1,9 +1,16 @@
-import { CaseFormValues } from "../types";
-import {  CaseItem } from "../types";
+import { CaseFormValues, CaseItem, TransactionReferenceBuffer } from "../types";
 import { mapStatusToId } from "../utils/statusMapping";
-export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number | null, personId: number | null, initialData?: CaseItem) {
+
+export function mapCaseToVoucherBuffer(
+  values: CaseFormValues,
+  userId: number | null,
+  personId: number | null,
+  initialData?: CaseItem,
+  referencedId?: number,
+) {
   const now = new Date();
   const isEditing = !!initialData;
+  console.log("Referenced ID:", referencedId);
 
   const issueDateValue = values.issueDate?.trim()
     ? values.issueDate
@@ -21,6 +28,31 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number |
   const normalizedProjectId = Number(values.projectNameId) || 0;
   const normalizedConsignee2 = Number(isEditing ? initialData?.functionalConsultantId : personId ?? userId ?? 0) || null;
   const normalizedConsignee3 = Number(values.developer ?? initialData?.developerId ?? null);
+  const transactionReferencesBuffer: TransactionReferenceBuffer[] =
+    referencedId && referencedId > 0
+      ? [
+          {
+            transactionReference: {
+              id: 0,
+              referring: 0,
+              referencingVoucherDefn: 400,
+              referenced: referencedId,
+              referencedVoucherDefn: 400,
+              value: null,
+              relationType: null,
+              remark: "sub issue",
+            },
+            referencedActivity: null,
+            referencedVoucherLastState: null,
+            referencedVoucherVoid: false,
+            closedRelation: null,
+          },
+        ]
+      : [];
+
+
+  console.log("Transaction References Buffer:", transactionReferencesBuffer);
+  console.log(referencedId && referencedId > 0 ? "Referenced ID is valid" : "Referenced ID is not valid or not provided");
 
   return {
     voucher: {
@@ -45,6 +77,8 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number |
       extension2: values.caseType,
       extension3: values.module,
       extension4: finalStatus,
+      // extension5: values.isUrgent ? "Yes" : "No",
+      // extension6: values.isSubcase ? 2 : 1,
       lastState: lastStatusId,
       startDate: issueDateValue,
       endDate: values.deadLine || null,
@@ -64,10 +98,10 @@ export function mapCaseToVoucherBuffer(values: CaseFormValues, userId : number |
       year: now.getFullYear(),
       platform: "WEB",
       consigneeUnit: 3,
-      activityDefinition: isEditing ? 1001 : 1001,
+      activityDefinition: isEditing ? 1290 : 1305,
       remark: "",
     },
     IdGenerationParams: { isWeb: true, consigneeUnitId: 3 },
-    transactionReferencesBuffer: [],
+    transactionReferencesBuffer,
   };
 }

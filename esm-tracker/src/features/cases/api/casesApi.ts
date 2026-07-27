@@ -64,6 +64,7 @@ export const casesApi = {
           },
         }
       );
+      console.log("Voucher init response apiiiiiiiiiiiiiiiiiiiii:", response.data);
       return response.data;
     } catch (error) {
       console.error("Voucher init error:", error);
@@ -167,22 +168,24 @@ export const casesApi = {
       paidorNot: item.extension1 || "",
       caseType: normalizeCaseType(item.extension2),
       module: item.extension3 || "",
-      functionalConsultant: item.consignee2FullName || "",
-      functionalConsultantId: item.consignee2Id || "",
-      reviewedBy: item.consignee4FullName || "",
-      developer: item.consignee3FullName || "",
-      developerId: item.consignee3Id || "",
-      department: item.consigneeUnit1Description || "",
-      departmentId: item.consigneeUnit1Id || "",
       developmentStatus: item.extension4 || "",
-      UATStatus: item.lastStateDescription || "",
+      isUrgent: item.Extension5 || null,
+      isSubcase: item.Extension6 || null,
+      functionalConsultantId: item.consignee2Id || "",
+      functionalConsultant: item.consignee2FullName || "",
+      developerId: item.consignee3Id || "",
+      developer: item.consignee3FullName || "",
+      reviewerId: item.consignee4Id || "",
+      reviewer: item.consignee4FullName || "",
+      departmentId: item.consigneeUnit1Id || "",
+      department: item.consigneeUnit1Description || "",
       status: normalizeStatus(item.lastStateDescription),
       releaseNote: item.remark || "",
       startDate: item.startDate || "",
       deadLine: item.deadLine || item.DeadLine || item.endDate || item.EndDate || "",
-      referencedID: item.id || "",
-      attachmentUrl: item.attachmentUrl || "",
     }));
+
+    console.log("Mapped Case Items:", mapped);
 
     const page = params.page ?? 1;
     const pageSize = params.pageSize ?? 25;
@@ -216,29 +219,29 @@ export const casesApi = {
       id: item.id,
       caseNumber: item.code,
       issueDate: item.issueDate,
-      projectName: item.consignee1FullName || "",
       projectNameId: item.consignee1Id || "",
+      projectName: item.consignee1FullName || "",
       issues: item.Note || "",
       paidorNot: item.Extension1 || "",
       caseType: normalizeCaseType(item.Extension2),
       module: item.Extension3 || "",
-      functionalConsultant: item.consignee2FullName || "",
-      functionalConsultantId: item.consignee2Id || "",
-      reviewedBy: item.consignee4FullName || "",
-      developer: item.consignee3FullName || "",
-      developerId: item.consignee3Id || "",
-      department: item.ConsigneeUnit1Description || "",
-      departmentId: item.ConsigneeUnit1Id || "",
       developmentStatus: item.Extension4 || "",
-      UATStatus: item.LastStateDescription || "",
+      isUrgent: item.Extension5 || null,
+      isSubcase: item.Extension6 || null,
+      functionalConsultantId: item.consignee2Id || "",
+      functionalConsultant: item.consignee2FullName || "",
+      developerId: item.consignee3Id || "",
+      developer: item.consignee3FullName || "",
+      reviewerId: item.consignee4Id || "",
+      reviewer: item.consignee4FullName || "",
+      departmentId: item.ConsigneeUnit1Id || "",
+      department: item.ConsigneeUnit1Description || "",
       status: normalizeStatus(item.LastStateDescription),
       releaseNote: item.Remark || "",
       startDate: item.StartDate || "",
       deadLine: item.DeadLine || item.deadLine || item.EndDate || item.endDate || "",
-      referencedId: item.Id || "",
-      attachmentUrl: item.attachmentUrl || "",
     };
-    console.log(mapped);
+    console.log("Mapped Case Item:", mapped);
     return mapped;
   },
 
