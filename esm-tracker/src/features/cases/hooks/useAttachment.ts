@@ -3,6 +3,7 @@ import { uploadFileToFtp, type ResponseModel } from "../utils/uploadService";
 import { casesApi } from "../api/casesApi";
 import { getMimeType } from "../utils/mimeTypeUtils";
 import type { AttachmentDTO } from "../types";
+import { generateUUID } from "../utils/generateUUID";
 
 export interface AttachmentFile {
   id: string;
@@ -32,7 +33,7 @@ export function useAttachment() {
     if (!newFiles) return;
 
     const mapped = Array.from(newFiles).map((file) => ({
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       file,
       preview: URL.createObjectURL(file),
       uploadStatus: 'idle' as const,
@@ -175,17 +176,46 @@ export function useAttachment() {
     return file?.uploadStatus || 'idle';
   };
 
-const loadAttachments = async (caseId: number) => {
+  const previewAttachment = async (file: AttachmentFile): Promise<string | undefined> => {
+    if (!file.isExisting || !file.url) {
+      return file.preview || file.url;
+    }
+
+    try {
+      console.log("Previewing attachment for file:", file);
+      const previewResult = await casesApi.getAttachmentPreview(file.url);
+      const resolvedPreview = typeof previewResult === "string" && previewResult.trim()
+        ? previewResult
+        : file.preview || file.url;
+
+      setFiles((prev) =>
+        prev.map((item) =>
+          item.id === file.id
+            ? { ...item, preview: resolvedPreview }
+            : item
+        )
+      );
+
+      return resolvedPreview;
+    } catch (error) {
+      console.error("Failed to preview attachment:", error);
+      return file.preview || file.url;
+    }
+  };
+
+  const loadAttachments = async (caseId: number) => {
     try {
         console.log("Loading attachments for caseId:", caseId);
         const attachments = await casesApi.getAttachments(caseId);
         console.log("Loaded attachments:", attachments);
 
+        // const previewAttachment = await casesApi.getAttachmentPreview(attachments[0]?.url || '');
+
         const mapped = attachments.map(a => {
             const mimeType = getMimeType(a.url);
-            const previewFile = "ftp://192.168.1.8:21" + a.url;
-            
-            console.log(`Attachment URL: ${a.url}, Preview File: ${previewFile}, MIME Type: ${mimeType}`); // Debug log
+            // const previewFile = "ftp://192.168.1.8:21" + a.url;
+
+            console.log(`Attachment URL: ${a.url}, Preview File: ${a.url}, MIME Type: ${mimeType}`); // Debug log
             console.log(`File: ${a.description}, MIME: ${mimeType}`); // Debug log
             
             return {
@@ -197,7 +227,7 @@ const loadAttachments = async (caseId: number) => {
                 isDeleted: false,
                 uploadStatus: "success" as const,
                 file: new File([], a.description || a.url || 'attachment'),
-                preview: previewFile,
+                preview: a.url,
             };
         });
 
@@ -302,6 +332,7 @@ const loadAttachments = async (caseId: number) => {
     persistAttachments,
     updateAttachments,
     loadAttachments,
+    previewAttachment,
     hasAttachmentChanges,
     getActiveFiles,
   };

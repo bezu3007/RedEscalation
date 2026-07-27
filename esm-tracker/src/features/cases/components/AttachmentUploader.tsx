@@ -15,6 +15,7 @@ interface Props {
   acceptedTypes?: string[];
   subDirectory?: string;
   showUploadButtons?: boolean;
+  previewFile?: (file: AttachmentFile) => Promise<string | undefined> | string | undefined;
 }
 
 export function AttachmentUploader({
@@ -29,6 +30,7 @@ export function AttachmentUploader({
   acceptedTypes = ["*/*"],
   subDirectory = "",
   showUploadButtons = true,
+  previewFile,
 }: Props) {
   const [selectedFile, setSelectedFile] = useState<AttachmentFile | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -159,6 +161,21 @@ export function AttachmentUploader({
   const previewType = selectedFile?.file?.type || selectedFile?.mimeType || "";
   const previewUrl = selectedFile?.preview || selectedFile?.url || "";
 
+  const handleSelectFile = async (file: AttachmentFile) => {
+    setSelectedFile(file);
+
+    if (!previewFile) return;
+
+    const resolvedPreview = await previewFile(file);
+    if (resolvedPreview) {
+      setSelectedFile((current) =>
+        current?.id === file.id
+          ? { ...current, preview: resolvedPreview }
+          : current
+      );
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-5 min-h-[420px]">
       {/* LEFT PANEL */}
@@ -240,7 +257,7 @@ export function AttachmentUploader({
             files.map((file) => (
               <div
                 key={file.id}
-                onClick={() => setSelectedFile(file)}
+                onClick={() => void handleSelectFile(file)}
                 className={`flex items-start justify-between gap-2 rounded-lg border p-3 cursor-pointer transition-colors ${
                   selectedFile?.id === file.id
                     ? "bg-violet-50 border-violet-200"

@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState, useMemo } from "react";
 import {useCaseStore,type ColumnKey} from "../store/caseStore";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import {Plus,X,Search,Filter,Columns3} from "lucide-react";
+import {Plus,X,Search,Filter,Columns3, } from "lucide-react";
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/shared/components/ui/select";
 import {DropdownMenu,DropdownMenuContent,DropdownMenuCheckboxItem,DropdownMenuTrigger} from "@/shared/components/ui/dropdown-menu";
 import { DateField } from "@/shared/components/DateField";
-import {PAID_OR_NOT, type CaseFilters, type CaseStatus,type CaseType, type Consignee, type Extension} from "../types";
+import { PAID_OR_NOT, type CaseFilters, type CaseStatus,type CaseType, type Consignee, type Extension} from "../types";
 import {useAuthStore} from "../../auth/store/authStore";
 
 const STATUSES: CaseStatus[] = [
@@ -39,6 +39,7 @@ type FilterKey =
   | "caseType"
   | "module"
   | "projectName"
+  | "developer"
   | "paidorNot"
   | "fromIssueDate"
   | "toIssueDate";
@@ -51,6 +52,7 @@ const FILTER_CONFIG: {
   { key: "caseType", label: "Type" },
   { key: "module", label: "Module" },
   { key: "projectName", label: "Project" },
+  { key: "developer", label: "Developer" },
   { key: "paidorNot", label: "Payment Status" },
   { key: "fromIssueDate", label: "From Date" },
   { key: "toIssueDate", label: "To Date" },
@@ -63,8 +65,8 @@ const emptyDraftFilters: CaseFilters = {
   caseType: "",
   module: "",
   projectName: "",
-  paidorNot: "",
   developer: "",
+  paidorNot: "",
   fromIssueDate: "",
   toIssueDate: "",
 };
@@ -102,7 +104,7 @@ export function FilterBar({ initData }: Props) {
   // Memoize derived data to prevent recalculation on every render
   const [projectQuery, setProjectQuery] = useState("");
   const [moduleQuery, setModuleQuery] = useState("");
-  // const [developerQuery, setDeveloperQuery] = useState("");
+  const [developerQuery, setDeveloperQuery] = useState("");
 
   const projectOptions = useMemo(() => {
     const projects = initData?.projects ?? [];
@@ -152,31 +154,31 @@ const filteredModuleOptions = useMemo(() => {
 }, [moduleList, moduleQuery]);
 
   // Memoize developer options
-  // const developerOptions = useMemo(() => {
-  //   const developers = initData?.developers ?? [];
-  //   const query = developerQuery.trim().toLowerCase();
+  const developerOptions = useMemo(() => {
+    const developers = initData?.developers ?? [];
+    const query = developerQuery.trim().toLowerCase();
 
-  //   if (!query) {
-  //     return developers.slice(0, 250);
-  //   }
+    if (!query) {
+      return developers.slice(0, 250);
+    }
 
-  //   return developers
-  //     .filter((developer) => {
-  //       const haystack = [
-  //         developer.fullName,
-  //         developer.firstName,
-  //         developer.secondName,
-  //         developer.thirdName,
-  //         developer.code,
-  //       ]
-  //         .filter(Boolean)
-  //         .join(" ")
-  //         .toLowerCase();
+    return developers
+      .filter((developer) => {
+        const haystack = [
+          developer.fullName,
+          developer.firstName,
+          developer.secondName,
+          developer.thirdName,
+          developer.code,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
 
-  //       return haystack.includes(query);
-  //     })
-  //     .slice(0, 250);
-  // }, [initData?.developers, developerQuery]);
+        return haystack.includes(query);
+      })
+      .slice(0, 250);
+  }, [initData?.developers, developerQuery]);
 
   const paymentOptions = useMemo(() => {
     return [...PAID_OR_NOT];
@@ -227,9 +229,34 @@ const filteredModuleOptions = useMemo(() => {
 
   const hasActiveFilters = Object.entries(filters).some(([, value]) => Boolean(value));
 
+  const getSelectedOptionLabel = (value: string, options: any[], fallback: string) => {
+    if (!value || value === "all") return fallback;
+
+    const match = options.find((option) => {
+      const optionValue = option?.id ?? option?.value ?? option?.code ?? option?.name ?? option?.fullName;
+      return String(optionValue ?? "") === String(value);
+    });
+
+    if (!match) return value;
+
+    return match.fullName ?? match.name ?? match.code ?? String(match);
+  };
+
   const handleShow = useCallback(() => {
     setFilters(draftFilters);
   }, [draftFilters, setFilters]);
+
+  // const handleShowAll = useCallback(() => {
+  //   resetFilters();
+  //   setDraftFilters(emptyDraftFilters);
+  //   setVisibleFilters(
+  //     Object.fromEntries(FILTER_CONFIG.map((f) => [f.key, true])) as Record<FilterKey, boolean>
+  //   );
+    
+  //   setVisibleColumns(
+  //     Object.fromEntries(COLUMN_CONFIG.map((c) => [c.key, true])) as Record<ColumnKey, boolean>
+  //   );
+  // }, [resetFilters, setVisibleColumns]);
 
   const handleClear = useCallback(() => {
     resetFilters();
@@ -393,9 +420,9 @@ const filteredModuleOptions = useMemo(() => {
             }
           >
             <SelectTrigger className="w-[180px] bg-gray-50">
-              <div className="px-2 pb-1 text-sm text-slate-500">
-                Select Module
-              </div>
+              <span className="truncate text-left">
+                {getSelectedOptionLabel(draftFilters.module, moduleList, "Select Module")}
+              </span>
             </SelectTrigger>
             <SelectContent 
               className="bg-white z-[100] max-h-[320px] overflow-hidden"
@@ -434,9 +461,9 @@ const filteredModuleOptions = useMemo(() => {
             }
           >
             <SelectTrigger className="w-[180px] bg-gray-50">
-              <div className="px-2 pb-1 text-sm text-slate-500">
-                Select a project
-              </div>
+              <span className="truncate text-left">
+                {getSelectedOptionLabel(draftFilters.projectName, initData?.projects ?? [], "Select a project")}
+              </span>
             </SelectTrigger>
             <SelectContent 
               className="bg-white z-[100] max-h-[320px] overflow-hidden"
@@ -460,6 +487,47 @@ const filteredModuleOptions = useMemo(() => {
                 {projectOptions.map((project: Consignee) => (
                   <SelectItem key={project.id} value={String(project.id)}>
                     {project.fullName}
+                  </SelectItem>
+                ))}
+              </div>
+            </SelectContent>
+          </Select>
+        )}
+
+        {visibleFilters.developer && (
+          <Select
+            value={draftFilters.developer || "all"}
+            onValueChange={(v) =>
+              setDraftFilters({ ...draftFilters, developer: v === "all" ? "" : v })
+            }
+          >
+            <SelectTrigger className="w-[180px] bg-gray-50">
+              <span className="truncate text-left">
+                {getSelectedOptionLabel(draftFilters.developer, initData?.developers ?? [], "Select a developer")}
+              </span>
+            </SelectTrigger>
+            <SelectContent 
+              className="bg-white z-[100] max-h-[320px] overflow-hidden"
+              position="popper"
+              sideOffset={4} 
+            >
+              <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
+                <Input
+                  value={developerQuery}
+                  onChange={(e) => setDeveloperQuery(e.target.value)}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  placeholder="Search developer"
+                  className="h-8"
+                />
+              </div>
+              <div className="px-2 pb-1 text-xs text-slate-500">
+                Showing first 250 matches. Type to narrow the list.
+              </div>
+              <div className="h-[220px] overflow-y-auto">
+                {developerOptions.map((developer: Consignee) => (
+                  <SelectItem key={developer.id} value={String(developer.id)}>
+                    {developer.fullName}
                   </SelectItem>
                 ))}
               </div>
@@ -523,6 +591,16 @@ const filteredModuleOptions = useMemo(() => {
           <Button size="sm" onClick={handleShow}>
             Show
           </Button>
+
+          {/* <Button 
+            size="sm" 
+            onClick={handleShowAll}
+            variant="outline"
+            className="gap-1"
+          >
+            <List className="h-4 w-4" />
+            Show All
+          </Button> */}
 
         </div>
       </div>

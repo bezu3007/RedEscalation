@@ -182,7 +182,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
 
   const { mutate: createCase, isPending: creating } = useCreateCase();
   const { mutate: updateCase, isPending: updating } = useUpdateCase();
-  const { files, addFiles, removeFile, uploadSingleFile, uploadAllFiles, reset: resetAttachments, persistAttachments, updateAttachments, loadAttachments } = useAttachment();
+  const { files, addFiles, removeFile, uploadSingleFile, uploadAllFiles, reset: resetAttachments, persistAttachments, updateAttachments, loadAttachments, previewAttachment } = useAttachment();
 
   useEffect(() => {
     if (
@@ -849,6 +849,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                   removeFile={removeFile}
                   uploadSingleFile={uploadSingleFile}
                   uploadAllFiles={uploadAllFiles}
+                  previewFile={previewAttachment}
                   caseId={activeCaseId ?? initialData?.id ?? null}
                   disabled={isReadOnly}
                   maxFileSize={5}

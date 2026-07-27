@@ -63,6 +63,15 @@ export function useCases(extraParams?: Partial<CasesQueryParams>) {
         );
       }
 
+      if (filters?.developer) {
+        const developerFilter = filters.developer.trim().toLowerCase();
+        filtered = filtered.filter((item) => {
+          const developerId = String(item.developerId ?? "").toLowerCase();
+          const developerName = (item.developer ?? "").toLowerCase();
+          return developerId === developerFilter || developerName.includes(developerFilter);
+        });
+      }
+
       // Paginate on frontend
       const start = (page - 1) * pageSize;
       const end = start + pageSize;

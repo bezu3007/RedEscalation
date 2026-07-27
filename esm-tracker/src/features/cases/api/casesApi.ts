@@ -116,8 +116,14 @@ export const casesApi = {
         query.append("IssuedDate:", today);
       }
 
+      const developerFilterValue = params.developer?.trim();
+
       // ROLE-BASED FILTERING - Matches your C# logic
-      if (userRole === UserRole.DEVELOPER) {
+      if (developerFilterValue) {
+        query.append("Consignee3Id", developerFilterValue);
+        console.log("Developer filter - Consignee3Id:", developerFilterValue);
+      }
+      else if (userRole === UserRole.DEVELOPER) {
         query.append("Consignee3Id", user.id.toString());
         console.log("Developer filter - Consignee3Id:", user.id);
       } 
@@ -263,6 +269,7 @@ export const casesApi = {
 
   getAttachments: async (reference: number): Promise<AttachmentDTO[]> => {
     console.log("Fetching attachments for reference:", reference);
+    // CommonLibrary/ftp_file_preview/?path=0076217301/Transaction/ESMTracker
     const res = await apiClient.get("/Attachment/filter", {
       params: {
         Reference: reference,
@@ -271,6 +278,25 @@ export const casesApi = {
     });
 
     console.log("Fetched attachments:", res.data);
+
+    return res.data;
+  },
+
+  getAttachmentPreview: async (path: string): Promise<string> => {
+    const normalizedPath = path
+      ?.replace(/^ftp:\/\//i, "")
+      ?.replace(/^\\\\/i, "")
+      ?.replace(/^[A-Za-z]:\\/i, "")
+      ?.replace(/^\/+/i, "")
+      ?.trim();
+
+    console.log("Fetching attachment preview for path:", normalizedPath || path);
+
+    const res = await apiClient.get("/CommonLibrary/ftp_file_preview", {
+      params: {
+        path: normalizedPath || path,
+      },
+    });
 
     return res.data;
   },
