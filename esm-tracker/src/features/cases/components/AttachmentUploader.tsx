@@ -160,6 +160,7 @@ export function AttachmentUploader({
 
   const previewType = selectedFile?.file?.type || selectedFile?.mimeType || "";
   const previewUrl = selectedFile?.preview || selectedFile?.url || "";
+  console.log("Selected file:", selectedFile, "Preview type:", previewType, "Preview URL:", previewUrl);
 
   const handleSelectFile = async (file: AttachmentFile) => {
     setSelectedFile(file);
@@ -258,16 +259,25 @@ export function AttachmentUploader({
               <div
                 key={file.id}
                 onClick={() => void handleSelectFile(file)}
-                className={`flex items-start justify-between gap-2 rounded-lg border p-3 cursor-pointer transition-colors ${
-                  selectedFile?.id === file.id
-                    ? "bg-violet-50 border-violet-200"
-                    : "hover:bg-slate-50"
-                }`}
+                className={`flex items-start justify-between gap-2 rounded-lg border p-3 cursor-pointer transition-colors
+                  ${
+                    file.isDeleted
+                      ? "border-red-400 bg-red-50 opacity-70"
+                      : selectedFile?.id === file.id
+                        ? "bg-violet-50 border-violet-200"
+                        : "hover:bg-slate-50"
+                  }`}
               >
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">
                     {file.file?.name ?? file.description ?? 'Attachment'}
                   </p>
+                  
+                  {file.isDeleted && (
+                    <p className="text-xs text-red-600 font-medium">
+                      Will be deleted when you save
+                    </p>
+                  )}
                   <p className="text-xs text-slate-500">
                     {file.file ? `${Math.round(file.file.size / 1024)} KB` : ''}
                   </p>

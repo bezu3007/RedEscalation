@@ -7,7 +7,7 @@ import { generateUUID } from "../utils/generateUUID";
 
 export interface AttachmentFile {
   id: string;
-  // attachmentId?: number;
+  attachmentId?: number;
   file?: File;
   preview?: string;
   description?: string;
@@ -46,21 +46,23 @@ export function useAttachment() {
 
   const removeFile = (id: string) => {
     setFiles((prev) => {
-      const fileToRemove = prev.find(f => f.id === id);
-      if (fileToRemove) {
-        // Only revoke if it's a new file with a preview
-        if (!fileToRemove.isExisting && fileToRemove.preview) {
-          URL.revokeObjectURL(fileToRemove.preview);
-        }
-        // Mark existing files as deleted (for UI purposes only)
-        if (fileToRemove.isExisting) {
-          return prev.map(f => 
-            f.id === id ? { ...f, isDeleted: true } : f
-          );
-        }
-        return prev.filter((f) => f.id !== id);
+      const file = prev.find((f) => f.id === id);
+
+      if (!file) return prev;
+
+      if (file.isExisting) {
+        return prev.map((f) =>
+          f.id === id
+            ? { ...f, isDeleted: true }
+            : f
+        );
       }
-      return prev;
+
+      if (file.preview?.startsWith("blob:")) {
+        URL.revokeObjectURL(file.preview);
+      }
+
+      return prev.filter((f) => f.id !== id);
     });
   };
 
@@ -219,7 +221,8 @@ export function useAttachment() {
             console.log(`File: ${a.description}, MIME: ${mimeType}`); // Debug log
             
             return {
-                id: String(a.id),
+                id: generateUUID(),
+                attachmentId: a.id,
                 description: a.description,
                 url: a.url,
                 mimeType: mimeType,
@@ -298,18 +301,27 @@ export function useAttachment() {
       }
     }
 
-    const deletedFiles = files.filter(f => f.isExisting && f.isDeleted);
-    if (deletedFiles.length > 0) {
-      console.log("Files marked for deletion (no delete endpoint available):", 
-        deletedFiles.map(f => f.description));
+    const deletedFiles = files.filter(
+        f => f.isExisting && f.isDeleted && f.attachmentId
+    );
+
+    for (const file of deletedFiles) {
+        try {
+            await casesApi.deleteAttachment(file.attachmentId!);
+        } catch (err) {
+            console.error(
+                "Failed to delete attachment:",
+                file.attachmentId,
+                err
+            );
+        }
     }
   };
 
   const hasAttachmentChanges = () => {
-    // Check if there are new files or files marked for deletion
-    const hasNewFiles = files.some(f => !f.isExisting);
-    const hasDeletedFiles = files.some(f => f.isExisting && f.isDeleted);
-    return hasNewFiles || hasDeletedFiles;
+    return files.some(
+        f => !f.isExisting || f.isDeleted
+    );
   };
 
   // Get only active files (not marked as deleted)

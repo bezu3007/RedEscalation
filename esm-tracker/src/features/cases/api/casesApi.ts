@@ -302,9 +302,18 @@ export const casesApi = {
       params: {
         path: normalizedPath || path,
       },
+      responseType: "blob", // Expecting a binary response
     });
+    console.log("Fetched attachment preview URLLLLLLLLLLLLLLLLLLLLLLLL:", res.data);
 
-    return res.data;
+    return URL.createObjectURL(res.data);
   },
+
+  deleteAttachment: async (attachmentId: number) => {
+    console.log("Dddddddddddddddddddddddddeleting attachment with ID:", attachmentId);
+    const res = await apiClient.delete(`/Attachment/${attachmentId}`);
+    console.log("Aaaaaaaaaaaaaaaaaaaaaaaaaaattachment deletion response:", res.data);
+    return res.data;
+  }
 
 };

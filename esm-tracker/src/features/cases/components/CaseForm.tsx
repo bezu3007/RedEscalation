@@ -294,20 +294,14 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
     console.log("✅ Form validation passed!");
     console.log("🚀 Form submitted with values:", values);
     console.log(values.releaseNote);
-    values.isSubcase = isSubCaseCreateMode ? "true" : values.isSubcase ?? "false";
-    values.isUrgent = values.isUrgent ?? false;
 
     if (isSubCaseBlocked) {
       console.warn("Sub-case creation is blocked for the selected parent case status.");
       return;
-    }else{
-      console.log("Sub-case creation is allowed for the selected parent case status.", values.isSubcase);
     }
 
-    console.log("Status value before checking isUrgent:", values.status);
     if(values.isUrgent){
       values.status = "Urgent";
-      console.log("Status value set to Urgent due to isUrgent being true:", values.status);
     }
 
     values.isSubcase = isSubCaseCreateMode

@@ -68,11 +68,6 @@ export function StatusActionPopup({
   // Memoized close handler
   const handleClose = useCallback(() => {
     console.log('🔴 Closing popup');
-    // Don't close if updating
-    // if (isUpdatingRef.current) {
-    //   console.log('⏳ Update in progress, delaying close');
-    //   return;
-    // }
     onClose();
   }, [onClose]);
 

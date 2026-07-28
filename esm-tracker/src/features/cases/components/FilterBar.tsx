@@ -244,9 +244,7 @@ const filteredModuleOptions = useMemo(() => {
   };
 
   const handleShow = useCallback(() => {
-    console.log("Applying filters:", draftFilters);
     const search = draftFilters.search?.trim();
-    console.log("Search input:", search);
 
     if (/^EDV-\d{5}-\d{2}$/i.test(search)) {
       draftFilters.code = search.toUpperCase();
@@ -258,8 +256,8 @@ const filteredModuleOptions = useMemo(() => {
       draftFilters.code = `EDV-${search}-26`;
       draftFilters.search = "";
     }
+    console.log("Applying filters:", draftFilters);
 
-    console.log("Final draftFilters before applying:", draftFilters);
     
     setFilters(draftFilters);
   }, [draftFilters, setFilters]);
