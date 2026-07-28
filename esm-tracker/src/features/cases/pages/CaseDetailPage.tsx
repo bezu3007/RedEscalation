@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useCase } from "../hooks/useCases";
 // import { CaseActionBar } from "../components/CaseActionBar";
 // import { DeveloperSuggester } from "../components/DeveloperSuggester";
@@ -10,7 +10,7 @@ import { useCaseStore } from "../store/caseStore";
 import { Button } from "@/shared/components/ui/button";
 import { Separator } from "@/shared/components/ui/separator";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import {Card, CardContent, CardHeader, CardTitle,} from "@/shared/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { ArrowLeft, FileDown, Pencil } from "lucide-react";
 import { formatDate } from "@/shared/utils/formatDate";
 
@@ -331,9 +331,15 @@ export default function CaseDetailPage() {
 
           onClose={closeEditModal}
 
+          onSuccess={(_title, _message) => {
+            // No parent notification handler in this page; use console fallback.
+            console.log("Case updated successfully.");
+          }}
+
         />
 
       )}
+
 
     </div>
 

@@ -2,7 +2,6 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { useCaseStore } from "../store/caseStore";
 import type { ICellRendererParams } from "ag-grid-community";
-import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
 import { 
@@ -13,13 +12,14 @@ import {
   PlusCircle, 
   Clock3 
 } from "lucide-react";
+import { ExtendDeadlinePopup } from "./ExtendDeadlinePopup";
 
 export function RowMenuCell(params: ICellRendererParams) {
   const data = params.data;
-  const navigate = useNavigate();
   const { openEditModal, openCreateModal, openViewModal } = useCaseStore();
   const userRole = useAuthStore((state) => state.userRole);
   const [open, setOpen] = React.useState(false);
+  const [showExtendPopup, setShowExtendPopup] = React.useState(false);
   const [pos, setPos] = React.useState<{ x: number; y: number; anchor: 'bottom' | 'top' } | null>(null);
   const btnRef = React.useRef<HTMLButtonElement>(null);
 
@@ -50,7 +50,9 @@ export function RowMenuCell(params: ICellRendererParams) {
   
   const isBlockedSubcase = ["Solved", "Rejected"].includes(data.status);
   const canAddSubcase = !isDeveloper && !isBlockedSubcase;
-  const canExtendDeadline = !isDeveloper;
+  const canExtendDeadline =
+    !isDeveloper &&
+    !["Prepared", "Returned", "Reviewed", "Rejected", "Re Journal"].includes(data.status);
   
   const getMenuHeight = () => {
     let itemCount = 1;
@@ -103,7 +105,7 @@ export function RowMenuCell(params: ICellRendererParams) {
   };
 
   const handleDeadlineExtend = () => {
-    navigate(`/cases/${data.id}/extend-deadline`);
+    setShowExtendPopup(true);
     setOpen(false);
   };
 
@@ -207,6 +209,15 @@ export function RowMenuCell(params: ICellRendererParams) {
           </div>
         </>,
         document.body
+      )}
+
+      {showExtendPopup && (
+        <ExtendDeadlinePopup
+          caseItem={data}
+          anchorEl={btnRef.current}
+          onClose={() => setShowExtendPopup(false)}
+          onExtended={() => setShowExtendPopup(false)}
+        />
       )}
     </>
   );

@@ -17,9 +17,11 @@ import {
   FileCheck,
   RefreshCw,
   AlertCircle,
-  X
+  X,
+  Clock3,
 } from "lucide-react";
 import { VoucherBuffer } from "../types";
+import { ExtendDeadlinePopup } from "./ExtendDeadlinePopup";
 
 interface StatusActionPopupProps {
   caseItem: CaseItem;
@@ -48,7 +50,7 @@ export function StatusActionPopup({
   caseItem, 
   onClose, 
   anchorEl,
-  // onStatusUpdate 
+  onStatusUpdate,
 }: StatusActionPopupProps) {
   const { mutate: updateCase, isPending } = useUpdateCase();
   const popupRef = useRef<HTMLDivElement>(null);
@@ -62,8 +64,21 @@ export function StatusActionPopup({
 
   const allowedStatuses = useMemo(() => {
     if (!userRole) return [];
-    return getAllowedTransitions(caseItem.status,caseItem.functionalConsultantId, userRole);
+    return getAllowedTransitions(caseItem.status, caseItem.functionalConsultantId, userRole);
   }, [caseItem.status, userRole]);
+
+  const canExtendDeadline = useMemo(() => {
+    return (
+      userRole !== UserRole.DEVELOPER &&
+      !["Prepared", "Returned", "Reviewed", "Rejected", "Re Journal"].includes(caseItem.status)
+    );
+  }, [caseItem.status, userRole]);
+
+  const [showExtendPopup, setShowExtendPopup] = useState(false);
+
+  const handleRequestExtendDeadline = () => {
+    setShowExtendPopup(true);
+  };
 
   // Memoized close handler
   const handleClose = useCallback(() => {
@@ -164,6 +179,7 @@ export function StatusActionPopup({
     updateCase(normalizedPayload, {
       onSuccess: (data) => {
         console.log("UPDATE SUCCESS", data);
+        onStatusUpdate?.(targetStatus);
         handleClose();
       },
         onError: (err) => {
@@ -221,23 +237,24 @@ export function StatusActionPopup({
     };
   };
 
-  if (allowedStatuses.length === 0) {
+  if (allowedStatuses.length === 0 && !canExtendDeadline) {
     return null;
   }
 
   const position = getPopupPosition();
 
   return createPortal(
-    <div
-      ref={popupRef}
-      className="fixed z-[9999] min-w-[200px] max-w-[260px] rounded-xl border bg-white shadow-2xl overflow-hidden"
-      style={{
-        top: position.top,
-        left: position.left,
-        pointerEvents: 'auto', // Ensure clicks are captured
-      }}
-      onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
-    >
+    <>
+      <div
+        ref={popupRef}
+        className="fixed z-[9999] min-w-[200px] max-w-[260px] rounded-xl border bg-white shadow-2xl overflow-hidden"
+        style={{
+          top: position.top,
+          left: position.left,
+          pointerEvents: 'auto', // Ensure clicks are captured
+        }}
+        onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
+      >
       <div className="flex items-center justify-between px-4 py-3 border-b bg-slate-50">
         <div>
           <p className="font-medium text-sm">{caseItem.caseNumber}</p>
@@ -263,6 +280,23 @@ export function StatusActionPopup({
       )}
 
       <div className="p-2 max-h-[300px] overflow-y-auto space-y-0.5">
+        {canExtendDeadline && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRequestExtendDeadline();
+            }}
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-100 text-sm transition-colors"
+            disabled={isPending}
+          >
+            <span className="text-violet-500">
+              <Clock3 className="h-4 w-4" />
+            </span>
+            <span className="flex-1 text-left font-medium">Extend Deadline</span>
+          </button>
+        )}
+
         {allowedStatuses.map((status) => {
           const config = STATUS_CONFIG[status];
           return (
@@ -298,7 +332,20 @@ export function StatusActionPopup({
           Role: <span className="font-medium">{userRole}</span>
         </p>
       </div>
-    </div>,
+    </div>
+
+    {showExtendPopup && (
+      <ExtendDeadlinePopup
+        caseItem={caseItem}
+        anchorEl={anchorEl}
+        onClose={() => setShowExtendPopup(false)}
+        onExtended={() => {
+          setShowExtendPopup(false);
+          onClose();
+        }}
+      />
+    )}
+    </>,
     document.body
   );
 }

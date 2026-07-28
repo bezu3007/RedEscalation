@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/shared/lib/utils";
 
 interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "destructive";
+  variant?: "default" | "destructive" | "success";
 }
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
@@ -15,6 +15,8 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
           "bg-white text-black border-gray-200",
         variant === "destructive" &&
           "border-red-200 bg-red-50 text-red-700",
+        variant === "success" &&
+          "border-emerald-200 bg-emerald-50 text-emerald-700",
         className
       )}
       {...props}
