@@ -190,7 +190,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
 
   const { mutate: createCase, isPending: creating } = useCreateCase();
   const { mutate: updateCase, isPending: updating } = useUpdateCase();
-  const { files, addFiles, removeFile, uploadSingleFile, uploadAllFiles, reset: resetAttachments, persistAttachments, updateAttachments, loadAttachments, previewAttachment } = useAttachment();
+  const { files, addFiles, removeFile, uploadSingleFile, uploadAllFiles, downloadFile, reset: resetAttachments, persistAttachments, updateAttachments, loadAttachments, previewAttachment } = useAttachment();
 
   useEffect(() => {
     if (
@@ -956,6 +956,7 @@ console.log(isUrgent, isReadOnly, URGENT_EDITABLE_STATUSES.includes(currentStatu
                     removeFile={removeFile}
                     uploadSingleFile={uploadSingleFile}
                     uploadAllFiles={uploadAllFiles}
+                    downloadFile={downloadFile}
                     previewFile={previewAttachment}
                     caseId={activeCaseId ?? initialData?.id ?? null}
                     disabled={isReadOnly}

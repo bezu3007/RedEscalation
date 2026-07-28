@@ -1,6 +1,6 @@
 import { Button } from "@/shared/components/ui/button";
 import { useEffect, useState } from "react";
-import { Upload, FileText, X, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, Download, FileText, X, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import type { AttachmentFile } from "../hooks/useAttachment";
 
 interface Props {
@@ -9,6 +9,7 @@ interface Props {
   removeFile: (id: string) => void;
   uploadSingleFile?: (id: string, subDirectory?: string) => Promise<any>;
   uploadAllFiles?: (subDirectory?: string) => Promise<any>;
+  downloadFile?: (file: AttachmentFile) => Promise<void>;
   caseId?: number | null;
   disabled?: boolean;
   maxFileSize?: number;
@@ -24,6 +25,7 @@ export function AttachmentUploader({
   removeFile,
   uploadSingleFile,
   uploadAllFiles,
+  downloadFile,
   caseId,
   disabled = false,
   maxFileSize = 10,
@@ -89,7 +91,7 @@ export function AttachmentUploader({
       setError(`Upload failed: ${result.message}`);
     }
   };
-
+  
   const handleUploadAll = async () => {
     console.log("Handling upload for all files to subDirectory:", subDirectory);
     
@@ -272,7 +274,7 @@ export function AttachmentUploader({
                   <p className="text-sm font-medium truncate">
                     {file.file?.name ?? file.description ?? 'Attachment'}
                   </p>
-                  
+
                   {file.isDeleted && (
                     <p className="text-xs text-red-600 font-medium">
                       Will be deleted when you save
@@ -293,7 +295,7 @@ export function AttachmentUploader({
                 </div>
 
                 <div className="flex items-center gap-1">
-                  {showUploadButtons && uploadSingleFile && file.uploadStatus !== 'success' && (
+                  {/* {showUploadButtons && uploadSingleFile && file.uploadStatus !== 'success' && (
                     <Button
                       type="button"
                       variant="ghost"
@@ -307,7 +309,22 @@ export function AttachmentUploader({
                     >
                       <Upload className="h-3 w-3" />
                     </Button>
+                  )} */}
+                  {downloadFile && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        void downloadFile(file);
+                      }}
+                    >
+                      <Download className="h-3 w-3" />
+                    </Button>
                   )}
+
                   <Button
                     type="button"
                     variant="ghost"

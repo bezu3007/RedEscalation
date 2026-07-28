@@ -38,7 +38,6 @@ function compareDateOnly(value: string, current?: string) {
 
 export function ExtendDeadlinePopup({
   caseItem,
-  anchorEl,
   onClose,
   onExtended,
 }: ExtendDeadlinePopupProps) {
@@ -146,23 +145,28 @@ export function ExtendDeadlinePopup({
   };
 
     const getPopupPosition = () => {
-    const popupWidth = 360;
-    const popupHeight = 300; // adjust to your popup height
+        const popupWidth = 480;
+        const popupHeight = 420;
 
-    return {
-        top: (window.innerHeight - popupHeight) / 2,
-        left: (window.innerWidth - popupWidth) / 2,
-    };
+        return {
+            top: (window.innerHeight - popupHeight) / 2,
+            left: (window.innerWidth - popupWidth) / 2,
+        };
     };
 
   const position = getPopupPosition();
 
   return createPortal(
-    <div
-      ref={popupRef}
-      className="fixed z-[9999] min-w-[280px] max-w-[360px] rounded-2xl border bg-white shadow-2xl"
-      style={{ top: position.top, left: position.left }}
-    >
+    <>
+      <div
+        className="fixed inset-0 z-[9998] bg-black/20 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div
+        ref={popupRef}
+        className="fixed z-[9999] min-w-[320px] w-[480px] max-w-[calc(100vw-2rem)] rounded-3xl border border-slate-200 bg-white shadow-2xl"
+        style={{ top: position.top, left: position.left }}
+      >
       <div className="flex items-center justify-between gap-4 px-4 py-3 border-b bg-slate-50">
         <div>
           <p className="font-semibold">Extend Deadline</p>
@@ -178,7 +182,7 @@ export function ExtendDeadlinePopup({
         </button>
       </div>
 
-      <div className="space-y-4 p-4">
+      <div className="space-y-5 p-6">
         <div className="space-y-2">
           <label className="text-sm font-medium">New Deadline *</label>
           <Input
@@ -196,12 +200,12 @@ export function ExtendDeadlinePopup({
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             placeholder="Describe why the deadline needs to be extended..."
-            className="min-h-[120px] bg-white"
+            className="min-h-[140px] bg-white"
           />
           {errors.reason ? <p className="text-sm text-red-600">{errors.reason}</p> : null}
         </div>
 
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-2 pt-4">
           <Button type="button" variant="secondary" onClick={onClose} disabled={isPending}>
             Cancel
           </Button>
@@ -217,7 +221,8 @@ export function ExtendDeadlinePopup({
           </Button>
         </div>
       </div>
-    </div>,
+      </div>
+    </>,
     document.body
   );
 }

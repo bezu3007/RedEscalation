@@ -27,6 +27,15 @@ export function useAttachment() {
   const [loaded, setLoaded] = useState(false);
   
   console.log("attachment files: ", files);
+  const downloadFile = async (file: AttachmentFile) => {
+    if (!file.url) return;
+
+    const a = document.createElement("a");
+    a.href = file.url;
+    a.download = file.file?.name ?? file.description ?? "attachment";
+    a.target = "_blank";
+    a.click();
+  };
 
   const addFiles = (newFiles: FileList | null) => {
     console.log("Adding new files:", newFiles);
@@ -338,6 +347,7 @@ export function useAttachment() {
     reset,
     uploadSingleFile,
     uploadAllFiles,
+    downloadFile,
     getUploadStatus,
     uploading,
     setUploading,
