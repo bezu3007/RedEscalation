@@ -29,12 +29,18 @@ export function mapCaseToVoucherBuffer(
   // }
 console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrgent);
 
-  if(finalStatus === "Prepared" && values.isUrgent){
-        finalStatus = "Urgent";
+  // if(finalStatus === "Prepared" && values.isUrgent){
+  //       finalStatus = "Urgent";
+  // }
+  // if(finalStatus === "Urgent" && !values.isUrgent){
+  //       finalStatus = "Prepared";
+  // }
+
+  if(finalStatus === "Urgent"){
+    values.isUrgent = true;
   }
-  if(finalStatus === "Urgent" && !values.isUrgent){
-        finalStatus = "Prepared";
-  }
+
+  console.log("Final Status:", finalStatus, "isUrgent:", initialData?.isUrgent, values.isUrgent);
 
   const lastStatusId = mapStatusToId(finalStatus);
   const normalizedProjectId = Number(values.projectNameId) || 0;
@@ -101,7 +107,7 @@ console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrg
       extension2: values.caseType,
       extension3: values.module,
       extension4: finalStatus,
-      extension5: values.isUrgent ? "1364" : "0",
+      extension5: initialData?.isUrgent || values.isUrgent ? "1364" : "0",
       extension6: values.isSubcase === "true" ? "true" : "false",
       lastState: lastStatusId,
       startDate: issueDateValue,

@@ -14,13 +14,11 @@ const STATUSES: CaseStatus[] = [
   "Solved",
   "Fixed",
   "Prepared",
-  "Re Journal",
   "Rejected",
   "Returned",
   "Reviewed",
   "Not Solved",
   "On Progress",
-  "Closed",
   "Urgent",
 ];
 

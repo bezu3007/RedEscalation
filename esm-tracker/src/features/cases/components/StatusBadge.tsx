@@ -26,11 +26,6 @@ const STATUS_CONFIG: Record<CaseStatus,{ label: string; className: string }> = {
     className:
       "bg-blue-100 text-blue-800 border-blue-200",
   },
-  "Re Journal": {
-    label: "Re Journal",
-    className:
-      "bg-purple-100 text-purple-800 border-purple-200",
-  },
 
   Rejected: {
     label: "Rejected",
@@ -62,12 +57,6 @@ const STATUS_CONFIG: Record<CaseStatus,{ label: string; className: string }> = {
       "bg-yellow-100 text-yellow-800 border-yellow-200",
   },
 
-  "Closed": {
-    label: "Closed",
-    className:
-      "bg-gray-100 text-gray-800 border-gray-200",
-  },
-  
   "Urgent": {
     label: "Urgent",
     className:

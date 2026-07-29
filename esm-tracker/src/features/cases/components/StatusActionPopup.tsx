@@ -41,8 +41,6 @@ const STATUS_CONFIG: Record<CaseStatus, { label: string; icon: React.ReactNode; 
   "Not Solved": { label: "Not Solved", icon: <AlertCircle className="h-4 w-4" />, color: "text-red-500" },
   Accepted: { label: "Accept", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-green-600" },
   Fixed: { label: "Fixed", icon: <CheckCircle2 className="h-4 w-4" />, color: "text-blue-500" },
-  "Re Journal": { label: "Re Journal", icon: <RefreshCw className="h-4 w-4" />, color: "text-violet-600" },
-  "Closed": { label: "Closed", icon: <RefreshCw className="h-4 w-4" />, color: "text-gray-800" },
   "Urgent": { label: "Urgent", icon: <AlertCircle className="h-4 w-4" />, color: "#ee6b6e" },
 };
 

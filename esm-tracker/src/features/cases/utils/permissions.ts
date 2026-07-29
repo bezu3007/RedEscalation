@@ -3,10 +3,10 @@ import { CaseStatus } from "../types";
 
 // Define what statuses each role can see in the grid
 export const ROLE_VISIBLE_STATUSES: Record<UserRole, CaseStatus[]> = {
-  [UserRole.FUNCTIONAL_CONSULTANT]: ["Prepared", "Returned", "Rejected", "Reviewed", "Urgent", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"],
-  [UserRole.PROJECT_MANAGER]: ["Prepared", "Returned", "Rejected", "Reviewed", "Urgent", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"],
-  [UserRole.ADMIN]: ["Prepared", "Returned", "Rejected", "Reviewed", "Urgent", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"], // Admin ONLY sees from Reviewed upward
-  [UserRole.DEVELOPER]: ["Accepted", "On Progress", "Fixed", "Solved", "Not Solved", "Closed"],
+  [UserRole.FUNCTIONAL_CONSULTANT]: ["Prepared", "Returned", "Rejected", "Reviewed", "Urgent", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved"],
+  [UserRole.PROJECT_MANAGER]: ["Prepared", "Returned", "Rejected", "Reviewed", "Urgent", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved"],
+  [UserRole.ADMIN]: ["Prepared", "Returned", "Rejected", "Reviewed", "Urgent", "Accepted", "On Progress", "Fixed", "Solved", "Not Solved"], // Admin ONLY sees from Reviewed upward
+  [UserRole.DEVELOPER]: ["Accepted", "On Progress", "Urgent", "Fixed", "Solved", "Not Solved"],
 };
 
 // Define allowed transitions for each role and status
@@ -16,19 +16,19 @@ export const ROLE_TRANSITIONS: Record<UserRole, Partial<Record<CaseStatus, CaseS
   },
   
   [UserRole.PROJECT_MANAGER]: {
-    "Prepared": ["Reviewed", "Returned", "Rejected"],
+    "Prepared": ["Reviewed", "Returned", "Rejected", "Urgent"],
   },
   
   [UserRole.ADMIN]: {
     "Reviewed": ["Accepted", "Returned", "Rejected"],
     "Not Solved": ["Accepted", "Returned", "Rejected"],
-    "Urgent": ["Accepted", "Returned", "Rejected"],
+    // "Urgent": ["Accepted", "Returned", "Rejected"],
     "Accepted": ["Fixed"],
-    "Solved": ["Closed"],
   },
   
   [UserRole.DEVELOPER]: {
     "Accepted": ["On Progress", "Fixed"],
+    "Urgent": ["On Progress", "Fixed"],
     "On Progress": ["Fixed"],
   },
 };

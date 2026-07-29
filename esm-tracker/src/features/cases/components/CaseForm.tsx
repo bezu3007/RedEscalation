@@ -21,8 +21,7 @@ import { useCaseStore } from "../store/caseStore";
 import { FormError } from "@/shared/components/ui/form-error";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { getPlainTextFromHtml } from '../utils/htmlUtils'; 
-import { Checkbox } from "@/shared/components/ui/checkbox";
+import { getPlainTextFromHtml } from '../utils/htmlUtils';
 
 interface Props {
   mode: "create" | "edit" | "view";
@@ -81,11 +80,21 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
     transitionTargetStatus === "On Progress" ||
     transitionTargetStatus === "Fixed";
   const canEditDeadline = isAdminAcceptedCaseEdit && !isTransitioningToWork;
-  const canEditDeveloper = isAdminAcceptedCaseEdit && !isTransitioningToWork;
+  // const canEditDeveloper = isAdminAcceptedCaseEdit && !isTransitioningToWork;
+  const canEditDeveloper =
+    mode === "create" ||
+    (
+      mode === "edit" &&
+      userRole === UserRole.ADMIN &&
+      ["Prepared", "Accepted"].includes(
+        transitionTargetStatus ?? initialData?.status ?? ""
+      )
+    );
+
   const isLimitedReviewEdit = mode === "edit" && isAdminAcceptedCaseEdit;
 
   const PRE_FIXED_STATUSES: CaseStatus[] = ["Prepared", "Returned", "Rejected", "Reviewed", "Accepted", "On Progress"];
-  const POST_FIXED_STATUSES: CaseStatus[] = ["Solved", "Not Solved", "Closed"];
+  const POST_FIXED_STATUSES: CaseStatus[] = ["Solved", "Not Solved"];
 
   const isReleaseNoteEditable = useMemo(() => {
     if (mode === "view" || mode === "create") return false;
@@ -454,9 +463,15 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
 
 console.log(isUrgent, isReadOnly, URGENT_EDITABLE_STATUSES.includes(currentStatus));
 
-  const canEditUrgentChecklist = URGENT_EDITABLE_STATUSES.includes(currentStatus);
+  let canEditUrgentChecklist = false;
+  
+  if(mode== "create"){
+    canEditUrgentChecklist = true;
+  } else{
+    canEditUrgentChecklist = URGENT_EDITABLE_STATUSES.includes(currentStatus);
+  }
 
-    console.log("canEditUrgentChecklist:", canEditUrgentChecklist);
+  console.log("canEditUrgentChecklist:", canEditUrgentChecklist);
 
 
   return (
@@ -712,7 +727,7 @@ console.log(isUrgent, isReadOnly, URGENT_EDITABLE_STATUSES.includes(currentStatu
                       />
                     </div>
 
-                    {canEditUrgentChecklist &&(
+                    {/* {canEditUrgentChecklist &&(
                       <div className="grid grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -736,7 +751,7 @@ console.log(isUrgent, isReadOnly, URGENT_EDITABLE_STATUSES.includes(currentStatu
                           )}
                         />
                       </div>
-                    )}
+                    )} */}
 
                     {mode === "view" && (
                       <div className="grid gap-4">
@@ -758,7 +773,7 @@ console.log(isUrgent, isReadOnly, URGENT_EDITABLE_STATUSES.includes(currentStatu
                         <FormField
                           control={form.control}
                           name="deadLine"
-                          rules={isAdminAcceptanceReview ? { required: "Deadline is required before accepting" } : {}}
+                          rules={isAdminAcceptanceReview ? { required: "Assigning developer is required before accepting" } : {}}
                           render={({ field, fieldState }) => (
                             <FormItem>
                               <FormLabel>Deadline <span className="text-red-500">*</span></FormLabel>
@@ -781,15 +796,24 @@ console.log(isUrgent, isReadOnly, URGENT_EDITABLE_STATUSES.includes(currentStatu
                       </div>
                     )}
 
-                    {isAdminAcceptedCaseEdit && (
+                    {canEditDeveloper && (
                       <div className="gap-4">
                         <FormField
                           control={form.control}
                           name="developer"
-                          rules={{ required: "Developer is required before accepting" }}
+                          rules={{ 
+                            required: isAdminAcceptanceReview
+                              ? "Developer is required before accepting"
+                              : undefined,
+                          }}
                           render={({ field, fieldState }) => (
                             <FormItem>
-                              <FormLabel>Developer <span className="text-red-500">*</span></FormLabel>
+                              <FormLabel>
+                                Developer 
+                                {isAdminAcceptanceReview && (
+                                  <span className="text-red-500">*</span>
+                                )}
+                              </FormLabel>
                               <Select value={field.value ?? undefined} onValueChange={field.onChange} disabled={!canEditDeveloper}>
                                 <FormControl>
                                   <SelectTrigger 

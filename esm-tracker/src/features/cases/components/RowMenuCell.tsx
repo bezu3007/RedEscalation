@@ -34,7 +34,7 @@ export function RowMenuCell(params: ICellRendererParams) {
   if(isDeveloper){
     canEdit = false;
   }
-  if(data.status === "Closed"){
+  if(data.status === "Solved" || data.status === "Rejected"){
     canEdit = false;
   }
   if(isFunctionalConsultant){

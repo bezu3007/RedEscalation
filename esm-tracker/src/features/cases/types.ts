@@ -3,13 +3,11 @@ export const Case_Status =[
    "Solved",
    "Fixed",
    "Prepared",
-   "Re Journal",
    "Rejected",
    "Returned",
    "Reviewed",
    "Not Solved",
    "On Progress",
-   "Closed",
    "Urgent",
 ]
 export type CaseStatus =
