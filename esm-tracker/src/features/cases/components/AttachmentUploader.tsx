@@ -23,7 +23,7 @@ export function AttachmentUploader({
   files,
   addFiles,
   removeFile,
-  uploadSingleFile,
+  // uploadSingleFile,
   uploadAllFiles,
   downloadFile,
   caseId,
@@ -82,16 +82,16 @@ export function AttachmentUploader({
     addFiles(fileList);
   };
 
-  const handleUploadSingle = async (file: AttachmentFile) => {
-    console.log("Handling single file upload for file:", file, "to subDirectory:", subDirectory);
+  // const handleUploadSingle = async (file: AttachmentFile) => {
+  //   console.log("Handling single file upload for file:", file, "to subDirectory:", subDirectory);
 
-    if (!uploadSingleFile) return;
-    const result = await uploadSingleFile(file.id, subDirectory);
-    if (!result.success) {
-      setError(`Upload failed: ${result.message}`);
-    }
-  };
-  
+  //   if (!uploadSingleFile) return;
+  //   const result = await uploadSingleFile(file.id, subDirectory);
+  //   if (!result.success) {
+  //     setError(`Upload failed: ${result.message}`);
+  //   }
+  // };
+
   const handleUploadAll = async () => {
     console.log("Handling upload for all files to subDirectory:", subDirectory);
     
