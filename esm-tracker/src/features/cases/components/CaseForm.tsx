@@ -951,6 +951,7 @@ console.log(isUrgent, isReadOnly, URGENT_EDITABLE_STATUSES.includes(currentStatu
               {activeTab === "attachments" && (
                 <div className="p-6 min-h-[500px]">
                   <AttachmentUploader
+                    open={activeTab === "attachments"}
                     files={files}
                     addFiles={addFiles}
                     removeFile={removeFile}

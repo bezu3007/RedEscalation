@@ -38,7 +38,7 @@ export function useAttachment() {
   };
 
   const addFiles = (newFiles: FileList | null) => {
-    console.log("Adding new files:", newFiles);
+    console.log("Aaaaaaaaaaaaaaaaaaaaaadding new files:", newFiles);
     if (!newFiles) return;
 
     const mapped = Array.from(newFiles).map((file) => ({
@@ -48,7 +48,7 @@ export function useAttachment() {
       uploadStatus: 'idle' as const,
     }));
 
-    console.log("Mapped files to add:", mapped);
+    console.log("Mmmmmmmmmmmmmmmmmmmapped files to add:", mapped);
 
     setFiles((prev) => [...prev, ...mapped]);
   };
@@ -164,7 +164,7 @@ export function useAttachment() {
   const uploadAllFiles = async (
     subDirectory: string = ''
   ): Promise<{ success: boolean; results: ResponseModel<string>[] }> => {
-    console.log("Uploading all files to subDirectory:", subDirectory);
+    console.log("Uuuuuuuuuuuuuuuuuuuuuuploading all files to subDirectory:", subDirectory);
 
     const uploadPromises = files
       .filter(f => !f.isExisting && f.file && !f.isDeleted) // Only upload new files that aren't deleted
@@ -175,6 +175,7 @@ export function useAttachment() {
     setUploading(false);
 
     const allSuccess = results.every(r => r.success);
+    console.log("Fffffffffffffffffiles saved in subdirectory:", subDirectory, "with results:", results);
     return {
       success: allSuccess,
       results,
@@ -254,10 +255,11 @@ export function useAttachment() {
     const successfulUploads = files.filter(f => f.uploadResult && !f.isExisting && !f.isDeleted);
 
     for (const fileEntry of successfulUploads) {
-      const ftpUrl = fileEntry.uploadResult;
-      const url = ftpUrl?.substring(ftpUrl.indexOf("/", 7));
+      // const ftpUrl = fileEntry.uploadResult;
+      const url = fileEntry.uploadResult;
 
       console.log("Persisting attachment for file:", fileEntry.file?.name, "with upload result:", fileEntry.uploadResult);
+      console.log("Computed URL for attachment:", url);
       const attachment: AttachmentDTO = {
         id: 0,
         reference: caseId,

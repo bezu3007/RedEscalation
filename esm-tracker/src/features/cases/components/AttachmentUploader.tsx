@@ -17,6 +17,7 @@ interface Props {
   subDirectory?: string;
   showUploadButtons?: boolean;
   previewFile?: (file: AttachmentFile) => Promise<string | undefined> | string | undefined;
+  open?: boolean;
 }
 
 export function AttachmentUploader({
@@ -33,6 +34,7 @@ export function AttachmentUploader({
   subDirectory = "",
   showUploadButtons = true,
   previewFile,
+  open = false,
 }: Props) {
   const [selectedFile, setSelectedFile] = useState<AttachmentFile | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,14 +43,22 @@ export function AttachmentUploader({
   console.log("Attachment uploader caseId:", caseId, "subDirectory:", subDirectory, "files:", files);
 
   useEffect(() => {
-    console.log(files.length, "files length");
-    if (files.length > 0 && !selectedFile) {
-      setSelectedFile(files[0]);
-    }
-    if (files.length === 0) {
-      setSelectedFile(null);
-    }
-  }, [files, selectedFile]);
+    const loadFirstPreview = async () => {
+      if (!open || files.length === 0) {
+        if (files.length === 0) {
+          setSelectedFile(null);
+        }
+        return;
+      }
+
+      if (!selectedFile) {
+        void handleSelectFile(files[0]);
+      }
+    };
+
+    void loadFirstPreview();
+
+  }, [open, files, selectedFile, previewFile]);
 
   const handleFileUpload = (fileList: FileList | null) => {
     console.log("Handling file upload with fileList:", fileList);
@@ -93,7 +103,7 @@ export function AttachmentUploader({
   // };
 
   const handleUploadAll = async () => {
-    console.log("Handling upload for all files to subDirectory:", subDirectory);
+    console.log("Hhhhhhhhhhhhhhhhhhhhhhhhandling upload for all files to subDirectory:", subDirectory);
     
     if (!uploadAllFiles) return;
     setUploading(true);
@@ -103,20 +113,6 @@ export function AttachmentUploader({
       setError('Some files failed to upload');
     }
   };
-
-  // const canPreview = (file: AttachmentFile) => {
-  //   const previewableTypes = [
-  //     'image/',
-  //     'application/pdf',
-  //     'text/',
-  //     'video/',
-  //     'audio/'
-  //   ];
-  //   return previewableTypes.some(type => 
-  //     !!file.file?.type && 
-  //     file.file.type.startsWith(type)
-  //   );
-  // };
 
   const canPreview = (file: AttachmentFile) => {
     const previewableTypes = [

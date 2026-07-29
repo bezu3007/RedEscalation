@@ -259,6 +259,8 @@ export const casesApi = {
     return res.data.data.voucher
   },
 
+  ///////////////////////// Attachment API Calls /////////////////////////
+
   createAttachment: async (attachment: AttachmentDTO) => {
     console.log("Creating attachment with data:", attachment);
     const res = await apiClient.post("/Attachment", attachment);

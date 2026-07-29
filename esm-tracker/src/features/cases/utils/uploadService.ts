@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { apiClient } from '@/shared/lib/apiClient';
 
 export interface FtpUploadRequest {
   subDirectory: string;
@@ -24,8 +25,8 @@ export const uploadFileToFtp = async (
   console.log(formData);
 
   try {
-    const response = await axios.post<ResponseModel<string>>(
-      '/api/CommonLibrary/upload_ftp_file',
+    const response = await apiClient.post<ResponseModel<string>>(
+      '/CommonLibrary/upload_ftp_file',
       formData,
       {
         headers: {
@@ -33,6 +34,7 @@ export const uploadFileToFtp = async (
         },
       }
     );
+    console.log("Uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuupload response:", response.data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
