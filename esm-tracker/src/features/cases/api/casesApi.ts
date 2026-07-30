@@ -1,5 +1,5 @@
 import { apiClient } from "@/shared/lib/apiClient";
-import type {CasesResponse, CaseItem, CaseFilters, CaseStatus, CaseType, AttachmentDTO
+import type {CasesResponse, CaseItem, CaseFilters, CaseStatus, CaseType, AttachmentDTO, ActivityLogView
   // Developer,
   // AiSuggestDevelopersResponse,
 } from "../types";
@@ -174,7 +174,8 @@ export const casesApi = {
       module: item.extension3 || "",
       developmentStatus: item.extension4 || "",
       isUrgent: (item.extension5 === "1364") ? true : false,
-      isSubcase: item.extension6,
+      parentCaseId: item.extension6 ? Number(item.extension6) : null,
+      isSubcase: !!item.extension6,
       functionalConsultantId: item.consignee2Id || "",
       functionalConsultant: item.consignee2FullName || "",
       developerId: item.consignee3Id || "",
@@ -190,6 +191,26 @@ export const casesApi = {
     }));
 
     console.log("Mapped Case Items from getAll:", mapped);
+
+    const childrenMap = new Map<number, CaseItem[]>();
+
+    mapped.forEach(c => {
+      if (c.parentCaseId) {
+        if (!childrenMap.has(c.parentCaseId)) {
+          childrenMap.set(c.parentCaseId, []);
+        }
+        childrenMap.get(c.parentCaseId)!.push(c);
+      }
+    });
+
+    const ordered: CaseItem[] = [];
+
+    mapped
+      .filter(c => !c.parentCaseId)
+      .forEach(parent => {
+        ordered.push(parent);
+        ordered.push(...(childrenMap.get(parent.id ?? 0) ?? []));
+      });
 
     const page = params.page ?? 1;
     const pageSize = params.pageSize ?? 25;
@@ -231,7 +252,8 @@ export const casesApi = {
       module: item.Extension3 || "",
       developmentStatus: item.Extension4 || "",
       isUrgent: (item.extension5 === "1364") ? true : false,
-      isSubcase: item.extension6,
+      parentCaseId: item.extension6 ? Number(item.extension6) : null,
+      isSubcase: !!item.extension6,
       functionalConsultantId: item.consignee2Id || "",
       functionalConsultant: item.consignee2FullName || "",
       developerId: item.consignee3Id || "",
@@ -317,6 +339,35 @@ export const casesApi = {
     const res = await apiClient.delete(`/Attachment/${attachmentId}`);
     console.log("Aaaaaaaaaaaaaaaaaaaaaaaaaaattachment deletion response:", res.data);
     return res.data;
-  }
+  },
+
+  getActivityLog: async (caseId: number): Promise<any[]> => {
+    console.log("Fetching activity log for case ID:", caseId);
+    const res = await apiClient.get("/ActivityView", {
+      params: {
+        Reference: caseId,
+      },
+    });
+    console.log("Fetched activity log:", res.data);
+    const ActivityLog = res.data;
+
+    const mappedLog: ActivityLogView[] = ActivityLog.map((item: any) => ({
+      id: item.id,
+      pointer: item.pointer,
+      reference: item.reference,
+      code: item.code,
+      activityDefinition: item.activityDefinition,
+      consigneeUnit: item.consigneeUnit,
+      organizationUnitDefnDesc: item.organizationUnitDefnDesc,
+      timeStamp: item.timeStamp,
+      day: item.day,
+      user: item.user,
+      userName: item.userName,
+      platform: item.platform,
+      remark: item.remark || "",
+    }));
+
+    return mappedLog;
+  },
 
 };

@@ -46,6 +46,10 @@ interface CaseUIState {
     isOpen: boolean;
     data?: CaseItem;
   };
+  activityLogModal: {
+    isOpen: boolean;
+    data?: CaseItem;
+  };
   editingCase: CaseItem | null;
   viewingCase: CaseItem | null;
   transitionTargetStatus: CaseStatus | null;
@@ -65,6 +69,8 @@ interface CaseUIState {
   clearTransitionTargetStatus: () => void;
   openViewModal: (data: CaseItem) => void;
   closeViewModal: () => void;
+  openActivityLogModal: (data: CaseItem) => void;
+  closeActivityLogModal: () => void;
   setSelectedParentCase: (data: CaseItem | null) => void;
   setPage: (page: number) => void;
   setPageSize: (size: number) => void;
@@ -111,6 +117,10 @@ export const useCaseStore = create<CaseUIState>((set) => ({
     deadLine: false,
   },
   viewModal: {
+    isOpen: false,
+    data: undefined,
+  },
+  activityLogModal: {
     isOpen: false,
     data: undefined,
   },
@@ -169,6 +179,13 @@ export const useCaseStore = create<CaseUIState>((set) => ({
   }),
   closeViewModal: () => set({ 
     viewModal: { isOpen: false, data: undefined } 
+  }),
+
+  openActivityLogModal: (data) => set({ 
+    activityLogModal: { isOpen: true, data } 
+  }),
+  closeActivityLogModal: () => set({ 
+    activityLogModal: { isOpen: false, data: undefined } 
   }),
 
   // SUB CASE CONTEXT

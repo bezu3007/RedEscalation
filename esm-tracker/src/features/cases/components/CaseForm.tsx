@@ -260,7 +260,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
       caseType: initialData.caseType || "",
       module: initialData.module || "",
       developmentStatus: initialData.developmentStatus || "",
-      isSubcase: initialData.isSubcase === "true" ? "true" : "false",
+      isSubcase: typeof initialData.isSubcase === "boolean" ? (initialData.isSubcase ? "true" : "false") : (initialData.isSubcase === "true" ? "true" : "false"),
       isUrgent: initialData.isUrgent ? true : false,
       developer: initialData.developerId != null ? String(initialData.developerId) : null,
       department: initialData.department || "",

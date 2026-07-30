@@ -56,7 +56,8 @@ function mapEscalationItems(items: any[]): CaseItem[] {
     module: item.extension3 || "",
     developmentStatus: item.extension4 || "",
     isUrgent: item.extension5 === "1364",
-    isSubcase: item.extension6,
+    parentCaseId: item.extension6 ? Number(item.extension6) : null,
+    isSubcase: !!item.extension6,
     functionalConsultantId: item.consignee2Id || null,
     functionalConsultant: item.consignee2FullName || "",
     developerId: item.consignee3Id || null,
@@ -188,6 +189,7 @@ function buildAnalyticsFromCases(items: CaseItem[]): AnalyticsData {
 export const reportsApi = {
   getAnalytics: async (_params?: AnalyticsParams): Promise<AnalyticsData> => {
     const response = await apiClient.get("/EscalationView/dynamic/");
+    console.log("Analytics API Response:", response.data);
     const payload = response.data;
     const rawItems = Array.isArray(payload) ? payload : payload?.items ?? [];
     const mappedItems = mapEscalationItems(rawItems);

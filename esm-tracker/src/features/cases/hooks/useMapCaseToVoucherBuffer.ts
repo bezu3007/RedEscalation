@@ -39,7 +39,7 @@ console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrg
   if(finalStatus === "Urgent"){
     values.isUrgent = true;
   }
-  
+
   if(isEditing && initialData?.status === "Prepared"){
     finalStatus = "Edited";
   }
@@ -111,7 +111,9 @@ console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrg
       extension3: values.module,
       extension4: finalStatus,
       extension5: initialData?.isUrgent || values.isUrgent ? "1364" : "0",
-      extension6: values.isSubcase === "true" ? "true" : "false",
+      extension6: referencedId && referencedId > 0
+                    ? referencedId.toString()
+                    : "",
       lastState: lastStatusId,
       startDate: issueDateValue,
       endDate: values.deadLine || null,
@@ -131,7 +133,7 @@ console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrg
       year: now.getFullYear(),
       platform: "WEB",
       consigneeUnit: 3,
-      activityDefinition: isEditing ? 1290 : 1305,
+      activityDefinition: lastStatusId,
       remark: "",
     },
     IdGenerationParams: { isWeb: true, consigneeUnitId: 3 },

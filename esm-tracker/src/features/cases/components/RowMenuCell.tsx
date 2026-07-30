@@ -16,7 +16,7 @@ import { ExtendDeadlinePopup } from "./ExtendDeadlinePopup";
 
 export function RowMenuCell(params: ICellRendererParams) {
   const data = params.data;
-  const { openEditModal, openCreateModal, openViewModal } = useCaseStore();
+  const { openEditModal, openCreateModal, openViewModal, openActivityLogModal } = useCaseStore();
   const userRole = useAuthStore((state) => state.userRole);
   const [open, setOpen] = React.useState(false);
   const [showExtendPopup, setShowExtendPopup] = React.useState(false);
@@ -52,7 +52,7 @@ export function RowMenuCell(params: ICellRendererParams) {
   const canAddSubcase = !isDeveloper && !isBlockedSubcase;
   const canExtendDeadline =
     !isDeveloper &&
-    !["Prepared", "Returned", "Reviewed", "Rejected", "Re Journal"].includes(data.status);
+    !["Prepared", "Edited", "Returned", "Reviewed", "Rejected", "Not Solved"].includes(data.status);
   
   const getMenuHeight = () => {
     let itemCount = 1;
@@ -106,6 +106,11 @@ export function RowMenuCell(params: ICellRendererParams) {
 
   const handleDeadlineExtend = () => {
     setShowExtendPopup(true);
+    setOpen(false);
+  };
+
+  const handleActivityLog = () => {
+    openActivityLogModal(data);
     setOpen(false);
   };
 
@@ -205,6 +210,14 @@ export function RowMenuCell(params: ICellRendererParams) {
                   Extend Deadline
                 </button>
               )}
+              <button
+                type="button"
+                onClick={handleActivityLog}
+                className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-slate-100 text-sm transition-colors"
+              >
+                <Clock3 className="h-4 w-4 text-violet-600" />
+                Activity Log
+              </button>
             </div>
           </div>
         </>,

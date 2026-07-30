@@ -8,6 +8,67 @@ import { ROLE_VISIBLE_STATUSES } from "../utils/permissions";
 
 export const CASES_KEY = "cases";
 
+function flattenCaseTree(items: CaseItem[]): CaseItem[] {
+  const flattened: CaseItem[] = [];
+
+  const visit = (item: CaseItem) => {
+    flattened.push(item);
+    (item.children ?? []).forEach(visit);
+  };
+
+  items.forEach(visit);
+  return flattened;
+}
+
+function buildCaseTree(items: CaseItem[]): CaseItem[] {
+  const childrenMap = new Map<number, CaseItem[]>();
+
+  items.forEach((item) => {
+    if (item.id != null && item.parentCaseId) {
+      const bucket = childrenMap.get(item.parentCaseId) ?? [];
+      bucket.push(item);
+      childrenMap.set(item.parentCaseId, bucket);
+    }
+  });
+
+  const buildNode = (item: CaseItem, path: string[] = []): CaseItem => {
+    const childNodes = (childrenMap.get(item.id ?? 0) ?? []).map((child) => buildNode(child, [...path, item.caseNumber || String(item.id ?? "case")]));
+
+    return {
+      ...item,
+      children: childNodes,
+      treePath: [...path, item.caseNumber || String(item.id ?? "case")],
+    };
+  };
+
+  return items.filter((item) => !item.parentCaseId).map((item) => buildNode(item));
+}
+
+function buildVisibleTree(items: CaseItem[]): CaseItem[] {
+  const visibleIds = new Set(items.map((item) => item.id).filter((id): id is number => id != null));
+  const childrenMap = new Map<number, CaseItem[]>();
+
+  items.forEach((item) => {
+    if (item.id != null && item.parentCaseId && visibleIds.has(item.parentCaseId)) {
+      const bucket = childrenMap.get(item.parentCaseId) ?? [];
+      bucket.push(item);
+      childrenMap.set(item.parentCaseId, bucket);
+    }
+  });
+
+  const buildNode = (item: CaseItem, path: string[] = []): CaseItem => {
+    const childNodes = (childrenMap.get(item.id ?? 0) ?? []).map((child) => buildNode(child, [...path, item.caseNumber || String(item.id ?? "case")]));
+
+    return {
+      ...item,
+      children: childNodes,
+      treePath: [...path, item.caseNumber || String(item.id ?? "case")],
+    };
+  };
+
+  return items.filter((item) => !item.parentCaseId || !visibleIds.has(item.parentCaseId)).map((item) => buildNode(item));
+}
+
 export function useCases(extraParams?: Partial<CasesQueryParams>) {
 
   const { filters, page, pageSize } = useCaseStore();
@@ -73,13 +134,17 @@ export function useCases(extraParams?: Partial<CasesQueryParams>) {
         });
       }
 
+      const treeItems = buildCaseTree(filtered);
+      const flattenedItems = flattenCaseTree(treeItems);
+
       // Paginate on frontend
       const start = (page - 1) * pageSize;
       const end = start + pageSize;
+      const pageItems = flattenedItems.slice(start, end);
 
       return {
-        items: filtered.slice(start, end),
-        totalCount: filtered.length,
+        items: buildVisibleTree(pageItems),
+        totalCount: flattenedItems.length,
         page,
         pageSize,
       };

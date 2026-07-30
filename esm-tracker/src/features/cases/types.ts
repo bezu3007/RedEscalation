@@ -206,7 +206,8 @@ export interface CaseItem {
   module: string;
   status: CaseStatus;
   isUrgent: boolean;//extension5 is used for urgency indicator
-  isSubcase: string;
+  parentCaseId: number | null;
+  isSubcase: boolean;
   functionalConsultantId: Number | null;
   functionalConsultant: string;
   developerId: string | null;
@@ -219,6 +220,8 @@ export interface CaseItem {
   releaseNote: string;
   startDate: string;
   deadLine: string;
+  children?: CaseItem[];
+  treePath?: string[];
 //aiSuggestedDeveloper?: string | null;
 }
 
@@ -393,3 +396,67 @@ export interface AttachmentDTO {
   isActive: boolean;
   remark: string | null;
 }
+
+export interface ActivityLogView {
+  id: number;
+  pointer: number;
+  reference: number;
+  code: string;
+  // firstName: string | null;
+  // secondName: string | null;
+  // thirdName: string | null;
+  // nationality: string | null;
+  // dob: string | null;
+  activityDefinition: number;
+  // activitiyDefinitionDesc: string | null;
+  // activitiyDefinitionLookup: string | null;
+  consigneeUnit: number;
+  organizationUnitDefnDesc: string;
+  timeStamp: string;
+  day: number;
+  // device: string | null;
+  // deviceName: string | null;
+  user: number;
+  userName: string;
+  // location: string | null;
+  platform: string;
+  // periodId: number | null;
+  // ipAdress: string | null;
+  // periodName: string | null;
+  // periodStart: string | null;
+  // periodEnd: string | null;
+  remark: string;
+  // isPrint: boolean | null;
+  // isManual: boolean | null;
+}
+
+// "id": 1295139,
+//         "pointer": 767,
+//         "reference": 380276,
+//         "code": "EDV-02445-26",
+//         "firstName": null,
+//         "secondName": null,
+//         "thirdName": null,
+//         "nationality": null,
+//         "dob": null,
+//         "activityDefinition": 1290,
+//         "activitiyDefinitionDesc": null,
+//         "activitiyDefinitionLookup": null,
+//         "consigneeUnit": 3,
+//         "organizationUnitDefnDesc": "Head Office",
+//         "timeStamp": "2026-07-30T16:49:17.677",
+//         "day": 30,
+//         "device": null,
+//         "deviceName": null,
+//         "user": 406,
+//         "userName": "Orit Samuel",
+//         "location": null,
+//         "platform": "WEB",
+//         "periodId": null,
+//         "ipAdress": null,
+//         "periodName": null,
+//         "periodStart": null,
+//         "periodEnd": null,
+//         "remark": "",
+//         "isPrint": null,
+//         "isManual": null

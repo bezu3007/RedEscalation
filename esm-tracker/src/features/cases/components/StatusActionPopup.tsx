@@ -68,7 +68,7 @@ export function StatusActionPopup({
   const canExtendDeadline = useMemo(() => {
     return (
       userRole !== UserRole.DEVELOPER &&
-      !["Prepared", "Returned", "Reviewed", "Rejected", "Re Journal"].includes(caseItem.status)
+      !["Prepared", "Edited", "Returned", "Reviewed", "Rejected", "Not Solved"].includes(caseItem.status)
     );
   }, [caseItem.status, userRole]);
 

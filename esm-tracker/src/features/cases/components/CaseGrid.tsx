@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from "react";
+import React, { useMemo, useRef, useEffect, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import type { ColDef, ICellRendererParams } from "ag-grid-community";
 import { useCases } from "../hooks/useCases";
@@ -18,13 +18,24 @@ import { UserRole } from "@/features/auth/types";
 import { getAllowedTransitions } from "../utils/permissions";
 import { getPlainTextFromHtml } from "../utils/htmlUtils";
 
-function ExpandCell() {
-  const [expanded, setExpanded] = React.useState(false);
+function ExpandCell(props: ICellRendererParams<CaseItem>) {
+  const data = props.data;
+  const hasChildren = (data?.children ?? []).length > 0;
+
+  if (!hasChildren) {
+    return <span className="block h-full" />;
+  }
+
+  const expanded = props.context?.expandedRows?.[String(data?.id)] ?? true;
+
   return (
     <button
       type="button"
-      onClick={() => setExpanded(!expanded)}
-      className="flex items-center justify-center w-full h-full"
+      onClick={(event) => {
+        event.stopPropagation();
+        props.context?.toggleRowExpanded?.(data?.id ?? null, !expanded);
+      }}
+      className="flex h-full w-full items-center justify-center"
     >
       {expanded ? (
         <ChevronDown className="h-4 w-4" />
@@ -104,6 +115,7 @@ export const CaseGrid = React.memo(function CaseGrid() {
   const gridRef = useRef<AgGridReact<CaseItem>>(null);
   const { data, isLoading, isFetching } = useCases();
   const { page, pageSize, setPage, visibleColumns, setVisibleColumns } = useCaseStore();
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
   // Set default visibility for Issues column if not set
   useEffect(() => {
@@ -128,6 +140,26 @@ export const CaseGrid = React.memo(function CaseGrid() {
     }
   }, [visibleColumns, setVisibleColumns]);
 
+  const toggleRowExpanded = (id: number | null, expanded: boolean) => {
+    if (id == null) return;
+    setExpandedRows((prev) => ({ ...prev, [String(id)]: expanded }));
+  };
+
+  const rowData = useMemo(() => {
+    const rows = data?.items ?? [];
+    if (!rows.length) return [];
+
+    const visit = (items: CaseItem[]): CaseItem[] =>
+      items.flatMap((item) => {
+        const isExpanded = expandedRows[String(item.id)] ?? true;
+        const row = { ...item, expanded: item.children?.length ? isExpanded : undefined };
+        if (!item.children?.length) return [row];
+        return [row, ...(isExpanded ? visit(item.children) : [])];
+      });
+
+    return visit(rows);
+  }, [data?.items, expandedRows]);
+
   const colDefs = useMemo<ColDef<CaseItem>[]>(
     () => [
       {
@@ -138,6 +170,12 @@ export const CaseGrid = React.memo(function CaseGrid() {
         filter: false,
         resizable: false,
         cellRenderer: ExpandCell,
+        cellRendererParams: {
+          context: {
+            toggleRowExpanded,
+            expandedRows,
+          },
+        },
         // Don't auto-height for this column
         autoHeight: false,
       },
@@ -274,7 +312,7 @@ export const CaseGrid = React.memo(function CaseGrid() {
         autoHeight: false,
       },
     ],
-    [visibleColumns]
+    [visibleColumns, expandedRows]
   );
 
   const defaultColDef = useMemo<ColDef>(
@@ -294,7 +332,7 @@ export const CaseGrid = React.memo(function CaseGrid() {
         <div className="ag-theme-quartz" style={{ minWidth: "max-content", width: "100%", height: "100%" }}>
           <AgGridReact
             ref={gridRef}
-            rowData={data?.items ?? []}
+            rowData={rowData}
             columnDefs={colDefs}
             defaultColDef={defaultColDef}
             loading={isLoading}
@@ -303,28 +341,38 @@ export const CaseGrid = React.memo(function CaseGrid() {
             suppressCellFocus
             animateRows
             getRowId={({ data: d }) => String(d.id)}
-            getRowClass={(params: any) => (
-              params.data?.isSubcase === "true" 
-                ? "subcase-row" 
-                : params.data?.isUrgent
-                  ? "urgent-row" 
-                  : ""
-            )}
             getRowStyle={(params: any) => {
-               if (params.data?.isUrgent === true) {
+              const depth = (params.data?.treePath?.length ?? 1) - 1;
+              const indent = depth * 18;
+              const baseStyle: Record<string, string | number> = {
+                paddingLeft: `${indent + 8}px`,
+              };
+
+              if (params.data?.isUrgent === true) {
                 return {
+                  ...baseStyle,
                   background: "#fee2e2",
                   borderLeft: "3px solid #ef4444",
                 };
-              }else if (params.data?.isSubcase === "true"){
-                return {
-                  background: "#fef3c7",
-                  borderLeft: "3px solid #f59e0b",
-                };
               }
 
-              else return undefined;
+              // if (params.data?.isSubcase === true || params.data?.isSubcase === "true") {
+              //   return {
+              //     ...baseStyle,
+              //     background: "#fef3c7",
+              //     borderLeft: "3px solid #f59e0b",
+              //   };
+              // }
+
+              return baseStyle;
             }}
+            getRowClass={(params: any) => (
+              params.data?.isSubcase === true || params.data?.isSubcase === "true"
+                ? "subcase-row"
+                : params.data?.isUrgent
+                  ? "urgent-row"
+                  : ""
+            )}
             gridOptions={{
               onGridReady: () => {
                 // Additional grid configuration if needed
