@@ -3,6 +3,7 @@ export const Case_Status =[
    "Solved",
    "Fixed",
    "Prepared",
+   "Edited",
    "Rejected",
    "Returned",
    "Reviewed",

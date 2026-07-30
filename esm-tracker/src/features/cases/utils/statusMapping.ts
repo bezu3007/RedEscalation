@@ -3,6 +3,7 @@ import type { CaseStatus } from "../types";
 export function mapStatusToId(status: CaseStatus): number {
   const statusMap: Record<CaseStatus, number> = {
     "Prepared": 1305,
+    "Edited": 1290,
     "Reviewed": 1343,
     "Returned": 1337,
     "Rejected": 1344,
@@ -23,6 +24,7 @@ export function mapStatusToId(status: CaseStatus): number {
 export function mapIdToStatus(id: number): CaseStatus {
   const statusMap: Record<number, CaseStatus> = {
     1305: "Prepared",
+    1290: "Edited",
     1343: "Reviewed",
     1337: "Returned",
     1344: "Rejected",

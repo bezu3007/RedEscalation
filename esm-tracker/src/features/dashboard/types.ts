@@ -43,6 +43,8 @@ export interface DeveloperResolution {
   totalAssigned: number;
   resolved: number;
   avgResolutionDays: number;
+  fixedCases?: number;
+  overdueCases?: number;
 }
 
 export interface DepartmentStats {
@@ -57,6 +59,12 @@ export interface AnalyticsData {
   openCases: number;
   resolvedCases: number;
   avgResolutionDays: number;
+  totalIssues?: number;
+  resolvedIssues?: number;
+  overdueIssues?: number;
+  overdueCases?: number;
+  issuesWithDeadLinePassed?: number;
+  statusCounts?: Record<string, number>;
   projectDistribution: ProjectDistribution[];
   paymentStatus: PaymentStatusSummary[];
   moduleDistribution: ModuleDistribution[];

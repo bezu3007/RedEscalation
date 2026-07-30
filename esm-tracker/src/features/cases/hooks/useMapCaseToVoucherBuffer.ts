@@ -39,6 +39,10 @@ console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrg
   if(finalStatus === "Urgent"){
     values.isUrgent = true;
   }
+  
+  if(isEditing && initialData?.status === "Prepared"){
+    finalStatus = "Edited";
+  }
 
   console.log("Final Status:", finalStatus, "isUrgent:", initialData?.isUrgent, values.isUrgent);
 
@@ -75,7 +79,6 @@ console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrg
 
   console.log("Transaction References Buffer:", transactionReferencesBuffer);
   console.log(referencedId && referencedId > 0 ? "Referenced ID is valid" : "Referenced ID is not valid or not provided");
-  
   
   // const urgentValue =
   // isEditing && initialData?.isUrgent

@@ -20,6 +20,7 @@ export interface CasesQueryParams
 function normalizeStatus(apiStatus: string): CaseStatus {
   const map: Record<string, CaseStatus> = {
     Accepted: "Accepted",
+    Edited: "Edited",
     Solved: "Solved",
     Fixed: "Fixed",
     Prepared: "Prepared",

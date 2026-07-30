@@ -27,6 +27,12 @@ const STATUS_CONFIG: Record<CaseStatus,{ label: string; className: string }> = {
       "bg-blue-100 text-blue-800 border-blue-200",
   },
 
+  Edited: {
+    label: "Edited",
+    className:
+      "bg-indigo-100 text-indigo-800 border-indigo-200",
+  },
+
   Rejected: {
     label: "Rejected",
     className:

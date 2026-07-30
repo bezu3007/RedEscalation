@@ -14,6 +14,7 @@ const STATUSES: CaseStatus[] = [
   "Solved",
   "Fixed",
   "Prepared",
+  "Edited",
   "Rejected",
   "Returned",
   "Reviewed",
