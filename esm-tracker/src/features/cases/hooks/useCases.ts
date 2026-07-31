@@ -212,3 +212,11 @@ export function useUpdateCase() {
     },
   });
 }
+
+export const useActivityLog = (caseId: number, enabled: boolean) => {
+  return useQuery({
+    queryKey: ["activity-log", caseId],
+    queryFn: () => casesApi.getActivityLog(caseId),
+    enabled: enabled && !!caseId,
+  });
+};

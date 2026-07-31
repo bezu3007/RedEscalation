@@ -6,6 +6,7 @@ import { FilterBar } from "../components/FilterBar";
 import { CaseForm } from "../components/CaseForm";
 import { useVoucherInit } from "../hooks/useVoucherInit";
 import { StatusActionPopup } from "../components/StatusActionPopup";
+import { ActivityLogDialog } from "../components/ActvityLogDialog";
 import { StatusDialog } from "@/shared/components/ui/status-dialog";
 
 export default function CaseListPage() {
@@ -23,6 +24,8 @@ export default function CaseListPage() {
     closeEditModal,
     viewModal,
     closeViewModal,
+    activityLogModal,
+    closeActivityLogModal,
     statusPopup,
     closeStatusPopup,
   } = useCaseStore();
@@ -90,6 +93,15 @@ export default function CaseListPage() {
           open={viewModal.isOpen}
           onClose={closeViewModal}
           initData={initData}
+        />
+      )}
+
+      {activityLogModal.isOpen && (
+        <ActivityLogDialog
+          open={activityLogModal.isOpen}
+          caseId={activityLogModal.data?.id ?? undefined}
+          caseNumber={activityLogModal.data?.caseNumber}
+          onClose={closeActivityLogModal}
         />
       )}
 

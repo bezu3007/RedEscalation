@@ -181,11 +181,11 @@ export const useCaseStore = create<CaseUIState>((set) => ({
     viewModal: { isOpen: false, data: undefined } 
   }),
 
-  openActivityLogModal: (data) => set({ 
-    activityLogModal: { isOpen: true, data } 
+  openActivityLogModal: (data) => set({
+    activityLogModal: { isOpen: true, data }
   }),
-  closeActivityLogModal: () => set({ 
-    activityLogModal: { isOpen: false, data: undefined } 
+  closeActivityLogModal: () => set({
+    activityLogModal: { isOpen: false, data: undefined }
   }),
 
   // SUB CASE CONTEXT

@@ -374,11 +374,12 @@ export const casesApi = {
 
   getActivityLog: async (caseId: number): Promise<any[]> => {
     console.log("Fetching activity log for case ID:", caseId);
-    const res = await apiClient.get("/ActivityView", {
+    const res = await apiClient.get("ActivityView/dynamic", {
       params: {
         Reference: caseId,
       },
     });
+    console.log("Fetched activity log response:", res.data);
     console.log("Fetched activity log:", res.data);
     const ActivityLog = res.data;
 

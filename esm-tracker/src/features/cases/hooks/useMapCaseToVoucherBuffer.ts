@@ -40,7 +40,7 @@ console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrg
     values.isUrgent = true;
   }
 
-  if(isEditing && initialData?.status === "Prepared"){
+  if(isEditing && initialData?.status === "Prepared" && initialData?.status === finalStatus){
     finalStatus = "Edited";
   }
 
@@ -111,9 +111,7 @@ console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrg
       extension3: values.module,
       extension4: finalStatus,
       extension5: initialData?.isUrgent || values.isUrgent ? "1364" : "0",
-      extension6: referencedId && referencedId > 0
-                    ? referencedId.toString()
-                    : "",
+      extension6: initialData?.parentCaseId || (referencedId && referencedId > 0 ? referencedId.toString() : ""),
       lastState: lastStatusId,
       startDate: issueDateValue,
       endDate: values.deadLine || null,

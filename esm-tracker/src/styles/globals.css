@@ -122,7 +122,21 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  user-select: text;
+  -webkit-user-select: text;
 }
+
+.ag-theme-quartz .ag-cell * {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* .ag-theme-quartz .ag-cell-focus,
+.ag-theme-quartz .ag-cell-focus .ag-cell-wrapper {
+  border: 1px solid #2563eb !important;
+  background: #eff6ff !important;
+  box-sizing: border-box;
+} */
 
 /* Allow wrapping for issues column */
 .ag-theme-quartz .ag-cell[col-id="issues"] {

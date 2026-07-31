@@ -338,6 +338,7 @@ export const CaseGrid = React.memo(function CaseGrid() {
             loading={isLoading}
             rowHeight={44}
             headerHeight={44}
+            enableCellTextSelection
             suppressCellFocus
             animateRows
             getRowId={({ data: d }) => String(d.id)}
