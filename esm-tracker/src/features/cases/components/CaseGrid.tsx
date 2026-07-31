@@ -356,13 +356,13 @@ export const CaseGrid = React.memo(function CaseGrid() {
                 };
               }
 
-              // if (params.data?.isSubcase === true || params.data?.isSubcase === "true") {
-              //   return {
-              //     ...baseStyle,
-              //     background: "#fef3c7",
-              //     borderLeft: "3px solid #f59e0b",
-              //   };
-              // }
+              if (params.data?.isSubcase === true || params.data?.isSubcase === "true") {
+                return {
+                  ...baseStyle,
+                  background: "#dadada",
+                  borderLeft: "3px solid #808080",
+                };
+              }
 
               return baseStyle;
             }}

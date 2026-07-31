@@ -160,7 +160,38 @@ export const casesApi = {
     console.log("API URL:", url);
 
     const response = await apiClient.get(url);
-    const data = response.data ?? [];
+    let data = response.data ?? [];
+
+    if (params.code && data.length > 0) {
+      const selected = data[0];
+
+      // If it's a child, fetch its parent
+      if (selected.extension6) {
+        const parentRes = await apiClient.get(
+          `/EscalationView/dynamic/?id=${selected.extension6}`
+        );
+
+        const childRes = await apiClient.get(
+          `/EscalationView/dynamic/?Extension6=${selected.extension6}`
+        );
+
+        data = [
+          ...(parentRes.data ?? []),
+          ...(childRes.data ?? [])
+        ];
+      }
+      // If it's a parent, fetch all children
+      else {
+        const childRes = await apiClient.get(
+          `/EscalationView/dynamic/?Extension6=${selected.id}`
+        );
+
+        data = [
+          selected,
+          ...(childRes.data ?? [])
+        ];
+      }
+    }
 
     const mapped: CaseItem[] = data.map((item: any) => ({
       id: item.id,
