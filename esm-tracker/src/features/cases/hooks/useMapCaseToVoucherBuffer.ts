@@ -10,7 +10,6 @@ export function mapCaseToVoucherBuffer(
 ) {
   const now = new Date();
   const isEditing = !!initialData;
-  console.log("Referenced ID:", referencedId);
 
   const issueDateValue = values.issueDate?.trim()
     ? values.issueDate
@@ -27,7 +26,6 @@ export function mapCaseToVoucherBuffer(
   // if(finalStatus == "Rejected"){
   //   finalStatus="Closed";
   // }
-console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrgent);
 
   // if(finalStatus === "Prepared" && values.isUrgent){
   //       finalStatus = "Urgent";
@@ -43,8 +41,6 @@ console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrg
   if(isEditing && initialData?.status === "Prepared" && initialData?.status === finalStatus){
     finalStatus = "Edited";
   }
-
-  console.log("Final Status:", finalStatus, "isUrgent:", initialData?.isUrgent, values.isUrgent);
 
   const lastStatusId = mapStatusToId(finalStatus);
   const normalizedProjectId = Number(values.projectNameId) || 0;
@@ -75,10 +71,6 @@ console.log("Final Status isUrgentttttttttttttttttt:", finalStatus, values.isUrg
   if(referencedId && referencedId === 0){
     values.isSubcase = "false";
   }
-
-
-  console.log("Transaction References Buffer:", transactionReferencesBuffer);
-  console.log(referencedId && referencedId > 0 ? "Referenced ID is valid" : "Referenced ID is not valid or not provided");
   
   // const urgentValue =
   // isEditing && initialData?.isUrgent

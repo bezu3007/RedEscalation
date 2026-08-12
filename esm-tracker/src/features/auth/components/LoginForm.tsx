@@ -42,18 +42,11 @@ export function LoginForm() {
   const { mutate, isPending, error } = useMutation({
     mutationFn: authApi.login,
     onSuccess: async (data) => {
-      console.log("=== LOGIN MUTATION SUCCESS ===");
-      console.log("Data:", data);
-      console.log("Success:", data.success);
-      console.log("User:", data.user);
       
       if (data.success && data.user) {
-        console.log("Calling signIn with:", data.user, rememberMe);
         await signIn(data.user, rememberMe);
-        console.log("SignIn complete, navigating to:", returnUrl);
         navigate(returnUrl);
       } else {
-        console.log("Login failed - no user data");
         setFieldError({
           field: 'general',
           message: data.message || "Login failed. Please try again."
@@ -61,8 +54,6 @@ export function LoginForm() {
       }
     },
     onError: (err: Error) => {
-      console.error("=== LOGIN MUTATION ERROR ===");
-      console.error(err);
       
       const errorMessage = err.message.toLowerCase();
       
@@ -112,8 +103,6 @@ export function LoginForm() {
   }, [username, password, clearErrors, fieldError]);
 
   const onSubmit = (data: LoginRequest) => {
-    console.log("=== FORM SUBMIT ===");
-    console.log("Login data:", data);
     setFieldError(null);
     clearErrors();
     mutate(data);

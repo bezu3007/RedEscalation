@@ -21,9 +21,6 @@ export const uploadFileToFtp = async (
   formData.append('File', file);
   formData.append('SubDirectory', subDirectory);
 
-  console.log("Reached uploadFileToFtp with file:", file.name, "and subDirectory:", subDirectory);
-  console.log(formData);
-
   try {
     const response = await apiClient.post<ResponseModel<string>>(
       '/CommonLibrary/upload_ftp_file',
@@ -34,7 +31,6 @@ export const uploadFileToFtp = async (
         },
       }
     );
-    console.log("Uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuupload response:", response.data);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {

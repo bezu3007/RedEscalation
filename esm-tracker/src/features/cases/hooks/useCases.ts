@@ -80,7 +80,6 @@ export function useCases(extraParams?: Partial<CasesQueryParams>) {
     queryKey: [CASES_KEY, filters, page, pageSize, extraParams, userRole, user?.id],
     queryFn: async () => {
       // Fetch all cases with basic filters
-      console.log("Fetching cases with filters:", filters, "page:", page, "pageSize:", pageSize, "extraParams:", extraParams, "userRole:", userRole, "userId:", user?.id);
       const response = await casesApi.getAll({ 
         ...filters, 
         page: 1, // Fetch all for frontend filtering

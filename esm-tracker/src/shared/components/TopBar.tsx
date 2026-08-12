@@ -136,14 +136,14 @@ export function TopBar() {
                 <p className="text-sm font-medium">
                   {user?.fullName || user?.userName || "User"}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
+                {/* <p className="text-xs text-muted-foreground truncate">
                   {user?.email || user?.userName || "No email"}
                 </p>
                 {user?.branch && (
                   <p className="text-xs text-muted-foreground mt-1">
                     Branch: {user.branch}
                   </p>
-                )}
+                )} */}
               </DropdownMenuLabel>
 
               <DropdownMenuSeparator />

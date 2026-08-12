@@ -5,7 +5,7 @@ import { MetricCard } from "@/shared/components/charts/MetricCard";
 import { Case_Status } from "@/features/cases/types";
 import { DashboardChartCard } from "@/shared/components/charts/DashboardChartCard";
 import { DashboardTable } from "@/shared/components/charts/DashboardTable";
-import { Skeleton } from "@/shared/components/ui/skeleton";
+import Loader from "@/shared/components/ui/loader";
 import {
   BadgeAlert,
   CheckCircle2,
@@ -191,17 +191,8 @@ export function AnalyticsDashboard() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 w-full" />
-          ))}
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-80 w-full" />
-          ))}
-        </div>
+      <div className="flex min-h-[560px] items-center justify-center p-6 mt-20">
+        <Loader />
       </div>
     );
   }

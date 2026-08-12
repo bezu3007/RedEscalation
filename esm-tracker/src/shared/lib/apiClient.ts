@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const preferredBase = import.meta.env.PROD
-  ? "http://196.191.244.130:7040/api"
+  ? "https://api-red.redcloud.com.et/api"
   : "/api";
 
 // Resolve the runtime API base URL. Preserve absolute URLs so requests can

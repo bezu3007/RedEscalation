@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
-import {useCaseStore,type ColumnKey} from "../store/caseStore";
+import { useCaseStore, type ColumnKey } from "../store/caseStore";
+import { UserRole } from "@/features/auth/types";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import {Plus,X,Search,Filter,Columns3, } from "lucide-react";
@@ -99,8 +100,16 @@ interface Props {
 export function FilterBar({ initData }: Props) {
   // const { data } = useCases();
   const userRole = useAuthStore.getState().userRole;
-  const isDeveloper = userRole === "developer";
+  const isDeveloper = userRole === UserRole.DEVELOPER;
   
+  const statusOptions = useMemo<CaseStatus[]>(() => {
+    if (isDeveloper) {
+      return ["Accepted", "Fixed", "Solved", "Urgent"];
+    }
+
+    return STATUSES;
+  }, [isDeveloper]);
+
   // Memoize derived data to prevent recalculation on every render
   const [projectQuery, setProjectQuery] = useState("");
   const [moduleQuery, setModuleQuery] = useState("");
@@ -255,7 +264,6 @@ const filteredModuleOptions = useMemo(() => {
       draftFilters.code = `EDV-${search}-26`;
       draftFilters.search = "";
     }
-    console.log("Applying filters:", draftFilters);
 
     
     setFilters(draftFilters);
@@ -406,7 +414,7 @@ const filteredModuleOptions = useMemo(() => {
             </SelectTrigger>
             <SelectContent className="bg-white z-[100]">
               <SelectItem value="all">All Statuses</SelectItem>
-              {STATUSES.map((s) => (
+              {statusOptions.map((s) => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
             </SelectContent>
@@ -514,7 +522,7 @@ const filteredModuleOptions = useMemo(() => {
           </Select>
         )}
 
-        {visibleFilters.developer && (
+        {visibleFilters.developer && !isDeveloper && (
           <Select
             value={draftFilters.developer || "all"}
             onValueChange={(v) =>

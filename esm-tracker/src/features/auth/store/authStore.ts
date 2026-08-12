@@ -65,18 +65,16 @@ export const useAuthStore = create<AuthState>()(
         try { const currentUser = get().user; 
           if (!currentUser) 
             { console.log("No authenticated user"); return; } 
-          console.log("AUTH USER:", currentUser); 
           // Change this depending on your actual user shape 
           const person = currentUser.person ?? currentUser.person ?? currentUser.id; 
-          console.log("REQUEST PERSON:", person); 
           const response = await apiClient.get( "/user/dynamic", { params: { person, }, } ); 
-          console.log( "DYNAMIC RESPONSE:", response.data ); 
+          console.log("Dynamic user response:", response.data);
           const dynamicUser = response.data?.[0]; 
           if (!dynamicUser) { console.log("No dynamic user found"); return; } 
           set({ 
             userId: dynamicUser.id, 
-            personId: dynamicUser.person, }); 
-          console.log("Stored dynamic user:", { userId: dynamicUser.id, personId: dynamicUser.person, }); } 
+            personId: dynamicUser.person, });
+        } 
           catch (error) { 
             console.error( "Failed loading dynamic user:", error ); 
           }
@@ -91,7 +89,6 @@ export const useAuthStore = create<AuthState>()(
         }
 
         const role = determineUserRole(user);
-        console.log("using signin in authStore.ts", user, role);
 
         set({
           user,

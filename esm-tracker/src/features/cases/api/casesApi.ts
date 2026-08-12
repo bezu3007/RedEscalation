@@ -68,10 +68,8 @@ export const casesApi = {
           },
         }
       );
-      console.log("Voucher init response apiiiiiiiiiiiiiiiiiiiii:", response.data);
       return response.data;
     } catch (error) {
-      console.error("Voucher init error:", error);
       throw error; // Re-throw to be handled by React Query
     }
   },
@@ -86,9 +84,6 @@ export const casesApi = {
     if (!user) {
       throw new Error("User not authenticated");
     }
-
-    console.log("Current user:", user);
-    console.log("User role:", userRole);
 
     const hasDateRange =
       Boolean(params.fromIssueDate?.trim()) || Boolean(params.toIssueDate?.trim());
@@ -126,18 +121,14 @@ export const casesApi = {
       // ROLE-BASED FILTERING - Matches your C# logic
       if (developerFilterValue) {
         query.append("Consignee3Id", developerFilterValue);
-        console.log("Developer filter - Consignee3Id:", developerFilterValue);
       }
       else if (userRole === UserRole.DEVELOPER) {
         query.append("Consignee3Id", user.id.toString());
-        console.log("Developer filter - Consignee3Id:", user.id);
       } 
       else if (userRole === UserRole.FUNCTIONAL_CONSULTANT) {
         query.append("Consignee2Id", user.id.toString());
-        console.log("FC filter - Consignee2Id:", user.id);
       } 
       else if (userRole === UserRole.PROJECT_MANAGER || userRole === UserRole.ADMIN) {
-        console.log("PM & Admin - no filter applied (viewing all)");
       }
       if (params.caseType) {
         query.append("Extension2", params.caseType);
@@ -157,7 +148,6 @@ export const casesApi = {
     }
 
     const url = `/EscalationView/dynamic/?${query.toString()}`;
-    console.log("API URL:", url);
 
     const response = await apiClient.get(url);
     let data = response.data ?? [];
@@ -221,8 +211,6 @@ export const casesApi = {
       deadLine: item.deadLine || item.DeadLine || item.endDate || item.EndDate || "",
     }));
 
-    console.log("Mapped Case Items from getAll:", mapped);
-
     const childrenMap = new Map<number, CaseItem[]>();
 
     mapped.forEach(c => {
@@ -259,11 +247,7 @@ export const casesApi = {
   getById: async (id: number): Promise<CaseItem> => {
     const url = `/EscalationView/${id}`;
 
-    console.log("GET BY ID URL:", url);
-
     const response = await apiClient.get(url);
-
-    console.log("GET BY ID RESPONSE:", response.data);
 
     const item = response.data;
 
@@ -298,7 +282,6 @@ export const casesApi = {
       startDate: item.StartDate || "",
       deadLine: item.DeadLine || item.deadLine || item.EndDate || item.endDate || "",
     };
-    console.log("Mapped Case Item:", mapped);
     return mapped;
   },
 
@@ -316,21 +299,16 @@ export const casesApi = {
   ///////////////////////// Attachment API Calls /////////////////////////
 
   createAttachment: async (attachment: AttachmentDTO) => {
-    console.log("Creating attachment with data:", attachment);
     const res = await apiClient.post("/Attachment", attachment);
-    console.log("Attachment creation response:", res.data);
     return res.data;
   },
 
   updateAttachment: async (attachment: AttachmentDTO) => {
-    console.log("Updating attachment with data:", attachment);
     const res = await apiClient.put("/Attachment", attachment);
-    console.log("Attachment update response:", res.data);
     return res.data;
   },
 
   getAttachments: async (reference: number): Promise<AttachmentDTO[]> => {
-    console.log("Fetching attachments for reference:", reference);
     // CommonLibrary/ftp_file_preview/?path=0076217301/Transaction/ESMTracker
     const res = await apiClient.get("/Attachment/filter", {
       params: {
@@ -338,8 +316,6 @@ export const casesApi = {
         Pointer: 767,
       },
     });
-
-    console.log("Fetched attachments:", res.data);
 
     return res.data;
   },
@@ -352,35 +328,27 @@ export const casesApi = {
       ?.replace(/^\/+/i, "")
       ?.trim();
 
-    console.log("Fetching attachment preview for path:", normalizedPath || path);
-
     const res = await apiClient.get("/CommonLibrary/ftp_file_preview", {
       params: {
         path: normalizedPath || path,
       },
       responseType: "blob", // Expecting a binary response
     });
-    console.log("Fetched attachment preview URLLLLLLLLLLLLLLLLLLLLLLLL:", res.data);
 
     return URL.createObjectURL(res.data);
   },
 
   deleteAttachment: async (attachmentId: number) => {
-    console.log("Dddddddddddddddddddddddddeleting attachment with ID:", attachmentId);
     const res = await apiClient.delete(`/Attachment/${attachmentId}`);
-    console.log("Aaaaaaaaaaaaaaaaaaaaaaaaaaattachment deletion response:", res.data);
     return res.data;
   },
 
   getActivityLog: async (caseId: number): Promise<any[]> => {
-    console.log("Fetching activity log for case ID:", caseId);
     const res = await apiClient.get("ActivityView/dynamic", {
       params: {
         Reference: caseId,
       },
     });
-    console.log("Fetched activity log response:", res.data);
-    console.log("Fetched activity log:", res.data);
     const ActivityLog = res.data;
 
     const mappedLog: ActivityLogView[] = ActivityLog.map((item: any) => ({

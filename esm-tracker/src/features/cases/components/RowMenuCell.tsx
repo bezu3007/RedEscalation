@@ -99,7 +99,6 @@ export function RowMenuCell(params: ICellRendererParams) {
     }
 
     useCaseStore.getState().setSelectedParentCase(data);
-    console.log("Selected Parent Case:", useCaseStore.getState().selectedParentCase);
     openCreateModal();
     setOpen(false);
   };

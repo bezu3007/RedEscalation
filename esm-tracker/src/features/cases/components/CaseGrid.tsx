@@ -17,6 +17,7 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
 import { getAllowedTransitions } from "../utils/permissions";
 import { getPlainTextFromHtml } from "../utils/htmlUtils";
+import Loader from "@/shared/components/ui/loader";
 
 function ExpandCell(props: ICellRendererParams<CaseItem>) {
   const data = props.data;
@@ -329,13 +330,17 @@ export const CaseGrid = React.memo(function CaseGrid() {
   return (
     <div className="flex flex-col gap-3">
       <div className="case-grid-container" style={{ height: "calc(100vh - 300px)", minHeight: 400 }}>
+        {(isLoading || isFetching) && (
+          <div className="case-grid-loader-overlay">
+            <Loader />
+          </div>
+        )}
         <div className="ag-theme-quartz" style={{ minWidth: "max-content", width: "100%", height: "100%" }}>
           <AgGridReact
             ref={gridRef}
             rowData={rowData}
             columnDefs={colDefs}
             defaultColDef={defaultColDef}
-            loading={isLoading}
             rowHeight={44}
             headerHeight={44}
             enableCellTextSelection

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo, useCallback, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useMemo, useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import { useUpdateCase } from "../hooks/useCases";
 import { useAuthStore } from "@/features/auth/store/authStore";
@@ -80,7 +80,6 @@ export function StatusActionPopup({
 
   // Memoized close handler
   const handleClose = useCallback(() => {
-    console.log('🔴 Closing popup');
     onClose();
   }, [onClose]);
 
@@ -123,8 +122,6 @@ export function StatusActionPopup({
     // Set updating flag
     isUpdatingRef.current = true;
 
-    console.log("Functional Consultant ID status update:", caseItem.functionalConsultantId);
-
     // Construct form values from existing case data
     const formValues: CaseFormValues = {
       projectName: caseItem.projectName || "",
@@ -146,8 +143,6 @@ export function StatusActionPopup({
       status: targetStatus,
     };
 
-    console.log("Form values prepared for status update:", formValues);
-
     const payload = mapCaseToVoucherBuffer(formValues, userId, personId, caseItem);
 
     const normalizedPayload = {
@@ -162,29 +157,15 @@ export function StatusActionPopup({
       }
     } as VoucherBuffer;
 
-    // Attach transition reason to payload so API receives it
-    // if (transitionReason) {
-    //   // append or overwrite voucher remark
-    //   normalizedPayload.voucher.remark = (normalizedPayload.voucher.remark || "") + (normalizedPayload.voucher.remark ? "\n" : "") + transitionReason;
-    //   // include in activity remark as well
-    //   if (normalizedPayload.activity) {
-    //     normalizedPayload.activity.remark = (normalizedPayload.activity.remark || "") + (normalizedPayload.activity.remark ? "\n" : "") + transitionReason;
-    //   }
-    // }
-
-    console.log("Status Update Payload:", normalizedPayload);
-
     updateCase(normalizedPayload, {
-      onSuccess: (data) => {
-        console.log("UPDATE SUCCESS", data);
+      onSuccess: () => {
         onStatusUpdate?.(targetStatus);
         handleClose();
       },
-        onError: (err) => {
-          console.error("UPDATE ERROR", err);
-        },
-      }
-      );
+      onError: (err) => {
+        console.error("UPDATE ERROR", err);
+      },
+    });
   };
 
   // Click outside to close - with delay to prevent immediate close
@@ -224,22 +205,32 @@ export function StatusActionPopup({
   // REMOVED: The overflow:hidden effect that was causing the grid to resize
   // This was the culprit - removing it fixes the grid size issue
 
-  const getPopupPosition = () => {
-    if (!anchorEl) return { top: 0, left: 0 };
+  const [position, setPosition] = useState({ top: 0, left: 0, anchor: "bottom" as "top" | "bottom" });
+
+  const getPopupPosition = (): { top: number; left: number; anchor: "top" | "bottom" } => {
+    if (!anchorEl) return { top: 0, left: 0, anchor: "bottom" };
     const rect = anchorEl.getBoundingClientRect();
     const popupWidth = 260;
+    const popupHeight = 260;
     const left = Math.min(rect.left, window.innerWidth - popupWidth - 10);
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const anchor: "top" | "bottom" = spaceBelow >= popupHeight ? "bottom" : "top";
+
     return {
-      top: rect.bottom + 4,
-      left: left,
+      top: anchor === "bottom" ? rect.bottom + 4 : rect.top - 4,
+      left,
+      anchor,
     };
   };
+
+  useLayoutEffect(() => {
+    if (!anchorEl) return;
+    setPosition(getPopupPosition());
+  }, [anchorEl, allowedStatuses.length, canExtendDeadline]);
 
   if (allowedStatuses.length === 0 && !canExtendDeadline) {
     return null;
   }
-
-  const position = getPopupPosition();
 
   return createPortal(
     <>
@@ -249,6 +240,7 @@ export function StatusActionPopup({
         style={{
           top: position.top,
           left: position.left,
+          transform: position.anchor === 'top' ? 'translateY(-100%)' : 'none',
           pointerEvents: 'auto', // Ensure clicks are captured
         }}
         onClick={(e) => e.stopPropagation()} // Prevent clicks from bubbling
@@ -261,7 +253,6 @@ export function StatusActionPopup({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            console.log('❌ Close button clicked');
             handleClose();
           }}
           className="h-7 w-7 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors"

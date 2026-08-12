@@ -42,7 +42,6 @@ export function getAllowedTransitions(
 ): CaseStatus[] {
 
   if(role === UserRole.ADMIN && functionalConsultantId === 37453 && status === "Fixed"){
-    console.log("Admin as FC: ", role, functionalConsultantId, status);
     role = UserRole.FUNCTIONAL_CONSULTANT;
   }
 

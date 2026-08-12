@@ -97,20 +97,16 @@ export const authApi = {
         // Check if there's a user property
         else if (data && data.user && data.user.userName) {
           userData = data.user;
-          console.log("Found user in user property");
         }
         // Check if any property in data has userName
         else if (data) {
           for (const key of Object.keys(data)) {
             if (data[key] && typeof data[key] === 'object' && data[key].userName) {
               userData = data[key];
-              console.log(`Found user in ${key} property`);
               break;
             }
           }
         }
-
-        console.log("Extracted user data:", userData);
 
         // If we found user data with userName, use it
         if (userData && userData.userName) {
@@ -119,8 +115,6 @@ export const authApi = {
           userData.branch = loginData.branch;
           userData.tin = loginData.tin;
           userData.role = response.data.data.role; 
-          
-          console.log("Final user object:", userData);
 
           // Store in localStorage
           localStorage.setItem('ems-user', JSON.stringify(userData));
@@ -139,8 +133,6 @@ export const authApi = {
           };
         } else {
           // Try to construct a user from the available data
-          console.error("No userName found in response:", response.data);
-          console.log("Available data keys:", Object.keys(data || {}));
           
           // If we have personInfo but no userName, try to use it anyway
           if (data && data.personInfo) {
@@ -158,8 +150,6 @@ export const authApi = {
             userData.remark = `${loginData.branch}_${encryptPassword(loginData.password)}`;
             userData.branch = loginData.branch;
             userData.tin = loginData.tin;
-            
-            console.log("Created user from personInfo:", userData);
             
             // Store in localStorage
             localStorage.setItem('ems-user', JSON.stringify(userData));
@@ -185,7 +175,6 @@ export const authApi = {
         };
       }
     } catch (error: any) {
-      console.error("Login API error:", error);
       throw new Error(error.response?.data?.message || error.message || "Login failed");
     }
   },

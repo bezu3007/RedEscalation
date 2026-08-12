@@ -13,7 +13,6 @@ export default function CaseListPage() {
   const [confirmationMessage, setConfirmationMessage] = useState<string | null>(null);
 
   const { data: initData } = useVoucherInit();
-  console.log("Voucher init data:", initData);
   
   // Get all needed store values
   const {
@@ -39,7 +38,6 @@ export default function CaseListPage() {
   const handleStatusUpdate = (newStatus: string) => {
     setConfirmationMessage(`Status changed to ${newStatus}.`);
     setDialogOpen(true);
-    console.log('Status updated to:', newStatus);
   };
 
   const handleSuccessMessage = (message: string) => {
@@ -111,7 +109,6 @@ export default function CaseListPage() {
           caseItem={statusPopup.caseItem}
           anchorEl={statusPopup.anchorEl}
           onClose={() => {
-            console.log('🔄 Closing popup from parent');
             closeStatusPopup();
           }}
           onStatusUpdate={handleStatusUpdate}

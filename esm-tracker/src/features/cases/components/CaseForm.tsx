@@ -304,9 +304,6 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
 
   // const onSubmit = useCallback((values: CaseFormValues) => {
    const onSubmit = useCallback(async (values: CaseFormValues) => {
-    console.log("✅ Form validation passed!");
-    console.log("🚀 Form submitted with values:", values);
-    console.log(values.releaseNote);
 
     if (isSubCaseBlocked) {
       console.warn("Sub-case creation is blocked for the selected parent case status.");
@@ -353,14 +350,10 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
       },
     } as VoucherBuffer;
 
-    console.log("Normalized Payload:", normalizedPayload);
-
     if (mode === "create") {
       createCase(normalizedPayload, {
         onSuccess: async (data) => {
-          console.log("CREATE SUCCESS", data);
           const caseId = Number(data?.id ?? 0);
-          console.log("New case ID:", caseId);
 
           setActiveCaseId(caseId || null);
 
@@ -384,13 +377,10 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
         },
       });
     } else if (initialData) {
-      console.log("Updating case with ID:", initialData.id);
       updateCase(normalizedPayload, {
         onSuccess: async (data) => {
-          console.log("UPDATE SUCCESS", data);
 
           const caseId = Number(data?.id ?? 0);
-          console.log("updating file with case ID:", caseId);
 
           setActiveCaseId(caseId || null);
 
@@ -454,14 +444,6 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
   const currentStatus = (transitionTargetStatus ??
     initialData?.status ??
     "") as CaseStatus;
-    console.log({
-  isSubcase: initialData?.isSubcase,
-  transitionTargetStatus,
-  initialStatus: initialData?.status,
-  currentStatus,
-});
-
-console.log(isUrgent, isReadOnly, URGENT_EDITABLE_STATUSES.includes(currentStatus));
 
   let canEditUrgentChecklist = false;
   
@@ -470,8 +452,6 @@ console.log(isUrgent, isReadOnly, URGENT_EDITABLE_STATUSES.includes(currentStatu
   } else{
     canEditUrgentChecklist = URGENT_EDITABLE_STATUSES.includes(currentStatus);
   }
-
-  console.log("canEditUrgentChecklist:", canEditUrgentChecklist);
 
 
   return (

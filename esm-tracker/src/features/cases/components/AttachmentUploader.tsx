@@ -27,7 +27,6 @@ export function AttachmentUploader({
   // uploadSingleFile,
   uploadAllFiles,
   downloadFile,
-  caseId,
   disabled = false,
   maxFileSize = 10,
   acceptedTypes = ["*/*"],
@@ -39,8 +38,6 @@ export function AttachmentUploader({
   const [selectedFile, setSelectedFile] = useState<AttachmentFile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-
-  console.log("Attachment uploader caseId:", caseId, "subDirectory:", subDirectory, "files:", files);
 
   useEffect(() => {
     const loadFirstPreview = async () => {
@@ -61,7 +58,6 @@ export function AttachmentUploader({
   }, [open, files, selectedFile, previewFile]);
 
   const handleFileUpload = (fileList: FileList | null) => {
-    console.log("Handling file upload with fileList:", fileList);
     setError(null);
     
     if (!fileList) return;
@@ -103,7 +99,6 @@ export function AttachmentUploader({
   // };
 
   const handleUploadAll = async () => {
-    console.log("Hhhhhhhhhhhhhhhhhhhhhhhhandling upload for all files to subDirectory:", subDirectory);
     
     if (!uploadAllFiles) return;
     setUploading(true);
@@ -158,7 +153,6 @@ export function AttachmentUploader({
 
   const previewType = selectedFile?.file?.type || selectedFile?.mimeType || "";
   const previewUrl = selectedFile?.preview || selectedFile?.url || "";
-  console.log("Selected file:", selectedFile, "Preview type:", previewType, "Preview URL:", previewUrl);
 
   const handleSelectFile = async (file: AttachmentFile) => {
     setSelectedFile(file);

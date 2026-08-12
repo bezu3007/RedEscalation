@@ -83,6 +83,8 @@ function buildAnalyticsFromCases(items: CaseItem[]): AnalyticsData {
 
   let resolvedCases = 0;
   let overdueCases = 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   for (const item of items) {
     const projectName = item.projectName || "Unassigned";
@@ -140,12 +142,15 @@ function buildAnalyticsFromCases(items: CaseItem[]): AnalyticsData {
     if (item.status === "Fixed") {
       developerEntry.fixedCases = (developerEntry.fixedCases ?? 0) + 1;
     }
-    if (item.deadLine) {
+    if (item.status === "Accepted" && item.deadLine) {
       const deadline = new Date(item.deadLine);
-      const today = new Date();
-      if (!Number.isNaN(deadline.getTime()) && deadline < today) {
-        overdueCases += 1;
-        developerEntry.overdueCases = (developerEntry.overdueCases ?? 0) + 1;
+      if (!Number.isNaN(deadline.getTime())) {
+        deadline.setHours(0, 0, 0, 0);
+        // console.log(`Checking deadline for case ${item.caseNumber}: ${deadline.toISOString()} against today: ${today.toISOString()}`);
+        if (deadline < today) {
+          overdueCases += 1;
+          developerEntry.overdueCases = (developerEntry.overdueCases ?? 0) + 1;
+        }
       }
     }
     developerMap.set(developerName, developerEntry);
@@ -189,7 +194,7 @@ function buildAnalyticsFromCases(items: CaseItem[]): AnalyticsData {
 export const reportsApi = {
   getAnalytics: async (_params?: AnalyticsParams): Promise<AnalyticsData> => {
     const response = await apiClient.get("/EscalationView/dynamic/");
-    console.log("Analytics API Response:", response.data);
+    // console.log("Analytics API Response:", response.data);
     const payload = response.data;
     const rawItems = Array.isArray(payload) ? payload : payload?.items ?? [];
     const mappedItems = mapEscalationItems(rawItems);
