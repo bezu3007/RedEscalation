@@ -435,23 +435,23 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
 
   const isUrgent = initialData?.isUrgent; 
 
-  const URGENT_EDITABLE_STATUSES: CaseStatus[] = [
-    "Prepared",
-    "Returned",
-    "Urgent",
-  ];
+  // const URGENT_EDITABLE_STATUSES: CaseStatus[] = [
+  //   "Prepared",
+  //   "Returned",
+  //   "Urgent",
+  // ];
 
-  const currentStatus = (transitionTargetStatus ??
-    initialData?.status ??
-    "") as CaseStatus;
+  // const currentStatus = (transitionTargetStatus ??
+  //   initialData?.status ??
+  //   "") as CaseStatus;
 
-  let canEditUrgentChecklist = false;
+  // let canEditUrgentChecklist = false;
   
-  if(mode== "create"){
-    canEditUrgentChecklist = true;
-  } else{
-    canEditUrgentChecklist = URGENT_EDITABLE_STATUSES.includes(currentStatus);
-  }
+  // if(mode== "create"){
+  //   canEditUrgentChecklist = true;
+  // } else{
+  //   canEditUrgentChecklist = URGENT_EDITABLE_STATUSES.includes(currentStatus);
+  // }
 
 
   return (
