@@ -74,6 +74,33 @@ export const casesApi = {
     }
   },
 
+  getEmployee: async (isDev: boolean) => {
+    try {
+      if(isDev){
+        const response = await apiClient.get("Consignee/dynamic", {
+          params: {
+            preference: 2,
+            department: 56,
+            isActive: true,
+            }
+        });
+      return response.data;
+      }
+
+      else{
+        const response = await apiClient.get("Consignee/dynamic", {
+          params: {
+            preference: 2,
+            isActive: true,
+            }
+        });
+        return response.data;
+      }
+    } catch (error) {
+      throw error; // Re-throw to be handled by React Query
+    }
+  },
+
   getAll: async (params: CasesQueryParams): Promise<CasesResponse> => {
     const query = new URLSearchParams();
 
@@ -95,7 +122,8 @@ export const casesApi = {
       params.module?.trim() ||
       params.paidorNot?.trim() ||
       params.projectName?.trim() ||
-      params.developer?.trim()
+      params.developer?.trim() ||
+      params.functionalConsultant?.trim()
     );
 
     if (params.code) {
@@ -130,6 +158,13 @@ export const casesApi = {
       } 
       else if (userRole === UserRole.PROJECT_MANAGER || userRole === UserRole.ADMIN) {
       }
+      
+      const functionalConsultantFilterValue = params.functionalConsultant?.trim();
+      if (functionalConsultantFilterValue) {
+        query.append("Consignee2Id", functionalConsultantFilterValue);
+      }
+
+
       if (params.caseType) {
         query.append("Extension2", params.caseType);
       }
@@ -146,7 +181,6 @@ export const casesApi = {
         query.append("Consignee1Id", params.projectName);
       }
     }
-
     const url = `/EscalationView/dynamic/?${query.toString()}`;
 
     const response = await apiClient.get(url);

@@ -9,7 +9,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export function LoginForm() {
@@ -37,6 +37,7 @@ export function LoginForm() {
 
   const username = watch("username");
   const password = watch("password");
+  const [showPassword, setShowPassword] = useState(false);
   const rememberMe = watch("rememberMe");
 
   const { mutate, isPending, error } = useMutation({
@@ -133,22 +134,47 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-1">
-        <Label htmlFor="password">Password</Label>
+      <Label htmlFor="password">Password</Label>
+
+      <div className="relative">
         <Input
           id="password"
-          type="password"
+          type={showPassword ? "text" : "password"}
           autoComplete="current-password"
-          className={errors.password ? "border-destructive" : ""}
-          {...register("password", { 
+          className={`pr-10 ${
+            errors.password ? "border-destructive" : ""
+          }`}
+          {...register("password", {
             required: "Password is required",
             onChange: () => {
               clearErrors("password");
               setFieldError(null);
-            }
+            },
           })}
         />
+
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
+              showPassword
+                ? "text-black hover:text-gray-700"
+                : "text-blue-600 hover:text-blue-700"
+            }`}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+
         {errors.password && (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
+          <p className="text-sm text-destructive">
+            {errors.password.message}
+          </p>
         )}
       </div>
 

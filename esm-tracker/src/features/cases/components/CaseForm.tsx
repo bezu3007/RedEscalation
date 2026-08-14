@@ -543,64 +543,76 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                 <div className="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-6 p-6 min-h-[500px]">
                   {/* LEFT CARD */}
                   <div className="rounded-2xl border bg-slate-50 p-5 space-y-5 shadow-sm">
+                    
                     {/* ROW 1 - Project */}
-                    <div className=" gap-4">
-                      <FormField
-                        control={form.control}
-                        name="projectNameId"
-                        rules={{ required: "Project is required" }}
-                        render={({ field, fieldState }) => (
-                          <FormItem>
-                            <FormLabel>Projects <span className="text-red-500">*</span></FormLabel>
-                            <Select
-                              value={field.value ?? undefined}
-                              onValueChange={field.onChange}
-                              disabled={isReadOnly || isLimitedReviewEdit || isParentValueLocked}
-                            >
-                              <FormControl>
-                                <SelectTrigger 
-                                  className={cn(
-                                    "h-10 bg-white",
-                                    getFieldErrorClass(fieldState)
-                                  )}
-                                >
-                                  <SelectValue placeholder="Select project" />
-                                </SelectTrigger>
-                              </FormControl>
-
-                              <SelectContent 
-                                className="bg-white z-[100] max-h-[320px] overflow-hidden"
-                                position="popper"
-                                sideOffset={4}
+                    {mode === "view" ? (
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 min-h-10">
+                        <p
+                          className="text-sm text-slate-700 break-words whitespace-normal"
+                          title={initialData?.projectName || ""}
+                        >
+                          {initialData?.projectName || "Not Assigned"}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className=" gap-4">
+                        <FormField
+                          control={form.control}
+                          name="projectNameId"
+                          rules={{ required: "Project is required" }}
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <FormLabel>Projects <span className="text-red-500">*</span></FormLabel>
+                              <Select
+                                value={field.value ?? undefined}
+                                onValueChange={field.onChange}
+                                disabled={isReadOnly || isLimitedReviewEdit || isParentValueLocked}
                               >
-                                <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
-                                  <Input
-                                    value={projectQuery}
-                                    onChange={(e) => setProjectQuery(e.target.value)}
-                                    onKeyDown={(e) => e.stopPropagation()}
-                                    onMouseDown={(e) => e.stopPropagation()}
-                                    placeholder="Search project"
-                                    className="h-8"
-                                    disabled={isReadOnly || isLimitedReviewEdit || isParentValueLocked}
-                                  />
-                                </div>
-                                <div className="px-2 pb-1 text-xs text-slate-500">
-                                  Showing first 250 matches. Type to narrow the list.
-                                </div>
-                                <div className="h-[220px] overflow-y-auto">
-                                  {projectOptions.map((project: Consignee) => (
-                                    <SelectItem key={project.id} value={String(project.id)}>
-                                      {project.fullName}
-                                    </SelectItem>
-                                  ))}
-                                </div>
-                              </SelectContent>
-                            </Select>
-                            <FormError message={fieldState.error?.message} />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                                <FormControl>
+                                  <SelectTrigger 
+                                    className={cn(
+                                      "h-10 bg-white",
+                                      getFieldErrorClass(fieldState)
+                                    )}
+                                  >
+                                    <SelectValue placeholder="Select project" />
+                                  </SelectTrigger>
+                                </FormControl>
+
+                                <SelectContent 
+                                  className="bg-white z-[100] max-h-[320px] overflow-hidden"
+                                  position="popper"
+                                  sideOffset={4}
+                                >
+                                  <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
+                                    <Input
+                                      value={projectQuery}
+                                      onChange={(e) => setProjectQuery(e.target.value)}
+                                      onKeyDown={(e) => e.stopPropagation()}
+                                      onMouseDown={(e) => e.stopPropagation()}
+                                      placeholder="Search project"
+                                      className="h-8"
+                                      disabled={isReadOnly || isLimitedReviewEdit || isParentValueLocked}
+                                    />
+                                  </div>
+                                  <div className="px-2 pb-1 text-xs text-slate-500">
+                                    Showing first 250 matches. Type to narrow the list.
+                                  </div>
+                                  <div className="h-[220px] overflow-y-auto">
+                                    {projectOptions.map((project: Consignee) => (
+                                      <SelectItem key={project.id} value={String(project.id)}>
+                                        {project.fullName}
+                                      </SelectItem>
+                                    ))}
+                                  </div>
+                                </SelectContent>
+                              </Select>
+                              <FormError message={fieldState.error?.message} />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
                       
                     {/* ROW 2 - Module */}
                     <div className="gap-4">
@@ -826,7 +838,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                                   <div className="h-[220px] overflow-y-auto">
                                     {developerOptions.map((developer: Consignee) => (
                                       <SelectItem key={developer.id} value={String(developer.id)}>
-                                        {developer.fullName}
+                                        {developer.firstName} {developer.secondName}
                                       </SelectItem>
                                     ))}
                                   </div>

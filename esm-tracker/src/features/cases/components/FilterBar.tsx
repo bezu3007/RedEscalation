@@ -41,6 +41,7 @@ type FilterKey =
   | "module"
   | "projectName"
   | "developer"
+  | "functionalConsultant"
   | "paidorNot"
   | "fromIssueDate"
   | "toIssueDate";
@@ -54,6 +55,7 @@ const FILTER_CONFIG: {
   { key: "module", label: "Module" },
   { key: "projectName", label: "Project" },
   { key: "developer", label: "Developer" },
+  { key: "functionalConsultant", label: "Functional Consultant" },
   { key: "paidorNot", label: "Payment Status" },
   { key: "fromIssueDate", label: "From Date" },
   { key: "toIssueDate", label: "To Date" },
@@ -67,6 +69,7 @@ const emptyDraftFilters: CaseFilters = {
   module: "",
   projectName: "",
   developer: "",
+  functionalConsultant: "",
   paidorNot: "",
   fromIssueDate: "",
   toIssueDate: "",
@@ -94,6 +97,7 @@ interface Props {
     projects?: Consignee[];
     developers?: Consignee[];
     modules?: Extension;
+    functionalConsultants?: Consignee[];
   };
 }
 
@@ -101,6 +105,7 @@ export function FilterBar({ initData }: Props) {
   // const { data } = useCases();
   const userRole = useAuthStore.getState().userRole;
   const isDeveloper = userRole === UserRole.DEVELOPER;
+  const isFunctionalConsultant = userRole === UserRole.FUNCTIONAL_CONSULTANT;
   
   const statusOptions = useMemo<CaseStatus[]>(() => {
     if (isDeveloper) {
@@ -114,6 +119,7 @@ export function FilterBar({ initData }: Props) {
   const [projectQuery, setProjectQuery] = useState("");
   const [moduleQuery, setModuleQuery] = useState("");
   const [developerQuery, setDeveloperQuery] = useState("");
+  const [functionalConsultantQuery, setFunctionalConsultantQuery] = useState("");
 
   const projectOptions = useMemo(() => {
     const projects = initData?.projects ?? [];
@@ -174,10 +180,8 @@ const filteredModuleOptions = useMemo(() => {
     return developers
       .filter((developer) => {
         const haystack = [
-          developer.fullName,
           developer.firstName,
           developer.secondName,
-          developer.thirdName,
           developer.code,
         ]
           .filter(Boolean)
@@ -188,6 +192,30 @@ const filteredModuleOptions = useMemo(() => {
       })
       .slice(0, 250);
   }, [initData?.developers, developerQuery]);
+
+  const functionalConsultantOptions = useMemo(() => {
+    const functionalConsultants = initData?.functionalConsultants ?? [];
+    const query = functionalConsultantQuery.trim().toLowerCase();
+
+    if (!query) {
+      return functionalConsultants.slice(0, 250);
+    }
+
+    return functionalConsultants
+      .filter((functionalConsultant) => {
+        const haystack = [
+          functionalConsultant.firstName,
+          functionalConsultant.secondName,
+          functionalConsultant.code,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(query);
+      })
+      .slice(0, 250);
+  }, [initData?.functionalConsultants, functionalConsultantQuery]);
 
   const paymentOptions = useMemo(() => {
     return [...PAID_OR_NOT];
@@ -242,13 +270,15 @@ const filteredModuleOptions = useMemo(() => {
     if (!value || value === "all") return fallback;
 
     const match = options.find((option) => {
-      const optionValue = option?.id ?? option?.value ?? option?.code ?? option?.name ?? option?.fullName;
+      const optionValue = option?.id ?? option?.value ?? option?.code ?? option?.name;
       return String(optionValue ?? "") === String(value);
     });
 
     if (!match) return value;
 
-    return match.fullName ?? match.name ?? match.code ?? String(match);
+    const fullName = `${match.firstName ?? ""} ${match.secondName ?? ""}`.trim();
+
+    return fullName || match.name || match.code || String(match);
   };
 
   const handleShow = useCallback(() => {
@@ -350,17 +380,26 @@ const filteredModuleOptions = useMemo(() => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 z-50">
-              {FILTER_CONFIG.map((filter) => (
-                <DropdownMenuCheckboxItem
-                  key={filter.key}
-                  checked={visibleFilters[filter.key]}
-                  onCheckedChange={(checked) =>
-                    setVisibleFilters((prev) => ({ ...prev, [filter.key]: !!checked }))
-                  }
-                >
-                  {filter.label}
-                </DropdownMenuCheckboxItem>
-              ))}
+              {FILTER_CONFIG
+                .filter(
+                  (filter) =>
+                    !(isFunctionalConsultant && filter.key === "functionalConsultant") &&
+                    !(isDeveloper && filter.key === "developer")
+                )
+                .map((filter) => (
+                  <DropdownMenuCheckboxItem
+                    key={filter.key}
+                    checked={visibleFilters[filter.key]}
+                    onCheckedChange={(checked) =>
+                      setVisibleFilters((prev) => ({
+                        ...prev,
+                        [filter.key]: !!checked,
+                      }))
+                    }
+                  >
+                    {filter.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -555,13 +594,54 @@ const filteredModuleOptions = useMemo(() => {
               <div className="h-[220px] overflow-y-auto">
                 {developerOptions.map((developer: Consignee) => (
                   <SelectItem key={developer.id} value={String(developer.id)}>
-                    {developer.fullName}
+                    {developer.firstName} {developer.secondName} {developer.thirdName}
                   </SelectItem>
                 ))}
               </div>
             </SelectContent>
           </Select>
         )}
+
+        {visibleFilters.functionalConsultant && !isFunctionalConsultant && (
+          <Select
+              value={draftFilters.functionalConsultant || "all"}
+              onValueChange={(v) =>
+                setDraftFilters({ ...draftFilters, functionalConsultant: v === "all" ? "" : v })
+              }
+            >
+              <SelectTrigger className="w-[180px] bg-gray-50">
+                <span className="truncate text-left">
+                  {getSelectedOptionLabel(draftFilters.functionalConsultant, initData?.functionalConsultants ?? [], "Select a functional consultant")}
+                </span>
+              </SelectTrigger>
+              <SelectContent 
+                className="bg-white z-[100] max-h-[320px] overflow-hidden"
+                position="popper"
+                sideOffset={4} 
+              >
+                <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
+                  <Input
+                    value={functionalConsultantQuery}
+                    onChange={(e) => setFunctionalConsultantQuery(e.target.value)}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    placeholder="Search functional consultant"
+                    className="h-8"
+                  />
+                </div>
+                <div className="px-2 pb-1 text-xs text-slate-500">
+                  Showing first 250 matches. Type to narrow the list.
+                </div>
+                <div className="h-[220px] overflow-y-auto">
+                  {functionalConsultantOptions.map((functionalConsultant: Consignee) => (
+                    <SelectItem key={functionalConsultant.id} value={String(functionalConsultant.id)}>
+                      {functionalConsultant.firstName} {functionalConsultant.secondName} {functionalConsultant.thirdName}
+                    </SelectItem>
+                  ))}
+                </div>
+              </SelectContent>
+            </Select>
+          )}
 
         {visibleFilters.paidorNot && (
           <Select

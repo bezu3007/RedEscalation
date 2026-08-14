@@ -37,7 +37,6 @@ export const authApi = {
 
   login: async (body: LoginRequest): Promise<LoginResponse> => {
     const company = await authApi.getCompany();
-    console.log("Using login in authApi.ts with company:", company);
     if (!company) {
       throw new Error("Failed to get company information. Please try again.");
     }
@@ -62,19 +61,11 @@ export const authApi = {
       const url = `/SysInitialize/authenticate?${queryParams.toString()}`;
       
       const response = await apiClient.get(url);
-      
-      console.log("=== FULL RESPONSE ===");
-      console.log("Response data:", response.data);
       // const role = response.data.data.role;
-      
-      console.log("=== END RESPONSE ===");
 
       if (response.status === 200 && response.data?.success) {
         // The user data might be inside response.data.data.personInfo or response.data.data itself
         const data = response.data.data;
-        
-        console.log("Data object keys:", Object.keys(data || {}));
-        console.log("Data object:", data);
         
         // Try to find user information in different possible locations
         let userData = null;
@@ -82,17 +73,14 @@ export const authApi = {
         // Check if the data object has userName directly
         if (data && data.userName) {
           userData = data;
-          console.log("Found user in data directly");
         }
         // Check if personInfo contains user info
         else if (data && data.personInfo && data.personInfo.userName) {
           userData = data.personInfo;
-          console.log("Found user in personInfo");
         }
         // Check if data is an array and first element has userName
         else if (Array.isArray(data) && data.length > 0 && data[0].userName) {
           userData = data[0];
-          console.log("Found user in array");
         }
         // Check if there's a user property
         else if (data && data.user && data.user.userName) {

@@ -34,10 +34,10 @@ export function RowMenuCell(params: ICellRendererParams) {
   if(isDeveloper){
     canEdit = false;
   }
-  if(data.status === "Solved" || data.status === "Rejected"){
+  else if(data.status === "Solved" || data.status === "Rejected"){
     canEdit = false;
   }
-  if(isFunctionalConsultant){
+  else if(isFunctionalConsultant){
     canEdit = data.status === "Prepared" || data.status === "Returned";
   }else if(isFunctionalConsultant || isProjectManager){
     if(data.status === "Accepted" || data.status === "On Progress" || data.status === "Fixed" || data.status === "Solved" || data.status === "Not Solved"){
@@ -131,7 +131,7 @@ export function RowMenuCell(params: ICellRendererParams) {
         <button
           ref={btnRef}
           onClick={toggleMenu}
-          className="h-8 w-8 rounded-md hover:bg-slate-100 flex items-center justify-center transition-colors"
+          className="h-8 w-8 rounded-md hover:bg-slate-200 flex items-center justify-center transition-colors"
         >
           <MoreVertical className="h-4 w-4" />
         </button>

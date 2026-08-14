@@ -36,7 +36,7 @@ function ExpandCell(props: ICellRendererParams<CaseItem>) {
         event.stopPropagation();
         props.context?.toggleRowExpanded?.(data?.id ?? null, !expanded);
       }}
-      className="flex h-full w-full items-center justify-center"
+      className="flex h-full w-full items-center justify-center shadow-sm hover:bg-slate-200 transition-colors"
     >
       {expanded ? (
         <ChevronDown className="h-4 w-4" />
@@ -165,7 +165,7 @@ export const CaseGrid = React.memo(function CaseGrid() {
     () => [
       {
         headerName: "",
-        width: 50,
+        width: 70,
         pinned: "left",
         sortable: false,
         filter: false,
@@ -182,13 +182,14 @@ export const CaseGrid = React.memo(function CaseGrid() {
       },
       {
         headerName: "",
-        width: 30,
+        width: 70,
         pinned: "left",
         sortable: false,
         filter: false,
         resizable: false,
         cellRenderer: RowMenuCell,
         autoHeight: false,
+  // cellClass: "flex items-center justify-center",
       },
       {
         field: "caseNumber",

@@ -10,10 +10,14 @@ export function useVoucherInit() {
       const response = await casesApi.voucherInit();
       const data: VoucherData = response.data;
 
+      const dev = await casesApi.getEmployee(true);
+
+      const employees = await casesApi.getEmployee(false);
+
       // Extract consignees with safe access
       const projects: Consignee[] = data.requiredConsignees[0]?.consignees || [];
-      const functionalConsultants: Consignee[] = data.requiredConsignees[1]?.consignees || [];
-      const developers: Consignee[] = data.requiredConsignees[2]?.consignees || [];
+      const functionalConsultants: Consignee[] = employees || [];
+      const developers: Consignee[] = dev || [];
 
       // Find modules extension (index 2)
       const modules: Extension | undefined = data.extensions.find(

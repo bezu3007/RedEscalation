@@ -45,6 +45,7 @@ export interface CaseFilters {
   projectName: string;
   paidorNot: string;
   developer: string;
+  functionalConsultant: string;
   fromIssueDate: string;
   toIssueDate: string;
 }
@@ -338,40 +339,6 @@ export interface Consignee {
     email: string | null;
 }
 
-// Optional: Additional interfaces for completeness
-// export interface Currency {
-//     id: number;
-//     country: number;
-//     description: string;
-//     sign: string;
-//     abbrivation: string;
-//     isDefault: boolean;
-//     remark: string | null;
-// }
-
-// export interface Config {
-//     id: number;
-//     pointer: number;
-//     reference: string;
-//     consigneeUnit: null;
-//     attribute: string;
-//     currentValue: string;
-//     previousValue: string | null;
-//     remark: string | null;
-// }
-
-// export interface Reference {
-//     id: number;
-//     relationType: number;
-//     consigneeUnit: null;
-//     referringPointer: number;
-//     referringObject: number;
-//     referencedPointer: number;
-//     referencedObject: number;
-//     relationLevel: null;
-//     remark: string | null;
-// }
-
 export interface VoucherInitResult {
   raw: VoucherData;
   voucherId: string;
@@ -402,61 +369,13 @@ export interface ActivityLogView {
   pointer: number;
   reference: number;
   code: string;
-  // firstName: string | null;
-  // secondName: string | null;
-  // thirdName: string | null;
-  // nationality: string | null;
-  // dob: string | null;
   activityDefinition: number;
-  // activitiyDefinitionDesc: string | null;
-  // activitiyDefinitionLookup: string | null;
   consigneeUnit: number;
   organizationUnitDefnDesc: string;
   timeStamp: string;
   day: number;
-  // device: string | null;
-  // deviceName: string | null;
   user: number;
   userName: string;
-  // location: string | null;
   platform: string;
-  // periodId: number | null;
-  // ipAdress: string | null;
-  // periodName: string | null;
-  // periodStart: string | null;
-  // periodEnd: string | null;
   remark: string;
-  // isPrint: boolean | null;
-  // isManual: boolean | null;
 }
-
-// "id": 1295139,
-//         "pointer": 767,
-//         "reference": 380276,
-//         "code": "EDV-02445-26",
-//         "firstName": null,
-//         "secondName": null,
-//         "thirdName": null,
-//         "nationality": null,
-//         "dob": null,
-//         "activityDefinition": 1290,
-//         "activitiyDefinitionDesc": null,
-//         "activitiyDefinitionLookup": null,
-//         "consigneeUnit": 3,
-//         "organizationUnitDefnDesc": "Head Office",
-//         "timeStamp": "2026-07-30T16:49:17.677",
-//         "day": 30,
-//         "device": null,
-//         "deviceName": null,
-//         "user": 406,
-//         "userName": "Orit Samuel",
-//         "location": null,
-//         "platform": "WEB",
-//         "periodId": null,
-//         "ipAdress": null,
-//         "periodName": null,
-//         "periodStart": null,
-//         "periodEnd": null,
-//         "remark": "",
-//         "isPrint": null,
-//         "isManual": null
