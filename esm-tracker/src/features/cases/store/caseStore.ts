@@ -10,6 +10,7 @@ const createEmptyFilters = (): CaseFilters => ({
   projectName: "",
   paidorNot: "",
   developer: "",
+  functionalConsultant: "",
   fromIssueDate: "",
   toIssueDate: "",
 });
