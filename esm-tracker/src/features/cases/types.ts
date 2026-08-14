@@ -146,6 +146,7 @@ export interface CreateCaseRequest {
   module: string;
   functionalConsultant: string;
   functionalConsultantId: string;
+  fcDepartmentId: string | null;
   reviewedBy: string | null;
   developer: string | null;
   developerId: string | null;
@@ -211,6 +212,7 @@ export interface CaseItem {
   isSubcase: boolean;
   functionalConsultantId: Number | null;
   functionalConsultant: string;
+  fcDepartmentId: string | null;
   developerId: string | null;
   developer: string | null;
   reviewerId: string | null;//consignee4Id
@@ -230,6 +232,7 @@ export interface CaseFormValues {
   projectName: string;
   projectNameId: string;
   functionalConsultantId: Number | null;
+  fcDepartmentId: string | null;
   module: string;
   caseType: CaseType | "";
   developer: string | null;
@@ -249,31 +252,9 @@ export interface CaseFormValues {
 // Main interface matching the API response structure
 export interface VoucherInit {
     voucherId: string;
-    // workflows: WorkFlow[];
     extensions: Extension[];
     requiredConsignees: RequiredConsignee[];
-    // Additional fields you might want to include
-    // currencies?: Currency[];
-    // configs?: Config[];
-    // references?: Reference[];
 }
-
-// export interface WorkFlow {
-//     id: number;
-//     reference: number;
-//     consigneeUnit: number | null;
-//     description: number;
-//     state: number;
-//     index: number;
-//     needsPassCode: boolean;
-//     issuingEffect: boolean;
-//     isManual: boolean;
-//     requiredTime: number;
-//     maxRepeat: number;
-//     sequence: boolean;
-//     isPrint: boolean;
-//     remark: string | null;
-// }
 
 // ============ Main Response Types ============
 
@@ -283,12 +264,8 @@ export interface VoucherInitResponse {
 
 export interface VoucherData {
   voucherId: string;
-  // workflows: WorkFlow[];
-  // currencies: Currency[];
-  // configs: Config[];
   extensions: Extension[];
   requiredConsignees: RequiredConsignee[];
-  // references?: Reference[];
   sourceStoreMappings?: any[];
   destinationStoreMappings?: any[];
 }
@@ -342,9 +319,6 @@ export interface Consignee {
 export interface VoucherInitResult {
   raw: VoucherData;
   voucherId: string;
-  // workflows: WorkFlow[];
-  // currencies: Currency[];
-  // configs: Config[];
   projects: Consignee[];
   functionalConsultants: Consignee[];
   developers: Consignee[];

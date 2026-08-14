@@ -15,6 +15,7 @@ interface AuthState {
 
   userId: number | null;
   personId: number | null;
+  userDepartment: number | null;
 
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -43,7 +44,8 @@ export const useAuthStore = create<AuthState>()(
 
       userId: null,
       personId: null,
-
+      userDepartment: null,
+      
       isAuthenticated: false,
       isLoading: false,
 
@@ -67,13 +69,16 @@ export const useAuthStore = create<AuthState>()(
             { console.log("No authenticated user"); return; } 
           // Change this depending on your actual user shape 
           const person = currentUser.person ?? currentUser.person ?? currentUser.id; 
-          const response = await apiClient.get( "/user/dynamic", { params: { person, }, } ); 
-          console.log("Dynamic user response:", response.data);
-          const dynamicUser = response.data?.[0]; 
+          console.log("Loading dynamic user for person:", person);
+          console.log("Current user:", currentUser.department);
+          const response = await apiClient.get( "/user/dynamic", { params: { person, }, } );
+          const dynamicUser = response.data?.[0];
           if (!dynamicUser) { console.log("No dynamic user found"); return; } 
           set({ 
             userId: dynamicUser.id, 
-            personId: dynamicUser.person, });
+            personId: dynamicUser.person,
+            userDepartment: currentUser.department,
+          });
         } 
           catch (error) { 
             console.error( "Failed loading dynamic user:", error ); 

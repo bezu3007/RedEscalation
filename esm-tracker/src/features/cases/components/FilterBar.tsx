@@ -105,6 +105,7 @@ export function FilterBar({ initData }: Props) {
   // const { data } = useCases();
   const userRole = useAuthStore.getState().userRole;
   const isDeveloper = userRole === UserRole.DEVELOPER;
+  console.log("userRole in FilterBar:", userRole);
   const isFunctionalConsultant = userRole === UserRole.FUNCTIONAL_CONSULTANT;
   
   const statusOptions = useMemo<CaseStatus[]>(() => {

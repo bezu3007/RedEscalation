@@ -60,6 +60,7 @@ function mapEscalationItems(items: any[]): CaseItem[] {
     isSubcase: !!item.extension6,
     functionalConsultantId: item.consignee2Id || null,
     functionalConsultant: item.consignee2FullName || "",
+    fcDepartmentId: item.consignee2UnitId || null,
     developerId: item.consignee3Id || null,
     developer: item.consignee3FullName || "",
     reviewerId: item.consignee4Id || null,

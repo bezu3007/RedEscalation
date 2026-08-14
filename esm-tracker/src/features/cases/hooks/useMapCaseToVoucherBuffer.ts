@@ -5,6 +5,7 @@ export function mapCaseToVoucherBuffer(
   values: CaseFormValues,
   userId: number | null,
   personId: number | null,
+  userDepartment: number | null,
   initialData?: CaseItem,
   referencedId?: number,
 ) {
@@ -45,6 +46,7 @@ export function mapCaseToVoucherBuffer(
   const lastStatusId = mapStatusToId(finalStatus);
   const normalizedProjectId = Number(values.projectNameId) || 0;
   const normalizedConsignee2 = Number(isEditing ? initialData?.functionalConsultantId : personId ?? userId ?? 0) || null;
+  const fcDepartmentId = Number(isEditing ? initialData?.fcDepartmentId : userDepartment ?? 0) || null;
   const normalizedConsignee3 = Number(values.developer ?? initialData?.developerId ?? null);
   const transactionReferencesBuffer: TransactionReferenceBuffer[] =
     referencedId && referencedId > 0
@@ -96,6 +98,7 @@ export function mapCaseToVoucherBuffer(
       note: values.issues,
       originConsigneeUnit: 3,
       consigneeUnit1: 3,
+      consigneeUnit2: fcDepartmentId,
       lastModified: now.toISOString(),
       createdOn: issueDateValue,
       extension1: values.paidorNot,

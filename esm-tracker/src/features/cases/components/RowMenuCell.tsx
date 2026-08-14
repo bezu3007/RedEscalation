@@ -34,6 +34,9 @@ export function RowMenuCell(params: ICellRendererParams) {
   if(isDeveloper){
     canEdit = false;
   }
+  else if (data.status === "Edited") {
+    canEdit = true;
+  }
   else if(data.status === "Solved" || data.status === "Rejected"){
     canEdit = false;
   }
@@ -47,6 +50,7 @@ export function RowMenuCell(params: ICellRendererParams) {
   else{
     canEdit = true;
   }
+  console.log("canEdit", canEdit);
   
   const isBlockedSubcase = ["Solved", "Rejected"].includes(data.status);
   const canAddSubcase = !isDeveloper && !isBlockedSubcase;

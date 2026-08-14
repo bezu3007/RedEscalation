@@ -48,6 +48,7 @@ export function ExtendDeadlinePopup({
   const { mutate: updateCase, isPending } = useUpdateCase();
   const userId = useAuthStore((state) => state.userId);
   const personId = useAuthStore((state) => state.personId);
+  const userDepartment = useAuthStore((state) => state.userDepartment);
 
   useEffect(() => {
     setDeadline(formatDateOnly(caseItem.deadLine));
@@ -106,6 +107,7 @@ export function ExtendDeadlinePopup({
       projectName: caseItem.projectName || "",
       projectNameId: String(caseItem.projectNameId || ""),
       functionalConsultantId: caseItem.functionalConsultantId,
+      fcDepartmentId: caseItem.fcDepartmentId,
       module: caseItem.module || "",
       caseType: caseItem.caseType || "Error",
       developer: caseItem.developerId != null ? String(caseItem.developerId) : "",
@@ -119,7 +121,7 @@ export function ExtendDeadlinePopup({
       status: caseItem.status,
     };
 
-    const payload = mapCaseToVoucherBuffer(formValues, userId, personId, caseItem);
+    const payload = mapCaseToVoucherBuffer(formValues, userId, personId, userDepartment, caseItem);
     const normalizedPayload = {
       ...payload,
       voucher: {

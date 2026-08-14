@@ -58,6 +58,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
 
   const userId = useAuthStore((s) => s.userId);
   const personId = useAuthStore((s) => s.personId);
+  const userDepartment = useAuthStore((s) => s.userDepartment);
   const userRole = useAuthStore((s) => s.userRole);
   const transitionTargetStatus = useCaseStore((s) => s.transitionTargetStatus);
   const selectedParentCase = useCaseStore((s) => s.selectedParentCase);
@@ -335,6 +336,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
       submitValues,
       userId,
       personId,
+      userDepartment,
       initialData,
       isSubCaseCreateMode ? Number(selectedParentCase?.id ?? 0) : undefined,
     );

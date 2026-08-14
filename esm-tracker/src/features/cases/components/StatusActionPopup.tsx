@@ -55,6 +55,7 @@ export function StatusActionPopup({
   const userRole = useAuthStore.getState().getUserRole();
   const userId = useAuthStore((s) => s.userId);
   const personId = useAuthStore((s) => s.personId);
+  const userDepartment = useAuthStore((s) => s.userDepartment);
   const [transitionError, setTransitionError] = useState<string | null>(null);
   
   // Flag to prevent closing during status update
@@ -127,6 +128,7 @@ export function StatusActionPopup({
       projectName: caseItem.projectName || "",
       projectNameId: String(caseItem.projectNameId || ""),
       functionalConsultantId: caseItem.functionalConsultantId,
+      fcDepartmentId: caseItem.fcDepartmentId,
       module: caseItem.module || "",
       caseType: caseItem.caseType || "Error",
       developer:
@@ -143,7 +145,7 @@ export function StatusActionPopup({
       status: targetStatus,
     };
 
-    const payload = mapCaseToVoucherBuffer(formValues, userId, personId, caseItem);
+    const payload = mapCaseToVoucherBuffer(formValues, userId, personId, userDepartment, caseItem);
 
     const normalizedPayload = {
       ...payload,

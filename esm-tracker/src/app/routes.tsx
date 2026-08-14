@@ -9,6 +9,7 @@ import { AppShell } from "@/shared/components/AppShell";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { AuthGuard } from "@/features/auth/components/AuthGuard";
 import { Providers } from "@/app/providers";
+import { IdleTimeout } from "@/app/useIdleTimeout";
 
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage"));
 const CaseListPage = lazy(() => import("@/features/cases/pages/CaseListPage"));
@@ -40,7 +41,12 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <AuthGuard />, // This will check authentication and redirect if needed
+    element: (
+      <>
+        <IdleTimeout />
+        <AuthGuard />
+      </>
+    ), // This will check authentication and redirect if needed
     children: [
       {
         element: (
