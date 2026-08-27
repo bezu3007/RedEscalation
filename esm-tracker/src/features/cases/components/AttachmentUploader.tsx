@@ -285,21 +285,6 @@ export function AttachmentUploader({
                 </div>
 
                 <div className="flex items-center gap-1">
-                  {/* {showUploadButtons && uploadSingleFile && file.uploadStatus !== 'success' && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7"
-                      disabled={file.uploadStatus === 'uploading' || disabled}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleUploadSingle(file);
-                      }}
-                    >
-                      <Upload className="h-3 w-3" />
-                    </Button>
-                  )} */}
                   {downloadFile && (
                     <Button
                       type="button"

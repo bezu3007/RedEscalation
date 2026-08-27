@@ -7,7 +7,10 @@ export function determineUserRole(user: User | null): UserRole {
   const userId = user.id || 0;
   const userRole = user.role || 0;
   // ADMIN: Department 56 AND User ID 37453
-  if (departmentId === 56 && userId === 37453) {
+  // if (departmentId === 56 && userId === 37453) {
+  //   return UserRole.ADMIN;
+  // }
+  if (departmentId === 56 && (userId === 37453 || userId === 51781)) {
     return UserRole.ADMIN;
   }
 

@@ -43,7 +43,6 @@ export function LoginForm() {
   const { mutate, isPending, error } = useMutation({
     mutationFn: authApi.login,
     onSuccess: async (data) => {
-      console.log("Login successful:", data);
       if (data.success && data.user) {
         await signIn(data.user, rememberMe);
         navigate(returnUrl);

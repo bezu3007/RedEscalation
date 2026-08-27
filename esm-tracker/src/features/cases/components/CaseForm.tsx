@@ -44,7 +44,7 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
   const [developerQuery, setDeveloperQuery] = useState("");
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [activeCaseId, setActiveCaseId] = useState<number | null>(initialData?.id ?? null);
-  const MAX_CHAR_LIMIT = 300;
+  const MAX_CHAR_LIMIT = 500;
 
   const deploymentModules = {
     toolbar: [

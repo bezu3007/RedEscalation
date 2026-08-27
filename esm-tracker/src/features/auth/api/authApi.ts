@@ -62,7 +62,6 @@ export const authApi = {
       
       const response = await apiClient.get(url);
       // const role = response.data.data.role;
-
       if (response.status === 200 && response.data?.success) {
         // The user data might be inside response.data.data.personInfo or response.data.data itself
         const data = response.data.data;

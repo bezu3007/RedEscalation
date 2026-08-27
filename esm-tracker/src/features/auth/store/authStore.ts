@@ -68,9 +68,7 @@ export const useAuthStore = create<AuthState>()(
           if (!currentUser) 
             { console.log("No authenticated user"); return; } 
           // Change this depending on your actual user shape 
-          const person = currentUser.person ?? currentUser.person ?? currentUser.id; 
-          console.log("Loading dynamic user for person:", person);
-          console.log("Current user:", currentUser.department);
+          const person = currentUser.person ?? currentUser.person ?? currentUser.id;
           const response = await apiClient.get( "/user/dynamic", { params: { person, }, } );
           const dynamicUser = response.data?.[0];
           if (!dynamicUser) { console.log("No dynamic user found"); return; } 
