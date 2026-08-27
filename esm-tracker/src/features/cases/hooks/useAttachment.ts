@@ -179,60 +179,62 @@ export function useAttachment() {
   };
 
   const previewAttachment = async (file: AttachmentFile): Promise<string | undefined> => {
-    if (!file.isExisting || !file.url) {
-      return file.preview || file.url;
-    }
+  if (!file.isExisting || !file.url) {
+    return file.preview || file.url;
+  }
 
-    try {
-      const previewResult = await casesApi.getAttachmentPreview(file.url);
-      const resolvedPreview = typeof previewResult === "string" && previewResult.trim()
-        ? previewResult
-        : file.preview || file.url;
+  try {
+    // Use the API to get the file content
+    // The API should return the actual file data or a blob URL
+    const previewResult = await casesApi.getAttachmentPreview(file.url);
+    
+    // If the API returns a blob URL or data URL, use it
+    const resolvedPreview = typeof previewResult === "string" && previewResult.trim()
+      ? previewResult
+      : file.preview || file.url;
 
-      setFiles((prev) =>
-        prev.map((item) =>
-          item.id === file.id
-            ? { ...item, preview: resolvedPreview }
-            : item
-        )
-      );
+    setFiles((prev) =>
+      prev.map((item) =>
+        item.id === file.id
+          ? { ...item, preview: resolvedPreview }
+          : item
+      )
+    );
 
-      return resolvedPreview;
-    } catch (error) {
-      console.error("Failed to preview attachment:", error);
-      return file.preview || file.url;
-    }
-  };
+    return resolvedPreview;
+  } catch (error) {
+    console.error("Failed to preview attachment:", error);
+    return file.preview || file.url;
+  }
+};
 
-  const loadAttachments = async (caseId: number) => {
-    try {
-        const attachments = await casesApi.getAttachments(caseId);
+const loadAttachments = async (caseId: number) => {
+  try {
+    const attachments = await casesApi.getAttachments(caseId);
+    
+    const mapped = attachments.map(a => {
+      const mimeType = getMimeType(a.url);
+      
+      return {
+        id: generateUUID(),
+        attachmentId: a.id,
+        description: a.description,
+        url: a.url,
+        mimeType: mimeType,
+        isExisting: true,  // This is KEY - tells the uploader it's an existing file
+        isDeleted: false,
+        uploadStatus: "success" as const,
+        preview: a.url,    // Use URL as preview
+        // IMPORTANT: Do NOT include a 'file' property for existing files
+        // The uploader will use the URL instead of a File object
+      };
+    });
 
-        // const previewAttachment = await casesApi.getAttachmentPreview(attachments[0]?.url || '');
-
-        const mapped = attachments.map(a => {
-            const mimeType = getMimeType(a.url);
-            // const previewFile = "ftp://192.168.1.8:21" + a.url;
-            
-            return {
-                id: generateUUID(),
-                attachmentId: a.id,
-                description: a.description,
-                url: a.url,
-                mimeType: mimeType,
-                isExisting: true,
-                isDeleted: false,
-                uploadStatus: "success" as const,
-                file: new File([], a.description || a.url || 'attachment'),
-                preview: a.url,
-            };
-        });
-
-        setFiles(mapped);
-        setLoaded(true);
-    } catch (err) {
-        console.error("Failed to load attachments:", err);
-    }
+    setFiles(mapped);
+    setLoaded(true);
+  } catch (err) {
+    console.error("Failed to load attachments:", err);
+  }
 };
 
   const persistAttachments = async (caseId: number) => {

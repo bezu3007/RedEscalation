@@ -985,7 +985,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                       "image/*",
                       "application/pdf",
                       "application/msword",
-                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                      "*/*",
+                      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                      "application/vnd.ms-excel",
+                      "application/octet-stream",
                     ]}
                   />
                 </div>

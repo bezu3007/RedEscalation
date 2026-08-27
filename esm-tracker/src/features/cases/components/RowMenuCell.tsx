@@ -50,7 +50,6 @@ export function RowMenuCell(params: ICellRendererParams) {
   else{
     canEdit = true;
   }
-  console.log("canEdit", canEdit);
   
   const isBlockedSubcase = ["Solved", "Rejected"].includes(data.status);
   const canAddSubcase = !isDeveloper && !isBlockedSubcase;
