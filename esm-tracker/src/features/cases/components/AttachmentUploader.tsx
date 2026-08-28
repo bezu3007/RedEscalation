@@ -85,16 +85,6 @@ export function AttachmentUploader({
 
     const loadExcel = async () => {
       try {
-        // console.log('📊 Loading Excel file:', {
-        //   name: selectedFile.file?.name || selectedFile.description || selectedFile.url,
-        //   hasFile: !!selectedFile.file,
-        //   hasUrl: !!selectedFile.url,
-        //   hasPreview: !!selectedFile.preview,
-        //   mimeType: selectedFile.file?.type || selectedFile.mimeType,
-        //   isExisting: selectedFile.isExisting,
-        //   fileSize: selectedFile.file?.size,
-        //   url: selectedFile.url
-        // });
 
         let arrayBuffer: ArrayBuffer | null = null;
 
@@ -463,6 +453,112 @@ export function AttachmentUploader({
     );
   };
 
+
+  const handleDownload = async (file: AttachmentFile) => {
+    try {
+      setError(null);
+
+      const fileName =
+        file.file?.name ||
+        file.description ||
+        file.url?.split("/").pop()?.split("?")[0] ||
+        "attachment";
+
+      // ---------------------------------------------------------
+      // 1. LOCAL FILE
+      // ---------------------------------------------------------
+      if (file.file && file.file.size > 0) {
+        const url = URL.createObjectURL(file.file);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        URL.revokeObjectURL(url);
+        return;
+      }
+
+      // ---------------------------------------------------------
+      // 2. BLOB PREVIEW URL
+      // ---------------------------------------------------------
+      if (file.preview?.startsWith("blob:")) {
+        const link = document.createElement("a");
+        link.href = file.preview;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        return;
+      }
+
+      // ---------------------------------------------------------
+      // 3. EXISTING SERVER FILE
+      // ---------------------------------------------------------
+      if (file.url) {
+        let downloadUrl = file.url;
+
+        // If this is a relative/backend storage path,
+        // send it through your API download endpoint.
+        if (
+          downloadUrl.startsWith("/") ||
+          (!downloadUrl.startsWith("http://") &&
+            !downloadUrl.startsWith("https://"))
+        ) {
+          downloadUrl = `/api/attachments/download?path=${encodeURIComponent(
+            downloadUrl
+          )}`;
+        }
+
+        const response = await fetch(downloadUrl, {
+          credentials: "include",
+          headers: {
+            Accept: "*/*",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            `Download failed: ${response.status} ${response.statusText}`
+          );
+        }
+
+        const blob = await response.blob();
+
+        // VERY IMPORTANT
+        if (blob.size === 0) {
+          throw new Error("The server returned an empty file.");
+        }
+
+        const blobUrl = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        URL.revokeObjectURL(blobUrl);
+
+        return;
+      }
+
+      throw new Error("No file data or download URL available.");
+    } catch (err) {
+      console.error("❌ Download failed:", err);
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to download attachment."
+      );
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-5 min-h-[420px]">
       {/* LEFT PANEL */}
@@ -587,7 +683,7 @@ export function AttachmentUploader({
                       className="h-7 w-7"
                       onClick={(e) => {
                         e.stopPropagation();
-                        void downloadFile(file);
+                        void handleDownload(file);
                       }}
                     >
                       <Download className="h-3 w-3" />
