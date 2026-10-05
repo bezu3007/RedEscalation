@@ -1,6 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { NotificationCenter } from "@/features/notifications/components/NotificationCenter";
 import logo from "@/assets/logo.jpg";
 
 import { Button } from "@/shared/components/ui/button";
@@ -86,7 +85,7 @@ export function TopBar() {
         {/* RIGHT */}
         <div className="flex items-center gap-3">
           {/* NAV */}
-          <NotificationCenter />
+          {/* <NotificationCenter /> */}
           <nav className="flex items-center gap-2 bg-muted p-1 rounded-xl">
             {NAV.map(({ href, label, icon: Icon }) => {
               const active = pathname.startsWith(href);

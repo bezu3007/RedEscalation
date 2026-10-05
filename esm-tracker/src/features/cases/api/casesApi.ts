@@ -352,6 +352,9 @@ export const casesApi = {
         Pointer: 767,
       },
     });
+    
+    console.log(res.data);
+    
 
     return res.data;
   },

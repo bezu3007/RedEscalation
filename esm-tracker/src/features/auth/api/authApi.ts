@@ -49,11 +49,9 @@ export const authApi = {
     };
 
     try {
-      const encodedPassword = encodeURIComponent(loginData.password);
-      
       const queryParams = new URLSearchParams({
-        userName: loginData.userName || '',
-        password: encodedPassword,
+        userName: loginData.userName,
+        password: loginData.password,
         tin: loginData.tin,
         consigneeUnit: loginData.branch
       });
@@ -61,19 +59,14 @@ export const authApi = {
       const url = `/SysInitialize/authenticate?${queryParams.toString()}`;
       
       const response = await apiClient.get(url);
-      // const role = response.data.data.role;
       if (response.status === 200 && response.data?.success) {
-        // The user data might be inside response.data.data.personInfo or response.data.data itself
         const data = response.data.data;
         
-        // Try to find user information in different possible locations
         let userData = null;
         
-        // Check if the data object has userName directly
         if (data && data.userName) {
           userData = data;
         }
-        // Check if personInfo contains user info
         else if (data && data.personInfo && data.personInfo.userName) {
           userData = data.personInfo;
         }
