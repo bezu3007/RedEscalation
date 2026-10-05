@@ -914,9 +914,11 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
                       control={form.control}
                       name="issues"
                       rules={{ 
-                        required: "Issue details are required",
                         validate: (value) => {
-                          const plainText = getPlainTextFromHtml(value);
+                          const plainText = getPlainTextFromHtml(value || "");
+                          if (!plainText) {
+                            return "Issue can't be empty";
+                          }
                           if (plainText.length > MAX_CHAR_LIMIT) {
                             return `Maximum ${MAX_CHAR_LIMIT} characters allowed`;
                           }
