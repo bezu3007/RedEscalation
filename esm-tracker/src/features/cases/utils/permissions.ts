@@ -18,6 +18,7 @@ export const ROLE_TRANSITIONS: Record<UserRole, Partial<Record<CaseStatus, CaseS
   [UserRole.PROJECT_MANAGER]: {
     "Prepared": ["Reviewed", "Returned", "Rejected", "Urgent"],
     "Edited": ["Reviewed", "Returned", "Rejected", "Urgent"],
+    "Fixed": ["Solved", "Not Solved"],
   },
   
   [UserRole.ADMIN]: {

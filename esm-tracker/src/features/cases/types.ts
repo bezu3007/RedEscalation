@@ -39,7 +39,7 @@ export type PaidorNot =
 export interface CaseFilters {
   code: string,
   search: string;
-  status: CaseStatus | "";
+  status: string;
   caseType: CaseType | "";
   module: string;
   projectName: string;

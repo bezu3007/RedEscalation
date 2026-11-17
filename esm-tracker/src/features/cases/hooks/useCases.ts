@@ -77,7 +77,7 @@ export function useCases(extraParams?: Partial<CasesQueryParams>) {
   const visibleStatuses = userRole != null ? (ROLE_VISIBLE_STATUSES[userRole] ?? []) : [];
 
   return useQuery({
-    queryKey: [CASES_KEY, filters, page, pageSize, extraParams, userRole, user?.id],
+    queryKey: [CASES_KEY, filters, page, pageSize, extraParams, userRole, user?.id, user?.department],
     queryFn: async () => {
       // Fetch all cases with basic filters
       const response = await casesApi.getAll({ 
@@ -95,8 +95,14 @@ export function useCases(extraParams?: Partial<CasesQueryParams>) {
 
         // 2. Check role-specific visibility rules
         switch (userRole) {
-          case UserRole.FUNCTIONAL_CONSULTANT:
-            return caseItem.functionalConsultantId === user?.id;
+          case UserRole.FUNCTIONAL_CONSULTANT: {
+            const isAssignedToUser =
+              String(caseItem.functionalConsultantId ?? "") === String(user?.id ?? "");
+            const isInUserDepartment =
+              user?.department != null &&
+              String(caseItem.fcDepartmentId ?? "") === String(user.department);
+            return isAssignedToUser || isInUserDepartment;
+          }
 
           case UserRole.PROJECT_MANAGER:
             return true;

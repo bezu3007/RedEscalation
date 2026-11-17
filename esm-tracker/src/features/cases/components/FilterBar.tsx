@@ -75,6 +75,15 @@ const emptyDraftFilters: CaseFilters = {
   toIssueDate: "",
 };
 
+const getSelectedValues = (value: string) =>
+  value.split(",").map((item) => item.trim()).filter(Boolean);
+
+const toggleSelectedValue = (currentValue: string, value: string, checked: boolean) => {
+  const selectedValues = getSelectedValues(currentValue).filter((item) => item !== value);
+  if (checked) selectedValues.push(value);
+  return selectedValues.join(",");
+};
+
 const COLUMN_CONFIG: {
   key: ColumnKey;
   label: string;
@@ -267,18 +276,20 @@ const filteredModuleOptions = useMemo(() => {
   const hasActiveFilters = Object.entries(filters).some(([, value]) => Boolean(value));
 
   const getSelectedOptionLabel = (value: string, options: any[], fallback: string) => {
-    if (!value || value === "all") return fallback;
+    const values = getSelectedValues(value);
+    if (values.length === 0 || value === "all") return fallback;
 
-    const match = options.find((option) => {
-      const optionValue = option?.id ?? option?.value ?? option?.code ?? option?.name;
-      return String(optionValue ?? "") === String(value);
-    });
+    return values.map((selectedValue) => {
+      const match = options.find((option) => {
+        const optionValue = option?.id ?? option?.value ?? option?.code ?? option?.name;
+        return String(optionValue ?? "") === selectedValue;
+      });
 
-    if (!match) return value;
+      if (!match) return selectedValue;
 
-    const fullName = `${match.firstName ?? ""} ${match.secondName ?? ""}`.trim();
-
-    return fullName || match.name || match.code || String(match);
+      const fullName = `${match.firstName ?? ""} ${match.secondName ?? ""}`.trim();
+      return fullName || match.name || match.code || String(match);
+    }).join(", ");
   };
 
   const handleShow = useCallback(() => {
@@ -442,22 +453,39 @@ const filteredModuleOptions = useMemo(() => {
       {/* FILTERS */}
       <div className="flex flex-wrap gap-2 items-center">
         {visibleFilters.status && (
-          <Select
-            value={draftFilters.status || "all"}
-            onValueChange={(v) =>
-              setDraftFilters({ ...draftFilters, status: v === "all" ? "" : (v as CaseStatus) })
-            }
-          >
-            <SelectTrigger className="w-[170px] bg-gray-50">
-              <SelectValue placeholder="Select Status" />
-            </SelectTrigger>
-            <SelectContent className="bg-white z-[100]">
-              <SelectItem value="all">All Statuses</SelectItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-[170px] justify-start bg-gray-50 font-normal">
+                <span className="truncate">
+                  {getSelectedOptionLabel(draftFilters.status, statusOptions, "Select Status")}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[200px] max-h-[320px] overflow-y-auto">
+              <DropdownMenuCheckboxItem
+                checked={getSelectedValues(draftFilters.status).length === 0}
+                onSelect={(event) => event.preventDefault()}
+                onCheckedChange={() => setDraftFilters({ ...draftFilters, status: "" })}
+              >
+                All Statuses
+              </DropdownMenuCheckboxItem>
               {statusOptions.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
+                <DropdownMenuCheckboxItem
+                  key={s}
+                  checked={getSelectedValues(draftFilters.status).includes(s)}
+                  onSelect={(event) => event.preventDefault()}
+                  onCheckedChange={(checked) =>
+                    setDraftFilters({
+                      ...draftFilters,
+                      status: toggleSelectedValue(draftFilters.status, s, checked === true),
+                    })
+                  }
+                >
+                  {s}
+                </DropdownMenuCheckboxItem>
               ))}
-            </SelectContent>
-          </Select>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
 
         {visibleFilters.caseType && (
@@ -603,28 +631,22 @@ const filteredModuleOptions = useMemo(() => {
         )}
 
         {visibleFilters.functionalConsultant && !isFunctionalConsultant && (
-          <Select
-              value={draftFilters.functionalConsultant || "all"}
-              onValueChange={(v) =>
-                setDraftFilters({ ...draftFilters, functionalConsultant: v === "all" ? "" : v })
-              }
-            >
-              <SelectTrigger className="w-[180px] bg-gray-50">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-[180px] justify-start bg-gray-50 font-normal">
                 <span className="truncate text-left">
                   {getSelectedOptionLabel(draftFilters.functionalConsultant, initData?.functionalConsultants ?? [], "Select a functional consultant")}
                 </span>
-              </SelectTrigger>
-              <SelectContent 
-                className="bg-white z-[100] max-h-[320px] overflow-hidden"
-                position="popper"
-                sideOffset={4} 
-              >
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[260px] max-h-[320px] overflow-hidden">
                 <div className="sticky top-0 z-10 bg-white px-2 pb-2 pt-2">
                   <Input
                     value={functionalConsultantQuery}
                     onChange={(e) => setFunctionalConsultantQuery(e.target.value)}
                     onKeyDown={(e) => e.stopPropagation()}
                     onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
                     placeholder="Search functional consultant"
                     className="h-8"
                   />
@@ -632,15 +654,36 @@ const filteredModuleOptions = useMemo(() => {
                 <div className="px-2 pb-1 text-xs text-slate-500">
                   Showing first 250 matches. Type to narrow the list.
                 </div>
+                <DropdownMenuCheckboxItem
+                  checked={getSelectedValues(draftFilters.functionalConsultant).length === 0}
+                  onSelect={(event) => event.preventDefault()}
+                  onCheckedChange={() => setDraftFilters({ ...draftFilters, functionalConsultant: "" })}
+                >
+                  All Functional Consultants
+                </DropdownMenuCheckboxItem>
                 <div className="h-[220px] overflow-y-auto">
                   {functionalConsultantOptions.map((functionalConsultant: Consignee) => (
-                    <SelectItem key={functionalConsultant.id} value={String(functionalConsultant.id)}>
+                    <DropdownMenuCheckboxItem
+                      key={functionalConsultant.id}
+                      checked={getSelectedValues(draftFilters.functionalConsultant).includes(String(functionalConsultant.id))}
+                      onSelect={(event) => event.preventDefault()}
+                      onCheckedChange={(checked) =>
+                        setDraftFilters({
+                          ...draftFilters,
+                          functionalConsultant: toggleSelectedValue(
+                            draftFilters.functionalConsultant,
+                            String(functionalConsultant.id),
+                            checked === true
+                          ),
+                        })
+                      }
+                    >
                       {functionalConsultant.firstName} {functionalConsultant.secondName} {functionalConsultant.thirdName}
-                    </SelectItem>
+                    </DropdownMenuCheckboxItem>
                   ))}
                 </div>
-              </SelectContent>
-            </Select>
+            </DropdownMenuContent>
+          </DropdownMenu>
           )}
 
         {visibleFilters.paidorNot && (
