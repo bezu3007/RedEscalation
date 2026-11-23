@@ -62,7 +62,8 @@ export function usePermissions() {
     return false;
   };
 
-  const canViewAllCases = userRole === UserRole.ADMIN || 
+  const canViewAllCases = userRole === UserRole.ADMIN ||
+                          userRole === UserRole.FUNCTIONAL_CONSULTANT ||
                           userRole === UserRole.PROJECT_MANAGER;
   
   const canViewCase = (caseItem: CaseItem) => {
@@ -71,7 +72,7 @@ export function usePermissions() {
     if (userRole === UserRole.ADMIN) return true;
     if (userRole === UserRole.PROJECT_MANAGER) return caseItem.projectNameId === user.id.toString();
     if (userRole === UserRole.DEVELOPER) return caseItem.developerId === user.id.toString();
-    if (userRole === UserRole.FUNCTIONAL_CONSULTANT) return caseItem.functionalConsultantId === user.id;
+    if (userRole === UserRole.FUNCTIONAL_CONSULTANT) return true;
     
     return false;
   };

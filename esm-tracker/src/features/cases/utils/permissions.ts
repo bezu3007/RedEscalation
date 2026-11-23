@@ -67,7 +67,7 @@ export function canViewCase(
 
   switch (role) {
     case UserRole.FUNCTIONAL_CONSULTANT:
-      return caseItem.functionalConsultantId === userId;
+      return true;
 
     case UserRole.PROJECT_MANAGER:
       return caseItem.departmentId === userId;

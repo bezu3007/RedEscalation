@@ -96,12 +96,7 @@ export function useCases(extraParams?: Partial<CasesQueryParams>) {
         // 2. Check role-specific visibility rules
         switch (userRole) {
           case UserRole.FUNCTIONAL_CONSULTANT: {
-            const isAssignedToUser =
-              String(caseItem.functionalConsultantId ?? "") === String(user?.id ?? "");
-            const isInUserDepartment =
-              user?.department != null &&
-              String(caseItem.fcDepartmentId ?? "") === String(user.department);
-            return isAssignedToUser || isInUserDepartment;
+            return true;
           }
 
           case UserRole.PROJECT_MANAGER:

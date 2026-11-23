@@ -164,17 +164,12 @@ export const authApi = {
   },
 
   logout: async (): Promise<void> => {
-    try {
-      await apiClient.post("/auth/logout");
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      _cachedCompany = null;
-      localStorage.removeItem('ems-user');
-      localStorage.removeItem('ems-login-timestamp');
-      localStorage.removeItem('ems-remember-me');
-      localStorage.removeItem('ems-session-persistent');
-    }
+    _cachedCompany = null;
+    localStorage.removeItem('ems-user');
+    localStorage.removeItem('ems-user-role');
+    localStorage.removeItem('ems-login-timestamp');
+    localStorage.removeItem('ems-remember-me');
+    localStorage.removeItem('ems-session-persistent');
   },
 
   getUserByUsername: async (username: string): Promise<User | null> => {

@@ -152,11 +152,6 @@ export const casesApi = {
       }
       else if (userRole === UserRole.DEVELOPER) {
         query.append("Consignee3Id", user.id.toString());
-      } 
-      else if (userRole === UserRole.FUNCTIONAL_CONSULTANT) {
-        query.append("Consignee2Id", user.id.toString());
-      } 
-      else if (userRole === UserRole.PROJECT_MANAGER || userRole === UserRole.ADMIN) {
       }
       
       const functionalConsultantFilterValue = params.functionalConsultant?.trim();

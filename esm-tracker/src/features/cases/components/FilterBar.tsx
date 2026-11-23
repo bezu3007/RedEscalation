@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
+import { format } from "date-fns";
+import type { DateRange } from "react-day-picker";
 import { useCaseStore, type ColumnKey } from "../store/caseStore";
 import { UserRole } from "@/features/auth/types";
 import { Input } from "@/shared/components/ui/input";
@@ -6,7 +8,7 @@ import { Button } from "@/shared/components/ui/button";
 import {Plus,X,Search,Filter,Columns3, } from "lucide-react";
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from "@/shared/components/ui/select";
 import {DropdownMenu,DropdownMenuContent,DropdownMenuCheckboxItem,DropdownMenuTrigger} from "@/shared/components/ui/dropdown-menu";
-import { DateField } from "@/shared/components/DateField";
+import { DateRangePicker } from "@/shared/components/DateRangePicker";
 import { PAID_OR_NOT, type CaseFilters, type CaseStatus,type CaseType, type Consignee, type Extension} from "../types";
 import {useAuthStore} from "../../auth/store/authStore";
 
@@ -114,7 +116,6 @@ export function FilterBar({ initData }: Props) {
   // const { data } = useCases();
   const userRole = useAuthStore.getState().userRole;
   const isDeveloper = userRole === UserRole.DEVELOPER;
-  const isFunctionalConsultant = userRole === UserRole.FUNCTIONAL_CONSULTANT;
   
   const statusOptions = useMemo<CaseStatus[]>(() => {
     if (isDeveloper) {
@@ -273,7 +274,28 @@ const filteredModuleOptions = useMemo(() => {
     localStorage.setItem("visibleColumns", JSON.stringify(visibleColumns));
   }, [visibleColumns]);
 
-  const hasActiveFilters = Object.entries(filters).some(([, value]) => Boolean(value));
+  const selectedIssueDateRange = useMemo<DateRange | undefined>(() => {
+    if (!draftFilters.fromIssueDate && !draftFilters.toIssueDate) return undefined;
+
+    const parseDate = (value: string) => {
+      if (!value) return undefined;
+      const [year, month, day] = value.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    };
+
+    return {
+      from: parseDate(draftFilters.fromIssueDate),
+      to: parseDate(draftFilters.toIssueDate),
+    };
+  }, [draftFilters.fromIssueDate, draftFilters.toIssueDate]);
+
+  const handleIssueDateRangeChange = useCallback((range: DateRange | undefined) => {
+    setDraftFilters((current) => ({
+      ...current,
+      fromIssueDate: range?.from ? format(range.from, "yyyy-MM-dd") : "",
+      toIssueDate: range?.to ? format(range.to, "yyyy-MM-dd") : "",
+    }));
+  }, []);
 
   const getSelectedOptionLabel = (value: string, options: any[], fallback: string) => {
     const values = getSelectedValues(value);
@@ -394,7 +416,6 @@ const filteredModuleOptions = useMemo(() => {
               {FILTER_CONFIG
                 .filter(
                   (filter) =>
-                    !(isFunctionalConsultant && filter.key === "functionalConsultant") &&
                     !(isDeveloper && filter.key === "developer")
                 )
                 .map((filter) => (
@@ -455,7 +476,11 @@ const filteredModuleOptions = useMemo(() => {
         {visibleFilters.status && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-[170px] justify-start bg-gray-50 font-normal">
+              <Button
+                variant="outline"
+                style={{ backgroundColor: "#f9fafb" }}
+                className="w-[170px] justify-start bg-gray-50 font-normal"
+              >
                 <span className="truncate">
                   {getSelectedOptionLabel(draftFilters.status, statusOptions, "Select Status")}
                 </span>
@@ -630,10 +655,14 @@ const filteredModuleOptions = useMemo(() => {
           </Select>
         )}
 
-        {visibleFilters.functionalConsultant && !isFunctionalConsultant && (
+        {visibleFilters.functionalConsultant && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="w-[180px] justify-start bg-gray-50 font-normal">
+              <Button
+                variant="outline"
+                style={{ backgroundColor: "#f9fafb" }}
+                className="w-[180px] justify-start bg-gray-50 font-normal"
+              >
                 <span className="truncate text-left">
                   {getSelectedOptionLabel(draftFilters.functionalConsultant, initData?.functionalConsultants ?? [], "Select a functional consultant")}
                 </span>
@@ -706,41 +735,26 @@ const filteredModuleOptions = useMemo(() => {
         )}
 
         {(visibleFilters.fromIssueDate || visibleFilters.toIssueDate) && (
-          <div className="flex items-center gap-2">
-            <DateField
-              placeholder="From Date"
-              value={draftFilters.fromIssueDate}
-              onChange={(value) =>
-                setDraftFilters({ ...draftFilters, fromIssueDate: value })
-              }
-              className="w-[160px] bg-gray-50 text-sm text-slate-500"
-            />
-            <DateField
-              placeholder="To Date"
-              value={draftFilters.toIssueDate}
-              onChange={(value) =>
-                setDraftFilters({ ...draftFilters, toIssueDate: value })
-              }
-              className="w-[160px] bg-gray-50 text-sm text-slate-500"
-            />
-          </div>
+          <DateRangePicker
+            date={selectedIssueDateRange}
+            onDateChange={handleIssueDateRangeChange}
+            onApply={handleShow}
+          />
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          {hasActiveFilters && (
-            <Button
-              variant="danger-outline"
-              size="sm"
-              onClick={handleClear}
-              className="gap-1"
-            >
-              <X className="h-4 w-4" />
-              Clear
-            </Button>
-          )}
+          <Button
+            variant="danger-outline"
+            size="sm"
+            onClick={handleClear}
+            className="gap-1"
+          >
+            <X className="h-4 w-4" />
+            Clear
+          </Button>
 
           <Button size="sm" onClick={handleShow}>
-            Show
+            Apply
           </Button>
 
           {/* <Button 
