@@ -59,6 +59,8 @@ export interface OpenDiscussionResponse {
   groupId: string;
   messageThreadId: number;
   status: "OPEN" | "CLOSED";
+  topicUrl?: string;
+  botUrl?: string;
   message: string;
   participants?: ParticipantSyncResult[];
 }
@@ -82,6 +84,7 @@ export interface UpdateDiscussionResponse {
   groupId?: string;
   messageThreadId?: number;
   status?: "OPEN" | "CLOSED";
+  topicUrl?: string;
   message: string;
 }
 

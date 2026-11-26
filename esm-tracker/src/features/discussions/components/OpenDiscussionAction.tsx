@@ -1,7 +1,12 @@
 import { Loader2, MessageSquare } from "lucide-react";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import type { CaseItem } from "@/features/cases/types";
 import { openCaseDiscussion } from "../services/discussionApi";
 import { useDiscussionStore } from "../store/discussionStore";
+import {
+  launchTelegramUrl,
+  resolveTelegramDestination,
+} from "../utils/telegramLinks";
 
 interface OpenDiscussionActionProps {
   caseItem: CaseItem;
@@ -14,6 +19,9 @@ export function OpenDiscussionAction({
 }: OpenDiscussionActionProps) {
   const { openingCaseId, setOpeningCaseId, showSuccess, showError } =
     useDiscussionStore();
+  const currentEmployeeId = useAuthStore(
+    (s) => s.personId ?? s.user?.person ?? s.user?.id
+  );
 
   const currentCaseKey =
     caseItem.id !== null && caseItem.id !== undefined
@@ -31,7 +39,15 @@ export function OpenDiscussionAction({
     setOpeningCaseId(currentCaseKey);
     try {
       const response = await openCaseDiscussion(caseItem);
-      showSuccess(response);
+      const target = resolveTelegramDestination(response, currentEmployeeId);
+      const autoLaunchAttempted = target.primaryUrl
+        ? launchTelegramUrl(target.primaryUrl)
+        : false;
+
+      showSuccess(response, {
+        ...target,
+        autoLaunchAttempted,
+      });
       onCompleted?.();
     } catch (error) {
       const message =

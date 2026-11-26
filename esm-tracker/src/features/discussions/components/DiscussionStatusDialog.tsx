@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -36,6 +36,7 @@ export function DiscussionStatusDialog() {
 
   const isSuccess = notification.variant === "success";
   const participants = notification.response?.participants ?? [];
+  const target = notification.telegramTarget;
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && clearNotification()}>
@@ -57,6 +58,12 @@ export function DiscussionStatusDialog() {
           <DialogTitle>{notification.title}</DialogTitle>
           <DialogDescription>{notification.message}</DialogDescription>
         </DialogHeader>
+
+        {isSuccess && target?.needsBotInviteFirst && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+            Accept your group invitation in the Telegram bot chat first, then open the discussion topic.
+          </div>
+        )}
 
         {participants.length > 0 && (
           <div className="mt-2 space-y-2 rounded-xl border bg-slate-50 p-3 text-xs">
@@ -82,9 +89,44 @@ export function DiscussionStatusDialog() {
           </div>
         )}
 
-        <Button className="mt-4 w-full" onClick={clearNotification}>
-          OK
-        </Button>
+        <div className="mt-4 flex flex-col gap-2">
+          {isSuccess && target?.primaryUrl && (
+            <a
+              href={target.primaryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={clearNotification}
+              className="inline-flex w-full items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-700"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              {target.primaryLabel}
+            </a>
+          )}
+
+          {isSuccess &&
+            target?.needsBotInviteFirst &&
+            target.topicUrl &&
+            target.topicUrl !== target.primaryUrl && (
+              <a
+                href={target.topicUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={clearNotification}
+                className="inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-gray-50"
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Open Topic (after joining)
+              </a>
+            )}
+
+          <Button
+            variant={isSuccess && target?.primaryUrl ? "ghost" : "primary"}
+            className="w-full"
+            onClick={clearNotification}
+          >
+            {isSuccess && target?.primaryUrl ? "Close" : "OK"}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
