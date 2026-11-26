@@ -13,6 +13,7 @@ import {
   Clock3 
 } from "lucide-react";
 import { ExtendDeadlinePopup } from "./ExtendDeadlinePopup";
+import { OpenDiscussionAction } from "@/features/discussions/components/OpenDiscussionAction";
 
 export function RowMenuCell(params: ICellRendererParams) {
   const data = params.data;
@@ -58,7 +59,7 @@ export function RowMenuCell(params: ICellRendererParams) {
     !["Prepared", "Edited", "Returned", "Reviewed", "Rejected", "Not Solved"].includes(data.status);
   
   const getMenuHeight = () => {
-    let itemCount = 1;
+    let itemCount = 3; // View Details, Activity Log, Open Discussion
     if (canEdit) itemCount++;
     if (canAddSubcase) itemCount++;
     if (canExtendDeadline) itemCount++;
@@ -220,6 +221,13 @@ export function RowMenuCell(params: ICellRendererParams) {
                 <Clock3 className="h-4 w-4 text-violet-600" />
                 Activity Log
               </button>
+
+              <div className="my-2 border-t" />
+
+              <OpenDiscussionAction
+                caseItem={data}
+                onCompleted={() => setOpen(false)}
+              />
             </div>
           </div>
         </>,

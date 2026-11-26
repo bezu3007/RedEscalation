@@ -8,6 +8,7 @@ import { useVoucherInit } from "../hooks/useVoucherInit";
 import { StatusActionPopup } from "../components/StatusActionPopup";
 import { ActivityLogDialog } from "../components/ActvityLogDialog";
 import { StatusDialog } from "@/shared/components/ui/status-dialog";
+import { DiscussionStatusDialog } from "@/features/discussions/components/DiscussionStatusDialog";
 
 export default function CaseListPage() {
   const [confirmationMessage, setConfirmationMessage] = useState<string | null>(null);
@@ -60,6 +61,7 @@ export default function CaseListPage() {
         autoCloseMs={1500}
         hideOk={true}
       />
+      <DiscussionStatusDialog />
       <FilterBar initData={initData} />
       <CaseGrid />
       
