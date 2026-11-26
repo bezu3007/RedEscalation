@@ -1,8 +1,12 @@
 import type { CaseItem } from "@/features/cases/types";
 import { getPlainTextFromHtml } from "@/features/cases/utils/htmlUtils";
 import type {
+  CloseDiscussionRequest,
+  CloseDiscussionResponse,
   OpenDiscussionRequest,
   OpenDiscussionResponse,
+  UpdateDiscussionRequest,
+  UpdateDiscussionResponse,
 } from "../types/discussion.types";
 
 const BOT_API_BASE = (
@@ -10,6 +14,13 @@ const BOT_API_BASE = (
 )
   .toString()
   .replace(/\/+$/, "");
+
+const CLOSED_CASE_STATUSES = new Set([
+  "Solved",
+  "Closed",
+  "Rejected",
+  "Removed",
+]);
 
 function toOptionalTrimmedString(value: unknown): string | undefined {
   if (value === null || value === undefined) {
@@ -84,14 +95,13 @@ interface BotApiErrorPayload {
   details?: Array<{ path?: string; message?: string }>;
 }
 
-export async function openCaseDiscussion(
-  caseItem: CaseItem
-): Promise<OpenDiscussionResponse> {
-  const payload = mapCaseItemToOpenDiscussionRequest(caseItem);
-
+async function postBotEndpoint<TResponse extends { success: boolean }>(
+  path: string,
+  payload: unknown
+): Promise<TResponse> {
   let response: Response;
   try {
-    response = await fetch(`${BOT_API_BASE}/discussions/open`, {
+    response = await fetch(`${BOT_API_BASE}${path}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -104,9 +114,9 @@ export async function openCaseDiscussion(
     );
   }
 
-  let body: (OpenDiscussionResponse & BotApiErrorPayload) | null = null;
+  let body: (TResponse & BotApiErrorPayload) | null = null;
   try {
-    body = (await response.json()) as OpenDiscussionResponse & BotApiErrorPayload;
+    body = (await response.json()) as TResponse & BotApiErrorPayload;
   } catch {
     body = null;
   }
@@ -119,9 +129,68 @@ export async function openCaseDiscussion(
     const message =
       detailText ||
       body?.message ||
-      `Failed to open Telegram discussion (HTTP ${response.status}).`;
+      `Telegram bot API request failed (HTTP ${response.status}).`;
     throw new Error(message);
   }
 
   return body;
+}
+
+export async function openCaseDiscussion(
+  caseItem: CaseItem
+): Promise<OpenDiscussionResponse> {
+  const payload = mapCaseItemToOpenDiscussionRequest(caseItem);
+  return postBotEndpoint<OpenDiscussionResponse>("/discussions/open", payload);
+}
+
+export async function updateCaseDiscussion(
+  payload: UpdateDiscussionRequest
+): Promise<UpdateDiscussionResponse> {
+  return postBotEndpoint<UpdateDiscussionResponse>("/discussions/update", payload);
+}
+
+export async function closeCaseDiscussion(
+  payload: CloseDiscussionRequest
+): Promise<CloseDiscussionResponse> {
+  return postBotEndpoint<CloseDiscussionResponse>("/discussions/close", payload);
+}
+
+export async function syncCaseDiscussionOnUpdate(params: {
+  caseId: number | string | null | undefined;
+  caseNumber?: string;
+  previousStatus?: string;
+  currentStatus?: string;
+  actorName?: string;
+  note?: string;
+  deadLine?: string;
+}): Promise<void> {
+  if (params.caseId === null || params.caseId === undefined) {
+    return;
+  }
+
+  try {
+    const nextStatus = toOptionalTrimmedString(params.currentStatus);
+    if (nextStatus && CLOSED_CASE_STATUSES.has(nextStatus)) {
+      await closeCaseDiscussion({
+        caseId: params.caseId,
+        caseNumber: toOptionalTrimmedString(params.caseNumber),
+        finalStatus: nextStatus,
+        closedBy: toOptionalTrimmedString(params.actorName),
+        note: toOptionalTrimmedString(params.note),
+      });
+      return;
+    }
+
+    await updateCaseDiscussion({
+      caseId: params.caseId,
+      caseNumber: toOptionalTrimmedString(params.caseNumber),
+      previousStatus: toOptionalTrimmedString(params.previousStatus),
+      currentStatus: nextStatus,
+      updatedBy: toOptionalTrimmedString(params.actorName),
+      note: toOptionalTrimmedString(params.note),
+      deadLine: toOptionalTrimmedString(params.deadLine),
+    });
+  } catch (error) {
+    console.warn("Telegram discussion lifecycle sync skipped:", error);
+  }
 }

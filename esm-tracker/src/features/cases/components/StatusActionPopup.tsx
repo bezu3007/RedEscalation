@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { VoucherBuffer } from "../types";
 import { ExtendDeadlinePopup } from "./ExtendDeadlinePopup";
+import { syncCaseDiscussionOnUpdate } from "@/features/discussions/services/discussionApi";
 
 interface StatusActionPopupProps {
   caseItem: CaseItem;
@@ -161,6 +162,15 @@ export function StatusActionPopup({
 
     updateCase(normalizedPayload, {
       onSuccess: () => {
+        const authUser = useAuthStore.getState().user;
+        void syncCaseDiscussionOnUpdate({
+          caseId: caseItem.id,
+          caseNumber: caseItem.caseNumber,
+          previousStatus: caseItem.status,
+          currentStatus: targetStatus,
+          actorName: authUser?.fullName || authUser?.userName,
+          note: transitionReason || undefined,
+        });
         onStatusUpdate?.(targetStatus);
         handleClose();
       },

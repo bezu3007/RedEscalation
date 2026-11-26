@@ -8,6 +8,7 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { LoaderCircle, X } from "lucide-react";
 import { mapCaseToVoucherBuffer } from "../hooks/useMapCaseToVoucherBuffer";
 import type { CaseItem, CaseFormValues } from "../types";
+import { syncCaseDiscussionOnUpdate } from "@/features/discussions/services/discussionApi";
 
 interface ExtendDeadlinePopupProps {
   caseItem: CaseItem;
@@ -137,6 +138,16 @@ export function ExtendDeadlinePopup({
 
     updateCase(normalizedPayload, {
       onSuccess: () => {
+        const authUser = useAuthStore.getState().user;
+        void syncCaseDiscussionOnUpdate({
+          caseId: caseItem.id,
+          caseNumber: caseItem.caseNumber,
+          previousStatus: caseItem.status,
+          currentStatus: caseItem.status,
+          actorName: authUser?.fullName || authUser?.userName,
+          deadLine: deadline,
+          note: `Deadline extended to ${deadline}. Reason: ${reason.trim()}`,
+        });
         onExtended?.();
         onClose();
       },

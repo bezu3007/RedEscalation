@@ -62,3 +62,46 @@ export interface OpenDiscussionResponse {
   message: string;
   participants?: ParticipantSyncResult[];
 }
+
+export interface UpdateDiscussionRequest {
+  caseId: string | number;
+  caseNumber?: string;
+  previousStatus?: string;
+  currentStatus?: string;
+  updatedBy?: string;
+  note?: string;
+  deadLine?: string;
+}
+
+export interface UpdateDiscussionResponse {
+  success: boolean;
+  found: boolean;
+  reopened?: boolean;
+  caseId: string;
+  caseNumber?: string;
+  groupId?: string;
+  messageThreadId?: number;
+  status?: "OPEN" | "CLOSED";
+  message: string;
+}
+
+export interface CloseDiscussionRequest {
+  caseId: string | number;
+  caseNumber?: string;
+  finalStatus?: string;
+  closedBy?: string;
+  note?: string;
+}
+
+export interface CloseDiscussionResponse {
+  success: boolean;
+  found: boolean;
+  alreadyClosed?: boolean;
+  caseId: string;
+  caseNumber?: string;
+  groupId?: string;
+  messageThreadId?: number;
+  status?: "OPEN" | "CLOSED";
+  closedAt?: string | null;
+  message: string;
+}

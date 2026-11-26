@@ -22,6 +22,7 @@ import { FormError } from "@/shared/components/ui/form-error";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { getPlainTextFromHtml } from '../utils/htmlUtils';
+import { syncCaseDiscussionOnUpdate } from "@/features/discussions/services/discussionApi";
 
 interface Props {
   mode: "create" | "edit" | "view";
@@ -391,6 +392,16 @@ export function CaseForm({ mode, initialData, open, onClose, initData, initialTa
           if (caseId && hasAttachmentChanges) {
             await updateAttachments(caseId);
           }
+
+          const authUser = useAuthStore.getState().user;
+          void syncCaseDiscussionOnUpdate({
+            caseId: initialData.id,
+            caseNumber: initialData.caseNumber,
+            previousStatus: initialData.status,
+            currentStatus: submitValues.status,
+            actorName: authUser?.fullName || authUser?.userName,
+            deadLine: submitValues.deadLine || undefined,
+          });
           
          onSuccess?.(
           "Case Updated",
