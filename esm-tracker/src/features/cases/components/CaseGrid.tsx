@@ -115,8 +115,11 @@ function IssuesCellRenderer(params: ICellRendererParams<CaseItem>) {
 export const CaseGrid = React.memo(function CaseGrid() {
   const gridRef = useRef<AgGridReact<CaseItem>>(null);
   const { data, isLoading, isFetching } = useCases();
-  const { page, pageSize, setPage, visibleColumns, setVisibleColumns } = useCaseStore();
+  const { pageSize, visibleColumns, setVisibleColumns } = useCaseStore();
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [displayedRows, setDisplayedRows] = useState<number | null>(null);
 
   // Set default visibility for Issues column if not set
   useEffect(() => {
@@ -160,6 +163,20 @@ export const CaseGrid = React.memo(function CaseGrid() {
 
     return visit(rows);
   }, [data?.items, expandedRows]);
+
+  const syncGridState = () => {
+    const api = gridRef.current?.api;
+    if (!api) return;
+
+    const currentPage = api.paginationGetCurrentPage() + 1;
+    setTotalPages(Math.max(1, api.paginationGetTotalPages()));
+    setDisplayedRows(api.getDisplayedRowCount());
+    setCurrentPage(currentPage);
+  };
+
+  useEffect(() => {
+    gridRef.current?.api?.paginationGoToFirstPage();
+  }, [data?.items]);
 
   const colDefs = useMemo<ColDef<CaseItem>[]>(
     () => [
@@ -260,6 +277,7 @@ export const CaseGrid = React.memo(function CaseGrid() {
         width: 150,
         minWidth: 120,
         hide: !visibleColumns.paidorNot,
+        filter: false,
         autoHeight: false,
       },
       {
@@ -321,12 +339,10 @@ export const CaseGrid = React.memo(function CaseGrid() {
     () => ({
       sortable: true,
       resizable: true,
-      filter: false,
+      filter: true,
     }),
     []
   );
-
-  const totalPages = Math.max(1, data ? Math.ceil(data.totalCount / pageSize) : 1);
 
   return (
     <div className="flex flex-col gap-3">
@@ -342,6 +358,12 @@ export const CaseGrid = React.memo(function CaseGrid() {
             rowData={rowData}
             columnDefs={colDefs}
             defaultColDef={defaultColDef}
+            pagination
+            paginationPageSize={pageSize}
+            suppressPaginationPanel
+            onGridReady={syncGridState}
+            onFilterChanged={syncGridState}
+            onPaginationChanged={syncGridState}
             rowHeight={44}
             headerHeight={44}
             enableCellTextSelection
@@ -380,11 +402,6 @@ export const CaseGrid = React.memo(function CaseGrid() {
                   ? "urgent-row"
                   : ""
             )}
-            gridOptions={{
-              onGridReady: () => {
-                // Additional grid configuration if needed
-              },
-            }}
           />
         </div>
       </div>
@@ -392,26 +409,26 @@ export const CaseGrid = React.memo(function CaseGrid() {
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>
           {data
-            ? `${data.totalCount} total case${data.totalCount !== 1 ? "s" : ""}`
+            ? `${displayedRows ?? data.totalCount} total case${(displayedRows ?? data.totalCount) !== 1 ? "s" : ""}`
             : "Loading..."}
         </span>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            disabled={page <= 1 || isFetching}
-            onClick={() => setPage(page - 1)}
+            disabled={currentPage <= 1 || isFetching}
+            onClick={() => gridRef.current?.api?.paginationGoToPreviousPage()}
           >
             Previous
           </Button>
           <span>
-            Page {page} of {totalPages}
+            Page {currentPage} of {totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
-            disabled={page >= totalPages || isFetching}
-            onClick={() => setPage(page + 1)}
+            disabled={currentPage >= totalPages || isFetching}
+            onClick={() => gridRef.current?.api?.paginationGoToNextPage()}
           >
             Next
           </Button>

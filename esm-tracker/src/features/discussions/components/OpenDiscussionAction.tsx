@@ -27,10 +27,6 @@ export function OpenDiscussionAction({
   const userRole = useAuthStore((s) => s.userRole);
 
   const currentEmployeeId = personId ?? authUser?.person ?? authUser?.id;
-  const currentPhone =
-    authUser?.phoneNumber ?? authUser?.personConsigneeUnit?.phone1 ?? undefined;
-  const currentTelegramId =
-    authUser?.telegramId ?? findTelegramMappingByPhone(currentPhone)?.telegramId;
 
   const currentCaseKey =
     caseItem.id !== null && caseItem.id !== undefined
@@ -51,6 +47,29 @@ export function OpenDiscussionAction({
         "voucher-init",
       ]);
 
+      const empIdStr =
+        currentEmployeeId !== null && currentEmployeeId !== undefined
+          ? String(currentEmployeeId).trim()
+          : "";
+      const fallbackConsigneePhone = empIdStr
+        ? voucherInit?.developers?.find((d) => String(d.id).trim() === empIdStr)
+            ?.phoneNo ??
+          voucherInit?.functionalConsultants?.find(
+            (f) => String(f.id).trim() === empIdStr
+          )?.phoneNo
+        : undefined;
+
+      const currentPhone =
+        authUser?.phoneNumber ??
+        authUser?.personConsigneeUnit?.phone1 ??
+        (authUser as { phone1?: string } | null)?.phone1 ??
+        (authUser?.personInfo as { phone1?: string } | undefined)?.phone1 ??
+        fallbackConsigneePhone ??
+        undefined;
+      const currentTelegramId =
+        findTelegramMappingByPhone(currentPhone)?.telegramId ??
+        authUser?.telegramId;
+
       const response = await openCaseDiscussion(caseItem, {
         voucherInit,
         requestedBy: {
@@ -68,9 +87,10 @@ export function OpenDiscussionAction({
         currentPhone,
         currentTelegramId
       );
-      const autoLaunchAttempted = target.primaryUrl
-        ? launchTelegramUrl(target.primaryUrl)
-        : false;
+      const autoLaunchAttempted =
+        target.shouldAutoLaunch !== false && target.primaryUrl
+          ? launchTelegramUrl(target.primaryUrl)
+          : false;
 
       showSuccess(response, {
         ...target,

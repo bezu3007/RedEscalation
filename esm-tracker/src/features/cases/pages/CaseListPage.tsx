@@ -62,7 +62,7 @@ export default function CaseListPage() {
         hideOk={true}
       />
       <DiscussionStatusDialog />
-      <FilterBar initData={initData} />
+      <FilterBar />
       <CaseGrid />
       
       {isCreateModalOpen && (

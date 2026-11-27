@@ -43,6 +43,7 @@ export interface ParticipantSyncResult {
   employeeId: string;
   name: string;
   role: "DEVELOPER" | "FC" | "REVIEWER" | "REQUESTER";
+  telegramId?: string;
   telegramIdMapped: boolean;
   membershipStatus: MembershipStatus;
   action:

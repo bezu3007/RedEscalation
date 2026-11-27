@@ -17,14 +17,12 @@ import {
 type Props = {
   date?: DateRange;
   onDateChange: (date: DateRange | undefined) => void;
-  onApply?: () => void;
   onClear?: () => void;
 };
 
 export function DateRangePicker({
   date,
   onDateChange,
-  onApply,
   onClear,
 }: Props) {
   const [open, setOpen] = React.useState(false);
@@ -57,6 +55,7 @@ export function DateRangePicker({
       }
 
       onDateChange({ from: date.from, to: selectedDay });
+      setOpen(false);
       return;
     }
 
@@ -118,17 +117,6 @@ export function DateRangePicker({
             }}
           >
             Clear
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            className="h-7 px-3"
-            onClick={() => {
-              onApply?.();
-              setOpen(false);
-            }}
-          >
-            Apply
           </Button>
         </div>
       </PopoverContent>

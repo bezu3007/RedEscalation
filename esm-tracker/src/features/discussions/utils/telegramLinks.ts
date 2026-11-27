@@ -7,6 +7,8 @@ export interface TelegramLaunchTarget {
   topicUrl?: string;
   botUrl?: string;
   needsBotInviteFirst: boolean;
+  shouldAutoLaunch?: boolean;
+  unmappedSelf?: boolean;
   autoLaunchAttempted?: boolean;
 }
 
@@ -30,7 +32,12 @@ export function buildTelegramTopicUrl(
   groupId?: string,
   messageThreadId?: number
 ): string | undefined {
-  if (!groupId || !messageThreadId || !Number.isInteger(messageThreadId) || messageThreadId <= 0) {
+  if (
+    !groupId ||
+    !messageThreadId ||
+    !Number.isInteger(messageThreadId) ||
+    messageThreadId <= 0
+  ) {
     return undefined;
   }
 
@@ -40,6 +47,18 @@ export function buildTelegramTopicUrl(
   }
 
   return undefined;
+}
+
+function appendBotStartParam(botUrl: string, startParam: string): string {
+  try {
+    const parsed = new URL(botUrl);
+    if (!parsed.searchParams.has("start")) {
+      parsed.searchParams.set("start", startParam);
+    }
+    return parsed.toString();
+  } catch {
+    return botUrl;
+  }
 }
 
 export function resolveTelegramDestination(
@@ -53,6 +72,7 @@ export function resolveTelegramDestination(
     : buildTelegramTopicUrl(response.groupId, response.messageThreadId);
 
   const botUrl = isSafeTelegramUrl(response.botUrl) ? response.botUrl : undefined;
+  const botStartUrl = botUrl ? appendBotStartParam(botUrl, "join") : undefined;
 
   const normalizedEmployeeId =
     currentEmployeeId !== null && currentEmployeeId !== undefined
@@ -60,11 +80,19 @@ export function resolveTelegramDestination(
       : "";
   const normalizedPhone = normalizePhoneNumber(currentPhoneNumber);
   const phoneKey = normalizedPhone ? `PHONE:${normalizedPhone}` : "";
-  const tgKey = currentTelegramId ? `TG:${currentTelegramId.trim()}` : "";
+  const cleanTelegramId = currentTelegramId?.trim() || "";
+  const tgKey = cleanTelegramId ? `TG:${cleanTelegramId}` : "";
 
   const myParticipant =
+    response.participants?.find(
+      (p) => cleanTelegramId && p.telegramId?.trim() === cleanTelegramId
+    ) ??
     response.participants?.find((p) => {
       const pId = p.employeeId.trim().toUpperCase();
+      const pTg = p.telegramId?.trim() || "";
+      if (cleanTelegramId && pTg && pTg !== cleanTelegramId) {
+        return false;
+      }
       return (
         (normalizedEmployeeId && pId === normalizedEmployeeId) ||
         (phoneKey && pId === phoneKey) ||
@@ -72,23 +100,56 @@ export function resolveTelegramDestination(
       );
     });
 
-  const needsBotInviteFirst = Boolean(
-    myParticipant &&
-      (myParticipant.action === "REQUIRES_BOT_START" ||
-        myParticipant.action === "INVITED" ||
-        myParticipant.action === "INVITE_REUSED")
-  );
+  if (myParticipant?.action === "ALREADY_MEMBER" && topicUrl) {
+    return {
+      primaryUrl: topicUrl,
+      primaryLabel: "Open Topic in Telegram",
+      topicUrl,
+      botUrl,
+      needsBotInviteFirst: false,
+      shouldAutoLaunch: true,
+    };
+  }
 
-  if (needsBotInviteFirst && botUrl) {
+  if (myParticipant?.action === "REQUIRES_BOT_START") {
+    const targetBotUrl = botStartUrl ?? botUrl;
+    return {
+      primaryUrl: targetBotUrl,
+      primaryLabel: "Start Bot & Request to Join",
+      topicUrl,
+      botUrl: targetBotUrl,
+      needsBotInviteFirst: true,
+      shouldAutoLaunch: Boolean(targetBotUrl),
+    };
+  }
+
+  if (
+    myParticipant?.action === "INVITED" ||
+    myParticipant?.action === "INVITE_REUSED"
+  ) {
     return {
       primaryUrl: botUrl,
-      primaryLabel:
-        myParticipant?.action === "REQUIRES_BOT_START"
-          ? "Start Bot in Telegram"
-          : "Open Invite in Telegram",
+      primaryLabel: "Open Invite in Telegram Bot",
       topicUrl,
       botUrl,
       needsBotInviteFirst: true,
+      shouldAutoLaunch: Boolean(botUrl),
+    };
+  }
+
+  if (
+    myParticipant?.action === "UNMAPPED_TELEGRAM_ID" ||
+    myParticipant?.action === "CHECK_FAILED" ||
+    !myParticipant
+  ) {
+    return {
+      primaryUrl: botStartUrl ?? botUrl,
+      primaryLabel: "Open Bot in Telegram",
+      topicUrl,
+      botUrl: botStartUrl ?? botUrl,
+      needsBotInviteFirst: true,
+      shouldAutoLaunch: false,
+      unmappedSelf: !myParticipant || myParticipant.action === "UNMAPPED_TELEGRAM_ID",
     };
   }
 
@@ -99,6 +160,7 @@ export function resolveTelegramDestination(
       topicUrl,
       botUrl,
       needsBotInviteFirst: false,
+      shouldAutoLaunch: true,
     };
   }
 
@@ -108,13 +170,15 @@ export function resolveTelegramDestination(
       primaryLabel: "Open Bot in Telegram",
       topicUrl,
       botUrl,
-      needsBotInviteFirst,
+      needsBotInviteFirst: true,
+      shouldAutoLaunch: true,
     };
   }
 
   return {
     primaryLabel: "Open in Telegram",
-    needsBotInviteFirst,
+    needsBotInviteFirst: false,
+    shouldAutoLaunch: false,
   };
 }
 

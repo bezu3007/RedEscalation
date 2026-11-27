@@ -61,7 +61,9 @@ export function DiscussionStatusDialog() {
 
         {isSuccess && target?.needsBotInviteFirst && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
-            Accept your group invitation in the Telegram bot chat first, then open the discussion topic.
+            {target.unmappedSelf
+              ? "Your ESM account is not yet mapped to a Telegram user ID or membership could not be verified. Open the Telegram bot first to get your ID / request access, or open the topic if you are already a group member."
+              : "You are not in the Telegram discussion group yet. Open the Telegram bot first to receive and accept your join-request invitation, then open the discussion topic."}
           </div>
         )}
 
@@ -115,7 +117,7 @@ export function DiscussionStatusDialog() {
                 className="inline-flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-gray-50"
               >
                 <ExternalLink className="mr-2 h-4 w-4" />
-                Open Topic (after joining)
+                Open Topic (Only After Joining Group)
               </a>
             )}
 

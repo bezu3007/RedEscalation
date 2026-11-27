@@ -18,13 +18,15 @@ function enrichUserWithTelegram(user: User | null): User | null {
   const rawPhone =
     user.phoneNumber ??
     user.personConsigneeUnit?.phone1 ??
+    (user as { phone1?: string | number | null }).phone1 ??
+    (user.personInfo as { phone1?: string | number | null } | undefined)?.phone1 ??
     undefined;
   const phoneNumber =
-    typeof rawPhone === "string"
-      ? rawPhone.trim() || undefined
+    rawPhone !== null && rawPhone !== undefined
+      ? String(rawPhone).trim() || undefined
       : undefined;
   const tgMatch = findTelegramMappingByPhone(phoneNumber);
-  const telegramId = user.telegramId || tgMatch?.telegramId;
+  const telegramId = tgMatch?.telegramId ?? user.telegramId;
 
   if (
     phoneNumber === user.phoneNumber &&
@@ -123,14 +125,15 @@ export const useAuthStore = create<AuthState>()(
           throw new Error("User is required");
         }
 
-        const role = determineUserRole(user);
+        const enrichedUser = enrichUserWithTelegram(user) ?? user;
+        const role = determineUserRole(enrichedUser);
 
         set({
-          user,
+          user: enrichedUser,
           userRole: role,
           isAuthenticated: true,
           isLoading: false,
-          _cachedUser: user,
+          _cachedUser: enrichedUser,
           rememberMe: isPersistent,
         });
 
@@ -156,7 +159,7 @@ export const useAuthStore = create<AuthState>()(
 
         localStorage.setItem(
           "ems-user",
-          JSON.stringify(user)
+          JSON.stringify(enrichedUser)
         );
 
         localStorage.setItem(
@@ -178,6 +181,7 @@ export const useAuthStore = create<AuthState>()(
 
           userId: null,
           personId: null,
+          userDepartment: null,
 
           isAuthenticated: false,
           _cachedUser: null,

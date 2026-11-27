@@ -1,5 +1,113 @@
 [
   {
+    "phoneNumber": "900000000",
+    "name": "Deperecated User",
+    "telegramId": "-1002818958545",
+    "department": null
+  },
+  {
+    "phoneNumber": "960403750",
+    "name": "Meron Tamirat",
+    "telegramId": "1310912485",
+    "department": "Office of the CEO"
+  },
+  {
+    "phoneNumber": "917765347",
+    "name": "Mekdes Berhanu H/Mariyam",
+    "telegramId": "439688929",
+    "department": "Financial Technology"
+  },
+  {
+    "phoneNumber": "913958370",
+    "name": "Rediet Geremew Sebsibe",
+    "telegramId": "272773945",
+    "department": "Financial Technology"
+  },
+  {
+    "phoneNumber": "923105345",
+    "name": "Asmera Abi Dejene",
+    "telegramId": "424108868",
+    "department": "Financial Technology"
+  },
+  {
+    "phoneNumber": "966966989",
+    "name": "Elizabeth Abera  Aboset",
+    "telegramId": "5321372109",
+    "department": "Manufacturing Industry"
+  },
+  {
+    "phoneNumber": "925182115",
+    "name": "Netsanet Embiale Belay",
+    "telegramId": "426395754",
+    "department": "Manufacturing Industry"
+  },
+  {
+    "phoneNumber": "950097377",
+    "name": "Ermiyas Meaza Sahelu",
+    "telegramId": "8338310977",
+    "department": "Manufacturing Industry"
+  },
+  {
+    "phoneNumber": "947073045",
+    "name": "Saba Yrdie Mengeste",
+    "telegramId": "5489533372",
+    "department": "Manufacturing Industry"
+  },
+  {
+    "phoneNumber": "970781813",
+    "name": "Baweke Enyew Eskzia",
+    "telegramId": "5002016067",
+    "department": "Manufacturing Industry"
+  },
+  {
+    "phoneNumber": "915604407",
+    "name": "Eshetu Misgie Abie",
+    "telegramId": "5491762071",
+    "department": "Manufacturing Industry"
+  },
+  {
+    "phoneNumber": "924275852",
+    "name": "Chalie Addisu Muche",
+    "telegramId": "1420788111",
+    "department": "Manufacturing Industry"
+  },
+  {
+    "phoneNumber": "913811846",
+    "name": "Dawit Asmamaw Desalegn",
+    "telegramId": "5753478638",
+    "department": "Hosptality Industry"
+  },
+  {
+    "phoneNumber": "955322574",
+    "name": "Yoseph Daniel Abera",
+    "telegramId": "617629189",
+    "department": "Hosptality Industry"
+  },
+  {
+    "phoneNumber": "946900958",
+    "name": "Azimachi Abriham Toche",
+    "telegramId": "7910032608",
+    "department": "Hosptality Industry"
+  },
+  {
+    "phoneNumber": "954693265",
+    "name": "Yeabsira Aychiluhim Abate",
+    "telegramId": "7155450605",
+    "department": "Hosptality Industry"
+  },
+  {
+    "phoneNumber": "927419156",
+    "name": "Mekdes Belachew Tilahun",
+    "telegramId": "1424996861",
+    "department": "Hosptality Industry"
+  },
+  {
+    "phoneNumber": "997208494",
+    "name": "Dagmawi Dessie Worku",
+    "telegramId": "7636166392",
+    "department": "Hosptality Industry"
+  },
+  {
     "phoneNumber": "949669399",
     "name": "Haymanot Tekle Asrat",
     "telegramId": "6153459258",
@@ -18,6 +126,270 @@
     "department": "Food and Entartaiment"
   },
   {
+    "phoneNumber": "976046464",
+    "name": "Kaleb Shumu Abegaz",
+    "telegramId": "1850963213",
+    "department": "Food and Entartaiment"
+  },
+  {
+    "phoneNumber": "924751214",
+    "name": "Bekabil Teferi Fufa",
+    "telegramId": "2005102566",
+    "department": "Food and Entartaiment"
+  },
+  {
+    "phoneNumber": "975076705",
+    "name": "Getye Masresha Shegen",
+    "telegramId": "402012744",
+    "department": "Food and Entartaiment"
+  },
+  {
+    "phoneNumber": "979653614",
+    "name": "Tadesse Temesgen Melaku",
+    "telegramId": "2067451005",
+    "department": "Food and Entartaiment"
+  },
+  {
+    "phoneNumber": "954898034",
+    "name": "Aster Fikre Negashu",
+    "telegramId": "828496160",
+    "department": "Food and Entartaiment"
+  },
+  {
+    "phoneNumber": "935971379",
+    "name": "Yimaldu Niguse W/meskel",
+    "telegramId": "1038022793",
+    "department": "Food and Entartaiment"
+  },
+  {
+    "phoneNumber": "946095050",
+    "name": "Workneh Mekete Ayalew",
+    "telegramId": "7408341216",
+    "department": "Food and Entartaiment"
+  },
+  {
+    "phoneNumber": "911488525",
+    "name": "Ermias Million Tadesse",
+    "telegramId": "1821865039",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "938065203",
+    "name": "Dagim Teshome Birru",
+    "telegramId": "606290888",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "973022095",
+    "name": "Kaleb Tesfaye Munea",
+    "telegramId": "5228126901",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "935712159",
+    "name": "Bekalu Dagne Gete",
+    "telegramId": "1024984218",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "912940911",
+    "name": "Abraham Kassaw Tiruneh",
+    "telegramId": "5546499801",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "918683766",
+    "name": "Chimdesa Belete Desalegn",
+    "telegramId": "1181768222",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "927347337",
+    "name": "Abebe Teshome Gutama",
+    "telegramId": "302177876",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "979360895",
+    "name": "Mikias Tsegaye Kebede",
+    "telegramId": "6232645250",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "920472574",
+    "name": "Tsion Merga Dechasa",
+    "telegramId": "904560743",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "946660814",
+    "name": "Kalkidan Tesfaye Kebede",
+    "telegramId": "431025086",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "969542311",
+    "name": "Hameza Nigussie Sentie",
+    "telegramId": "8001963585",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "965816506",
+    "name": "Solomon Amanu Garbi",
+    "telegramId": "8180479059",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "910100509",
+    "name": "Surafel Chanie Mitiku",
+    "telegramId": "338269322",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "929203321",
+    "name": "Abrham Gashaw Yesigat",
+    "telegramId": "1725743499",
+    "department": "FMCG Industry"
+  },
+  {
+    "phoneNumber": "923567378",
+    "name": "Hawariat Tenu Delay",
+    "telegramId": "451110130",
+    "department": "Infrustructure Industry"
+  },
+  {
+    "phoneNumber": "922878638",
+    "name": "Asmelash Haile Merga",
+    "telegramId": "972979622",
+    "department": "Infrustructure Industry"
+  },
+  {
+    "phoneNumber": null,
+    "name": "Wubeneh Agegnehu Delel",
+    "telegramId": null,
+    "department": "Infrustructure Industry"
+  },
+  {
+    "phoneNumber": "912009497",
+    "name": "Ephrem Awulachew Abate",
+    "telegramId": "365214615",
+    "department": "Infrustructure Industry"
+  },
+  {
+    "phoneNumber": "975545467",
+    "name": "Samuel Mekuriyaw Yizengaw",
+    "telegramId": "484223320",
+    "department": "Infrustructure Industry"
+  },
+  {
+    "phoneNumber": null,
+    "name": "Leykun Birhanu Tadesse",
+    "telegramId": null,
+    "department": "Infrustructure Industry"
+  },
+  {
+    "phoneNumber": "910892000",
+    "name": "Muluken Tigabie Gobaw",
+    "telegramId": "5745746353",
+    "department": "Infrustructure Industry"
+  },
+  {
+    "phoneNumber": "940346902",
+    "name": "Sara Gobena Abate",
+    "telegramId": "1486028487",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "943481579",
+    "name": "Sisay Aragew Ephrem",
+    "telegramId": "468153719",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "918088075",
+    "name": "Yeshanbel Mesele Kasaw",
+    "telegramId": "563918964",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "937217640",
+    "name": "Tinsae Handiso Melketo",
+    "telegramId": "342227828",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "961949413",
+    "name": "Mahidermariyam Tadesse G/Medhin",
+    "telegramId": "6348441704",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "945912741",
+    "name": "Yetnayet Adenagerachow Aychiluhem",
+    "telegramId": "396918324",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "929442953",
+    "name": "Nebiyu Zeleke Belay",
+    "telegramId": "588782325",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "906943881",
+    "name": "Lidetu Asamenew Temesgen",
+    "telegramId": "5857571721",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "946955209",
+    "name": "Yitadel Girma Tesfaye",
+    "telegramId": "8251001011",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "913356945",
+    "name": "Miftah Hassen Ibrahim",
+    "telegramId": "613403891",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "995877180",
+    "name": "Demlie Tesfaye Ambaw",
+    "telegramId": "7097449982",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "919726809",
+    "name": "Damtew Wondaferew Mamo",
+    "telegramId": "1410492580",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "921222365",
+    "name": "Minale Hailelaule Mihiretu",
+    "telegramId": "1068612752",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "930375720",
+    "name": "Abrham Mihiret Zewudie",
+    "telegramId": "5016285438",
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": null,
+    "name": "Tamirat Seyoum Medhine",
+    "telegramId": null,
+    "department": "Customer Service Department"
+  },
+  {
+    "phoneNumber": "935155925",
+    "name": "Mequannint Asmie Tefera",
+    "telegramId": "1628858704",
+    "department": "Customer Service Department"
+  },
+  {
     "phoneNumber": "948773837",
     "name": "Addisu Melese Hailu",
     "telegramId": "315995856",
@@ -30,10 +402,124 @@
     "department": "RND"
   },
   {
+    "phoneNumber": "941067467",
+    "name": "Amanuel Nega",
+    "telegramId": "447425015",
+    "department": "RND"
+  },
+  {
+    "phoneNumber": "920347514",
+    "name": "Tesfalem Gebreyesus Gebremareyam",
+    "telegramId": "5939686661",
+    "department": "Customer Service Department"
+  },
+  {
     "phoneNumber": "924786954",
     "name": "Misikir Engida Asfaw",
     "telegramId": "1219563868",
     "department": "RND"
+  },
+  {
+    "phoneNumber": "911172234",
+    "name": "Tadesse Hunegaw",
+    "telegramId": null,
+    "department": null
+  },
+  {
+    "phoneNumber": null,
+    "name": "972516621",
+    "telegramId": "Project",
+    "department": null
+  },
+  {
+    "phoneNumber": "966335860",
+    "name": "Mintesnot Legesse Mamo",
+    "telegramId": "1186160697",
+    "department": "Project"
+  },
+  {
+    "phoneNumber": "984724911",
+    "name": "Berhanu Seyoum Hurissa",
+    "telegramId": "814523272",
+    "department": "Project"
+  },
+  {
+    "phoneNumber": "913984958",
+    "name": "Habtemariam Hailu Fuje",
+    "telegramId": "420694982",
+    "department": "Project"
+  },
+  {
+    "phoneNumber": "986585220",
+    "name": "Biniyam",
+    "telegramId": "402521691",
+    "department": "RND"
+  },
+  {
+    "phoneNumber": "927784322",
+    "name": "Dawit Fissha",
+    "telegramId": "326279108",
+    "department": "IT Department"
+  },
+  {
+    "phoneNumber": "991287652",
+    "name": "Liben Mehamud Mussa",
+    "telegramId": "918364762",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "938039259",
+    "name": "Esubalew Kidanu",
+    "telegramId": "410367005",
+    "department": "Project"
+  },
+  {
+    "phoneNumber": "913147474",
+    "name": "Yared Mustefa",
+    "telegramId": "5482322306",
+    "department": "System Admin"
+  },
+  {
+    "phoneNumber": "915586440",
+    "name": "Hizkeal Alayu Gizaw",
+    "telegramId": "393679925",
+    "department": "Office of the General Manager"
+  },
+  {
+    "phoneNumber": "963158589",
+    "name": "Abdie Adem",
+    "telegramId": "1537873130",
+    "department": "Food & Entertainment"
+  },
+  {
+    "phoneNumber": "947843214",
+    "name": "Samuel Kassahun",
+    "telegramId": "361597567",
+    "department": "Project"
+  },
+  {
+    "phoneNumber": "900762741",
+    "name": "Wubalem Getachew",
+    "telegramId": "5488967260",
+    "department": "Project"
+  },
+  {
+    "phoneNumber": "912704149",
+    "name": "Ermias Abebe",
+    "telegramId": "298858088",
+    "department": "RND"
+  },
+  {
+    "phoneNumber": "913178914",
+    "name": "Abraham Fekede",
+    "telegramId": "371131654",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "953907070",
+    "name": "Kidus Shimeles",
+    "telegramId": "717528217",
+    "department": "-"
   },
   {
     "phoneNumber": "912931759",
@@ -42,10 +528,568 @@
     "department": "RND"
   },
   {
+    "phoneNumber": "994167127",
+    "name": "Eyoel Digafe",
+    "telegramId": "816155003",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "931695456",
+    "name": "Ayalew Derese",
+    "telegramId": "942204510",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "921431536",
+    "name": "Yihenew Mengist Birhanie",
+    "telegramId": "5009385163",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "915677166",
+    "name": "Manayitot Tesfaye",
+    "telegramId": "378015849",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "915954681",
+    "name": "Shewit Dagnew Adenew",
+    "telegramId": "7019572987",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "945027289",
+    "name": "Sinishaw Siyum",
+    "telegramId": "443898838",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "937103001",
+    "name": "Biruk Gezahegn woldemariam",
+    "telegramId": "1053985193",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "920041278",
+    "name": "Natnael Haileselassie",
+    "telegramId": "476819425",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "937454980",
+    "name": "Bereket Nega Abebaw",
+    "telegramId": "1146657658",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "922656577",
+    "name": "Daniel Tadesse",
+    "telegramId": "374263985",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "967942417",
+    "name": "Mihiret Abate",
+    "telegramId": "1990854144",
+    "department": "Sales & Marketing"
+  },
+  {
+    "phoneNumber": "929234729",
+    "name": "Eleni Mulugeta",
+    "telegramId": "1843072425",
+    "department": "Sales & Marketing"
+  },
+  {
+    "phoneNumber": "966966991",
+    "name": "Sintayehu Mesfin",
+    "telegramId": "1790030593",
+    "department": "Sales & Marketing"
+  },
+  {
+    "phoneNumber": "912628227",
+    "name": "Clinton G/Michael",
+    "telegramId": "330844260",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "920610747",
+    "name": "Chernet Demise",
+    "telegramId": "1086371883",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "911412269",
+    "name": "Yosef Gebresenbet",
+    "telegramId": "647889621",
+    "department": "Finance Directorates"
+  },
+  {
+    "phoneNumber": "911238415",
+    "name": "Habtamu Bira",
+    "telegramId": "2140606759",
+    "department": "Finance Directorates"
+  },
+  {
+    "phoneNumber": "933113967",
+    "name": "Haftom Guesh",
+    "telegramId": "5714900660",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "902923146",
+    "name": "Emnet Tesfa",
+    "telegramId": "686370700",
+    "department": "ICT Officer and General Manager"
+  },
+  {
+    "phoneNumber": "940630806",
+    "name": "Zewde Zelalem",
+    "telegramId": "7066466631",
+    "department": "Office of General Manager"
+  },
+  {
+    "phoneNumber": "921024401",
+    "name": "Meron Mekonnen",
+    "telegramId": "433345968",
+    "department": "Office of General Manager"
+  },
+  {
+    "phoneNumber": "942777463",
+    "name": "Hibrework Zewdu",
+    "telegramId": "398085486",
+    "department": "Finance"
+  },
+  {
+    "phoneNumber": "995828282",
+    "name": "Israel Belaynh",
+    "telegramId": "659341928",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "901121426",
+    "name": "Dagim Sisay",
+    "telegramId": "1430354574",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "923803416",
+    "name": "Maramawit Debebe",
+    "telegramId": "638617165",
+    "department": "Office of the General Manager"
+  },
+  {
+    "phoneNumber": "915667300",
+    "name": "Edom Kelbessa",
+    "telegramId": "937101483",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "973261865",
+    "name": "Kalkidan Ademe",
+    "telegramId": "7804374158",
+    "department": "Sales and Marketing"
+  },
+  {
     "phoneNumber": "901060118",
     "name": "Amanuel Tesfa",
     "telegramId": "2102580040",
     "department": "RnD"
+  },
+  {
+    "phoneNumber": "911346087",
+    "name": "Tsega Teklay",
+    "telegramId": "1047089069",
+    "department": "IT Department"
+  },
+  {
+    "phoneNumber": "915667300",
+    "name": "Edom Kelbessa Geletu",
+    "telegramId": "937101483",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "929038924",
+    "name": "Mastewal Asmamaw",
+    "telegramId": "1093439452",
+    "department": "Finance"
+  },
+  {
+    "phoneNumber": "940206787",
+    "name": "Tsedenya Fisha",
+    "telegramId": "390686398",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "930470557",
+    "name": "Hirut Zegeye Belayneh",
+    "telegramId": "1307411391",
+    "department": "Hospitality"
+  },
+  {
+    "phoneNumber": "993824892",
+    "name": "Tizeta Abreham",
+    "telegramId": "1891453178",
+    "department": "Sales & Marketing"
+  },
+  {
+    "phoneNumber": "920191238",
+    "name": "Waltenigus Mazengia Sewye",
+    "telegramId": "404217413",
+    "department": "General MGT - OPERATIONS"
+  },
+  {
+    "phoneNumber": "991136139",
+    "name": "Yonas Desta",
+    "telegramId": "5938161059",
+    "department": "Customer Service"
+  },
+  {
+    "phoneNumber": "941414957",
+    "name": "Alayu Shewaye",
+    "telegramId": "932715097",
+    "department": "Office of General Manager"
+  },
+  {
+    "phoneNumber": "919280852",
+    "name": "Abel",
+    "telegramId": "252328731",
+    "department": "User"
+  },
+  {
+    "phoneNumber": "910127247",
+    "name": "Liya Solomon",
+    "telegramId": "565624122",
+    "department": "Project"
+  },
+  {
+    "phoneNumber": "911429684",
+    "name": "Thomas",
+    "telegramId": "645864455",
+    "department": "User"
+  },
+  {
+    "phoneNumber": "967779077",
+    "name": "Angelica Rodolfo",
+    "telegramId": "1764543586",
+    "department": "User"
+  },
+  {
+    "phoneNumber": "939979690",
+    "name": "kalewold Kebede",
+    "telegramId": "6912078056",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "921074165",
+    "name": "Amanuel Kifle",
+    "telegramId": "8303750214",
+    "department": "Fintech"
+  },
+  {
+    "phoneNumber": "25377788851",
+    "name": "Abdirazack Nour Ibrahim",
+    "telegramId": "70374555879",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "911119425",
+    "name": "Basliel Girma",
+    "telegramId": "7891077534",
+    "department": "IT Officer"
+  },
+  {
+    "phoneNumber": "912661931",
+    "name": "Natnael Kassa",
+    "telegramId": "397448451",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "978206213",
+    "name": "Zelalem Emagnaw",
+    "telegramId": "6727684908",
+    "department": "Hospitality"
+  },
+  {
+    "phoneNumber": "976878780",
+    "name": "Abdul Majeed",
+    "telegramId": "5322908345",
+    "department": "Admin"
+  },
+  {
+    "phoneNumber": "911522190",
+    "name": "Gebre Dagnew",
+    "telegramId": "1010981513",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "916581858",
+    "name": "Tagel Weldsanbt",
+    "telegramId": "662014647",
+    "department": "General Manager"
+  },
+  {
+    "phoneNumber": "965709050",
+    "name": "NAHOM MULUGETA BELACHEW",
+    "telegramId": "476700403",
+    "department": "Software Development"
+  },
+  {
+    "phoneNumber": "974757670",
+    "name": "Yeshambel Yalew",
+    "telegramId": "7785219961",
+    "department": "Management Information System"
+  },
+  {
+    "phoneNumber": "969343536",
+    "name": "Samrawit Kassahun",
+    "telegramId": "7148437777",
+    "department": "Owner"
+  },
+  {
+    "phoneNumber": "920263365",
+    "name": "Amha Bekele",
+    "telegramId": "848107155",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "948848892",
+    "name": "Getachew Getie Tesera",
+    "telegramId": "886507365",
+    "department": "IT Supervisor"
+  },
+  {
+    "phoneNumber": "929905175",
+    "name": "Wastina Miressa",
+    "telegramId": "545683659",
+    "department": "Management"
+  },
+  {
+    "phoneNumber": "924478696",
+    "name": "Berehan Desalegn",
+    "telegramId": "776708223",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "930352720",
+    "name": "Endalkachew Asegie Akalu",
+    "telegramId": "8175748557",
+    "department": "General Manager"
+  },
+  {
+    "phoneNumber": "921352593",
+    "name": "Mekedes Gezahegn",
+    "telegramId": "442207238",
+    "department": "ICT"
+  },
+  {
+    "phoneNumber": "911516220",
+    "name": "Melkamu Kassahun",
+    "telegramId": "6516666006",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "944114722",
+    "name": "Dereje Siyum",
+    "telegramId": "8205110712",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "911518418",
+    "name": "Genet Abza",
+    "telegramId": "1007891190",
+    "department": "Executive Leadership"
+  },
+  {
+    "phoneNumber": "994749191",
+    "name": "Memekia Hailu",
+    "telegramId": "6623304925",
+    "department": "ICT"
+  },
+  {
+    "phoneNumber": "913727097",
+    "name": "Kidist Tadesse",
+    "telegramId": "917381468",
+    "department": "Finance"
+  },
+  {
+    "phoneNumber": "924345144",
+    "name": "Fikir Alemayehu",
+    "telegramId": "1535028842",
+    "department": "RnD"
+  },
+  {
+    "phoneNumber": "947552694",
+    "name": "Melaku Ayalew",
+    "telegramId": "327391120",
+    "department": "Information Technology"
+  },
+  {
+    "phoneNumber": "910945439",
+    "name": "Mesele Araba",
+    "telegramId": "1540598204",
+    "department": "IT Department"
+  },
+  {
+    "phoneNumber": "931528547",
+    "name": "Yohannes Assefa Guluma",
+    "telegramId": "358667477",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "937375408",
+    "name": "Desalegn Gebeyehu",
+    "telegramId": "6115861554",
+    "department": "Customer Service"
+  },
+  {
+    "phoneNumber": "918017624",
+    "name": "Miniybel Tsegaw Agidew",
+    "telegramId": "7075663957",
+    "department": "ICT"
+  },
+  {
+    "phoneNumber": "936205726",
+    "name": "Mihret Teshome Zeleke",
+    "telegramId": "504406788",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "911645986",
+    "name": "Debebe Worku",
+    "telegramId": "642474125",
+    "department": "Manager"
+  },
+  {
+    "phoneNumber": "956777752",
+    "name": "Addis Kebede",
+    "telegramId": "7735332097",
+    "department": "ICT"
+  },
+  {
+    "phoneNumber": "918592028",
+    "name": "Mequannent Gashaw Asinake",
+    "telegramId": "7951472080",
+    "department": "F&E"
+  },
+  {
+    "phoneNumber": "940725360",
+    "name": "Edlawit Dereje",
+    "telegramId": "1247165780",
+    "department": "Marketing"
+  },
+  {
+    "phoneNumber": "975244444",
+    "name": "Ashenafi Tewelde",
+    "telegramId": "7278889827",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "912084764",
+    "name": "Melkamu Ayalew",
+    "telegramId": "5342625067",
+    "department": "Hotel Manager"
+  },
+  {
+    "phoneNumber": "912193268",
+    "name": "Yonas Teka",
+    "telegramId": "375371014",
+    "department": "IT Department"
+  },
+  {
+    "phoneNumber": "960420136",
+    "name": "Tsadkan Haile",
+    "telegramId": "5699472071",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "911798679",
+    "name": "Awad Shikuri Hassen",
+    "telegramId": "680857379",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "912627366",
+    "name": "Gedamu Walelgn Bekalu",
+    "telegramId": "5930970864",
+    "department": "Manufacturing"
+  },
+  {
+    "phoneNumber": "935346218",
+    "name": "Mahder Birara",
+    "telegramId": "1294215014",
+    "department": "System Operator"
+  },
+  {
+    "phoneNumber": "946322683",
+    "name": "Helen Tesfaye",
+    "telegramId": "5396707187",
+    "department": "System Operator"
+  },
+  {
+    "phoneNumber": "978100247",
+    "name": "Sisay Belay",
+    "telegramId": "7513817910",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "933577415",
+    "name": "Abrham Workneh Ayele",
+    "telegramId": "8730608676",
+    "department": "F&E"
+  },
+  {
+    "phoneNumber": "915740567",
+    "name": "Anbesaw Engida",
+    "telegramId": "554245439",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "912811775",
+    "name": "Nugusayew Getachew",
+    "telegramId": "7164123932",
+    "department": "IT Department"
+  },
+  {
+    "phoneNumber": "910170131",
+    "name": "Fiseha Andarge",
+    "telegramId": "418751990",
+    "department": "Admin"
+  },
+  {
+    "phoneNumber": "912159549",
+    "name": "Azeb Nigatu",
+    "telegramId": "792388221",
+    "department": "Planning and Information Technology"
+  },
+  {
+    "phoneNumber": "945572210",
+    "name": "Wubneh Agegnehu",
+    "telegramId": "1915398280",
+    "department": "Infrastructure"
+  },
+  {
+    "phoneNumber": "985889328",
+    "name": "Abraham Brihan",
+    "telegramId": "7910003076",
+    "department": "Hospitality"
+  },
+  {
+    "phoneNumber": "923702181",
+    "name": "Bisrat Teherku",
+    "telegramId": "8414448343",
+    "department": "Hospitality"
+  },
+  {
+    "phoneNumber": "988741202",
+    "name": "Segni Bekele",
+    "telegramId": "811629942",
+    "department": "Enginering and IT"
+  },
+  {
+    "phoneNumber": "993597993",
+    "name": "Yohannes Asefa Mihretu",
+    "telegramId": "1904018083",
+    "department": "Manufacturing"
   },
   {
     "phoneNumber": "969427775",
@@ -54,15 +1098,393 @@
     "department": "F&E"
   },
   {
+    "phoneNumber": "954715108",
+    "name": "Henok Eliyas",
+    "telegramId": "685062960",
+    "department": "F&E"
+  },
+  {
+    "phoneNumber": "910843709",
+    "name": "Abiyu Desta",
+    "telegramId": "917582662",
+    "department": "Manufacturing"
+  },
+  {
+    "phoneNumber": "961317854",
+    "name": "Bezawit Girma",
+    "telegramId": "6858730703",
+    "department": "Manufacturing"
+  },
+  {
+    "phoneNumber": "928976347",
+    "name": "Abebe Seyoum",
+    "telegramId": "350609395",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "929049327",
+    "name": "Adam Yates",
+    "telegramId": "1669914025",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "911245248",
+    "name": "Nigus Solmon Adamu",
+    "telegramId": "7766260582",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "920220028",
+    "name": "Yosef Fikeru",
+    "telegramId": "398910665",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "912985950",
+    "name": "Habtamu Abera",
+    "telegramId": "1975199905",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "911651335",
+    "name": "Sileshi Demissie",
+    "telegramId": "8430266881",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "962439543",
+    "name": "Yosef Enyewu",
+    "telegramId": "6570431999",
+    "department": "Customer Service"
+  },
+  {
+    "phoneNumber": "943778511",
+    "name": "Yordanos Asmamaw",
+    "telegramId": "440567938",
+    "department": "I&I"
+  },
+  {
+    "phoneNumber": "993630199",
+    "name": "Kidus Girma",
+    "telegramId": "362352938",
+    "department": "Sales"
+  },
+  {
+    "phoneNumber": "969547624",
+    "name": "Amir Yassin",
+    "telegramId": "559133905",
+    "department": "ICT"
+  },
+  {
+    "phoneNumber": "944346697",
+    "name": "Bakale Beyene",
+    "telegramId": "1464653623",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "944346697",
+    "name": "Fethi Mohammed Ali",
+    "telegramId": "1464653623",
+    "department": "-"
+  },
+  {
+    "phoneNumber": "915787470",
+    "name": "Abel Wondafrash",
+    "telegramId": "329828705",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "911236979",
+    "name": "Fethi Mohammed Ali",
+    "telegramId": "370100537",
+    "department": "Management"
+  },
+  {
+    "phoneNumber": "979157703",
+    "name": "Zelalem Nigussu",
+    "telegramId": "5833203027",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "902568084",
+    "name": "Meskelu Demsis Woldearegay",
+    "telegramId": "989446537",
+    "department": "Finances"
+  },
+  {
+    "phoneNumber": "912197111",
+    "name": "Salih Shemsu Oumer",
+    "telegramId": "366181758",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "943282726",
+    "name": "Etsubdink Misganaw",
+    "telegramId": "6646389679",
+    "department": "P&H"
+  },
+  {
+    "phoneNumber": "935808472",
+    "name": "Abdurehman Juber",
+    "telegramId": "6884211412",
+    "department": "It"
+  },
+  {
+    "phoneNumber": "925403146",
+    "name": "Yegezu Beshah",
+    "telegramId": "6937367125",
+    "department": "It"
+  },
+  {
+    "phoneNumber": "966118310",
+    "name": "Maru Alamirew",
+    "telegramId": "6930698424",
+    "department": "Operation Manager"
+  },
+  {
+    "phoneNumber": "979697285",
+    "name": "Daniel Nega",
+    "telegramId": "377806040",
+    "department": "office of General manager"
+  },
+  {
+    "phoneNumber": "930078074",
+    "name": "Binyam Asnake",
+    "telegramId": "381304930",
+    "department": "Branch Manager"
+  },
+  {
+    "phoneNumber": "938012706",
+    "name": "Lalise Tekalegn",
+    "telegramId": "1701906414",
+    "department": "Operation Manager"
+  },
+  {
+    "phoneNumber": "913212014",
+    "name": "Elias Dibu",
+    "telegramId": "781854748",
+    "department": "It"
+  },
+  {
+    "phoneNumber": "913212024",
+    "name": "Elias Dibu",
+    "telegramId": "781854748",
+    "department": "It"
+  },
+  {
+    "phoneNumber": "913212024",
+    "name": "Elias Dibu",
+    "telegramId": "781854748",
+    "department": "It"
+  },
+  {
+    "phoneNumber": "995053737",
+    "name": "Hailemariiam Getie Menberu",
+    "telegramId": "8563856510",
+    "department": "office of GM"
+  },
+  {
+    "phoneNumber": "973013029",
+    "name": "Meseret Yehuala",
+    "telegramId": "7895994011",
+    "department": "It"
+  },
+  {
+    "phoneNumber": "911440765",
+    "name": "Beamlak Fassil Zewdie",
+    "telegramId": "352084712",
+    "department": "owner"
+  },
+  {
+    "phoneNumber": "977322623",
+    "name": "Dawit",
+    "telegramId": "356622724",
+    "department": "Project"
+  },
+  {
+    "phoneNumber": "912283197",
+    "name": "Kibrom Woldgerima",
+    "telegramId": "8597214444",
+    "department": "it"
+  },
+  {
+    "phoneNumber": "902067706",
+    "name": "Daniel Birhanu Hayiu",
+    "telegramId": "5750836956",
+    "department": "General Management"
+  },
+  {
+    "phoneNumber": "983700292",
+    "name": "Mekedelawit Mitiku",
+    "telegramId": "8139229151",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "920911111",
+    "name": "Solomon Hailegiorgis",
+    "telegramId": "366826738",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "967942416",
+    "name": "Dawit Solomon",
+    "telegramId": "1668312218",
+    "department": "Sales & marketing manager"
+  },
+  {
+    "phoneNumber": "939630016",
+    "name": "Meskerem Masresha",
+    "telegramId": "922511339",
+    "department": "MIS"
+  },
+  {
+    "phoneNumber": "577041035",
+    "name": "Irakli Maglakelidze",
+    "telegramId": "8871049158",
+    "department": "Commercial Planning"
+  },
+  {
+    "phoneNumber": "963666665",
+    "name": "Abdulfeta Aliyow",
+    "telegramId": "7697175767",
+    "department": "General manager"
+  },
+  {
     "phoneNumber": "964188840",
     "name": "Bezawit Yehalem",
     "telegramId": "5595051450",
     "department": "Research Development"
   },
   {
-    "phoneNumber": "935971379",
-    "name": "Yimaldu Nigussie",
-    "telegramId": "8910348925",
-    "department": "Functional Consultant"
+    "phoneNumber": "905430605",
+    "name": "Yared Tewelde",
+    "telegramId": "6083346312",
+    "department": "Engineering"
+  },
+  {
+    "phoneNumber": "955174157",
+    "name": "Mebratu Awoke",
+    "telegramId": "742950838",
+    "department": "Customer service"
+  },
+  {
+    "phoneNumber": "928259076",
+    "name": "Selamawit Abebe",
+    "telegramId": "7947298118",
+    "department": "Customer service"
+  },
+  {
+    "phoneNumber": "915885929",
+    "name": "Amen Alazar",
+    "telegramId": "1221239753",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "930362151",
+    "name": "Bisrat Demere",
+    "telegramId": "545002102",
+    "department": "Manager"
+  },
+  {
+    "phoneNumber": "978696682",
+    "name": "Matiyas Kagnew",
+    "telegramId": "918028234",
+    "department": "Directing Manager"
+  },
+  {
+    "phoneNumber": "920896220",
+    "name": "Girma Zelalem",
+    "telegramId": "7989710228",
+    "department": "Infrastructure and Installation"
+  },
+  {
+    "phoneNumber": "932539982",
+    "name": "Natnael Akalu",
+    "telegramId": "6562921564",
+    "department": "Infrastructure and Installation"
+  },
+  {
+    "phoneNumber": "910273814",
+    "name": "Samuel Asaminew Hailemichael",
+    "telegramId": "0951688889",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "913228620",
+    "name": "Genet Tamene",
+    "telegramId": "7845607363",
+    "department": "Salse and Marketing"
+  },
+  {
+    "phoneNumber": "936196187",
+    "name": "Ami Tadesse",
+    "telegramId": "410272436",
+    "department": "Customer service"
+  },
+  {
+    "phoneNumber": "965588858",
+    "name": "Kumssa Cherinet",
+    "telegramId": "618100526",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "911976296",
+    "name": "Seleshi Abebe",
+    "telegramId": "366784849",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "923990155",
+    "name": "Belaynhe Tadese",
+    "telegramId": "885234290",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "577041035",
+    "name": "IRAKLI",
+    "telegramId": "8871049158",
+    "department": "Merchendise"
+  },
+  {
+    "phoneNumber": "946349322",
+    "name": "Ermias Neway",
+    "telegramId": "387279197",
+    "department": "IT"
+  },
+  {
+    "phoneNumber": "922902553",
+    "name": "Amare Yigzaw",
+    "telegramId": "7085585384",
+    "department": "Customer service"
+  },
+  {
+    "phoneNumber": "919188510",
+    "name": "Emebet Menber",
+    "telegramId": "393944788",
+    "department": "Customer Service"
+  },
+  {
+    "phoneNumber": "912630062",
+    "name": "Elias Tesfaye",
+    "telegramId": "559541377",
+    "department": "Operations ERP"
+  },
+  {
+    "phoneNumber": "974528148",
+    "name": "Anteneh",
+    "telegramId": "5370883399",
+    "department": "R&D"
+  },
+  {
+    "phoneNumber": "909055731",
+    "name": "Tariku",
+    "telegramId": "1273009689",
+    "department": "R&D"
+  },
+  {
+    "phoneNumber": "924437234",
+    "name": "Kassahun Birara",
+    "telegramId": "7541711336",
+    "department": "It"
   }
 ]

@@ -1,21 +1,10 @@
 import { apiClient } from "@/shared/lib/apiClient";
-import type {CasesResponse, CaseItem, CaseFilters, CaseStatus, CaseType, AttachmentDTO, ActivityLogView
+import type {CasesResponse, CaseItem, CaseStatus, CaseType, AttachmentDTO, ActivityLogView
   // Developer,
   // AiSuggestDevelopersResponse,
 } from "../types";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { UserRole } from "@/features/auth/types";
-
-export interface CasesQueryParams
-  extends Partial<CaseFilters> {
-  page?: number;
-  pageSize?: number;
-  sortField?: string;
-  sortOrder?: "asc" | "desc";
-  userRole?: UserRole;
-  userId?: number;
-  departmentId?: number;
-}
 
 function normalizeStatus(apiStatus: string): CaseStatus {
   const map: Record<string, CaseStatus> = {
@@ -101,9 +90,7 @@ export const casesApi = {
     }
   },
 
-  getAll: async (params: CasesQueryParams): Promise<CasesResponse> => {
-    const query = new URLSearchParams();
-
+  getAll: async (): Promise<CasesResponse> => {
     // Get current user from auth store
     const user = useAuthStore.getState().user;
     const userRole = useAuthStore.getState().getUserRole();
@@ -112,105 +99,12 @@ export const casesApi = {
       throw new Error("User not authenticated");
     }
 
-    const hasDateRange =
-      Boolean(params.fromIssueDate?.trim()) || Boolean(params.toIssueDate?.trim());
-    const hasOtherFilters = Boolean(
-      params.code?.trim() ||
-      params.search?.trim() ||
-      params.status?.trim() ||
-      params.caseType?.trim() ||
-      params.module?.trim() ||
-      params.paidorNot?.trim() ||
-      params.projectName?.trim() ||
-      params.developer?.trim() ||
-      params.functionalConsultant?.trim()
-    );
-
-    if (params.code) {
-      query.append("code", params.code);
-    }
-
-    else{
-      if (hasDateRange) {
-        if (params.fromIssueDate?.trim()) {
-          query.append(":IssuedDate", params.fromIssueDate.trim());
-        }
-        if (params.toIssueDate?.trim()) {
-          query.append("IssuedDate:", params.toIssueDate.trim());
-        }
-      } else if (!hasOtherFilters) {
-        const today = new Date().toISOString().split("T")[0];
-        query.append(":IssuedDate", today);
-        query.append("IssuedDate:", today);
-      }
-
-      const developerFilterValue = params.developer?.trim();
-
-      // ROLE-BASED FILTERING - Matches your C# logic
-      if (developerFilterValue) {
-        query.append("Consignee3Id", developerFilterValue);
-      }
-      else if (userRole === UserRole.DEVELOPER) {
-        query.append("Consignee3Id", user.id.toString());
-      }
-      
-      const functionalConsultantFilterValue = params.functionalConsultant?.trim();
-      if (functionalConsultantFilterValue) {
-        query.append("Consignee2Id", functionalConsultantFilterValue);
-      }
-
-
-      if (params.caseType) {
-        query.append("Extension2", params.caseType);
-      }
-      if (params.status) {
-        query.append("LastStateDescription", params.status);
-      }
-      if (params.module) {
-        query.append("Extension3", params.module);
-      }
-      if (params.paidorNot) {
-        query.append("Extension1", params.paidorNot);
-      }
-      if (params.projectName) {
-        query.append("Consignee1Id", params.projectName);
-      }
-    }
-    const url = `/EscalationView/dynamic/?${query.toString()}`;
-
-    const response = await apiClient.get(url);
-    let data = response.data ?? [];
-
-    if (params.code && data.length > 0) {
-      const selected = data[0];
-
-      // If it's a child, fetch its parent
-      if (selected.extension6) {
-        const parentRes = await apiClient.get(
-          `/EscalationView/dynamic/?id=${selected.extension6}`
-        );
-
-        const childRes = await apiClient.get(
-          `/EscalationView/dynamic/?Extension6=${selected.extension6}`
-        );
-
-        data = [
-          ...(parentRes.data ?? []),
-          ...(childRes.data ?? [])
-        ];
-      }
-      // If it's a parent, fetch all children
-      else {
-        const childRes = await apiClient.get(
-          `/EscalationView/dynamic/?Extension6=${selected.id}`
-        );
-
-        data = [
-          selected,
-          ...(childRes.data ?? [])
-        ];
-      }
-    }
+    const response = await apiClient.get("/EscalationView/dynamic/", {
+      params: userRole === UserRole.DEVELOPER
+        ? { Consignee3Id: user.id }
+        : undefined,
+    });
+    const data = response.data ?? [];
 
     const mapped: CaseItem[] = data.map((item: any) => ({
       id: item.id,
@@ -241,36 +135,11 @@ export const casesApi = {
       deadLine: item.deadLine || item.DeadLine || item.endDate || item.EndDate || "",
     }));
 
-    const childrenMap = new Map<number, CaseItem[]>();
-
-    mapped.forEach(c => {
-      if (c.parentCaseId) {
-        if (!childrenMap.has(c.parentCaseId)) {
-          childrenMap.set(c.parentCaseId, []);
-        }
-        childrenMap.get(c.parentCaseId)!.push(c);
-      }
-    });
-
-    const ordered: CaseItem[] = [];
-
-    mapped
-      .filter(c => !c.parentCaseId)
-      .forEach(parent => {
-        ordered.push(parent);
-        ordered.push(...(childrenMap.get(parent.id ?? 0) ?? []));
-      });
-
-    const page = params.page ?? 1;
-    const pageSize = params.pageSize ?? 25;
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-
     return {
-      items: mapped.slice(start, end),
+      items: mapped,
       totalCount: mapped.length,
-      page,
-      pageSize,
+      page: 1,
+      pageSize: mapped.length,
     };
   },
 
