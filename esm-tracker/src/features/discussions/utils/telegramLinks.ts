@@ -1,3 +1,4 @@
+import { normalizePhoneNumber } from "@/shared/utils/tgMapper";
 import type { OpenDiscussionResponse } from "../types/discussion.types";
 
 export interface TelegramLaunchTarget {
@@ -43,7 +44,9 @@ export function buildTelegramTopicUrl(
 
 export function resolveTelegramDestination(
   response: OpenDiscussionResponse,
-  currentEmployeeId?: string | number | null
+  currentEmployeeId?: string | number | null,
+  currentPhoneNumber?: string | null,
+  currentTelegramId?: string | null
 ): TelegramLaunchTarget {
   const topicUrl = isSafeTelegramUrl(response.topicUrl)
     ? response.topicUrl
@@ -55,13 +58,19 @@ export function resolveTelegramDestination(
     currentEmployeeId !== null && currentEmployeeId !== undefined
       ? String(currentEmployeeId).trim().toUpperCase()
       : "";
+  const normalizedPhone = normalizePhoneNumber(currentPhoneNumber);
+  const phoneKey = normalizedPhone ? `PHONE:${normalizedPhone}` : "";
+  const tgKey = currentTelegramId ? `TG:${currentTelegramId.trim()}` : "";
 
   const myParticipant =
-    normalizedEmployeeId && response.participants
-      ? response.participants.find(
-          (p) => p.employeeId.trim().toUpperCase() === normalizedEmployeeId
-        )
-      : undefined;
+    response.participants?.find((p) => {
+      const pId = p.employeeId.trim().toUpperCase();
+      return (
+        (normalizedEmployeeId && pId === normalizedEmployeeId) ||
+        (phoneKey && pId === phoneKey) ||
+        (tgKey && pId === tgKey)
+      );
+    });
 
   const needsBotInviteFirst = Boolean(
     myParticipant &&

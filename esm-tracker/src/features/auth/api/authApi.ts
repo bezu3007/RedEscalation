@@ -1,5 +1,6 @@
 // features/auth/api/authApi.ts
 import { apiClient } from "@/shared/lib/apiClient";
+import { findTelegramMappingByPhone } from "@/shared/utils/tgMapper";
 import type {
   LoginRequest,
   LoginResponse,
@@ -88,13 +89,39 @@ export const authApi = {
           }
         }
 
+        const extractPhone1 = (targetUser: any): string | undefined => {
+          const rawPhone =
+            data?.personConsigneeUnit?.phone1 ??
+            targetUser?.personConsigneeUnit?.phone1 ??
+            targetUser?.phone1 ??
+            targetUser?.phoneNo ??
+            targetUser?.phoneNumber;
+          if (rawPhone === null || rawPhone === undefined) {
+            return undefined;
+          }
+          const trimmed = String(rawPhone).trim();
+          return trimmed.length > 0 ? trimmed : undefined;
+        };
+
         // If we found user data with userName, use it
         if (userData && userData.userName) {
+          const phone1 = extractPhone1(userData);
+          const tgMatch = findTelegramMappingByPhone(phone1);
+
           // Add additional properties
           userData.remark = `${loginData.branch}_${encryptPassword(loginData.password)}`;
           userData.branch = loginData.branch;
           userData.tin = loginData.tin;
-          userData.role = response.data.data.role; 
+          userData.role = response.data.data.role;
+          if (data?.personConsigneeUnit && !userData.personConsigneeUnit) {
+            userData.personConsigneeUnit = data.personConsigneeUnit;
+          }
+          if (phone1) {
+            userData.phoneNumber = phone1;
+          }
+          if (tgMatch?.telegramId) {
+            userData.telegramId = tgMatch.telegramId;
+          }
 
           // Store in localStorage
           localStorage.setItem('ems-user', JSON.stringify(userData));
@@ -125,11 +152,24 @@ export const authApi = {
               role: data.role || 0,
               ...personInfo
             };
+
+            const phone1 = extractPhone1(userData);
+            const tgMatch = findTelegramMappingByPhone(phone1);
             
             // Add additional properties
             userData.remark = `${loginData.branch}_${encryptPassword(loginData.password)}`;
             userData.branch = loginData.branch;
             userData.tin = loginData.tin;
+            if (data?.personConsigneeUnit && !userData.personConsigneeUnit) {
+              userData.personConsigneeUnit = data.personConsigneeUnit;
+            }
+            if (phone1) {
+              userData.phoneNumber = phone1;
+              console.log("Extracted phone number:", phone1);
+            }
+            if (tgMatch?.telegramId) {
+              userData.telegramId = tgMatch.telegramId;
+            }
             
             // Store in localStorage
             localStorage.setItem('ems-user', JSON.stringify(userData));

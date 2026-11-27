@@ -1,6 +1,8 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, MessageSquare } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import type { CaseItem } from "@/features/cases/types";
+import type { CaseItem, VoucherInitResult } from "@/features/cases/types";
+import { findTelegramMappingByPhone } from "@/shared/utils/tgMapper";
 import { openCaseDiscussion } from "../services/discussionApi";
 import { useDiscussionStore } from "../store/discussionStore";
 import {
@@ -17,11 +19,18 @@ export function OpenDiscussionAction({
   caseItem,
   onCompleted,
 }: OpenDiscussionActionProps) {
+  const queryClient = useQueryClient();
   const { openingCaseId, setOpeningCaseId, showSuccess, showError } =
     useDiscussionStore();
-  const currentEmployeeId = useAuthStore(
-    (s) => s.personId ?? s.user?.person ?? s.user?.id
-  );
+  const authUser = useAuthStore((s) => s.user);
+  const personId = useAuthStore((s) => s.personId);
+  const userRole = useAuthStore((s) => s.userRole);
+
+  const currentEmployeeId = personId ?? authUser?.person ?? authUser?.id;
+  const currentPhone =
+    authUser?.phoneNumber ?? authUser?.personConsigneeUnit?.phone1 ?? undefined;
+  const currentTelegramId =
+    authUser?.telegramId ?? findTelegramMappingByPhone(currentPhone)?.telegramId;
 
   const currentCaseKey =
     caseItem.id !== null && caseItem.id !== undefined
@@ -38,8 +47,27 @@ export function OpenDiscussionAction({
 
     setOpeningCaseId(currentCaseKey);
     try {
-      const response = await openCaseDiscussion(caseItem);
-      const target = resolveTelegramDestination(response, currentEmployeeId);
+      const voucherInit = queryClient.getQueryData<VoucherInitResult>([
+        "voucher-init",
+      ]);
+
+      const response = await openCaseDiscussion(caseItem, {
+        voucherInit,
+        requestedBy: {
+          employeeId: currentEmployeeId,
+          name: authUser?.fullName || authUser?.userName,
+          role: userRole,
+          phoneNumber: currentPhone,
+          telegramId: currentTelegramId,
+        },
+      });
+
+      const target = resolveTelegramDestination(
+        response,
+        currentEmployeeId,
+        currentPhone,
+        currentTelegramId
+      );
       const autoLaunchAttempted = target.primaryUrl
         ? launchTelegramUrl(target.primaryUrl)
         : false;

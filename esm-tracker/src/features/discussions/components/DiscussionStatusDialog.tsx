@@ -8,24 +8,24 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { useDiscussionStore } from "../store/discussionStore";
-import type { ParticipantSyncResult } from "../types/discussion.types";
+// import type { ParticipantSyncResult } from "../types/discussion.types";
 
-function formatParticipantAction(participant: ParticipantSyncResult): string {
-  switch (participant.action) {
-    case "ALREADY_MEMBER":
-      return "Already in group";
-    case "INVITED":
-      return "Invitation sent via Telegram DM";
-    case "INVITE_REUSED":
-      return "Active invitation re-sent via Telegram DM";
-    case "REQUIRES_BOT_START":
-      return "Waiting for /start in Telegram";
-    case "UNMAPPED_TELEGRAM_ID":
-      return "Telegram ID not configured";
-    case "CHECK_FAILED":
-      return "Membership check failed";
-  }
-}
+// function formatParticipantAction(participant: ParticipantSyncResult): string {
+//   switch (participant.action) {
+//     case "ALREADY_MEMBER":
+//       return "Already in group";
+//     case "INVITED":
+//       return "Invitation sent via Telegram DM";
+//     case "INVITE_REUSED":
+//       return "Active invitation re-sent via Telegram DM";
+//     case "REQUIRES_BOT_START":
+//       return "Waiting for /start in Telegram";
+//     case "UNMAPPED_TELEGRAM_ID":
+//       return "Telegram ID not configured";
+//     case "CHECK_FAILED":
+//       return "Membership check failed";
+//   }
+// }
 
 export function DiscussionStatusDialog() {
   const { notification, clearNotification } = useDiscussionStore();
@@ -77,13 +77,13 @@ export function DiscussionStatusDialog() {
                   <span className="font-medium text-slate-800">
                     {participant.name} ({participant.role})
                   </span>
-                  <span className="text-slate-600">
+                  {/* <span className="text-slate-600">
                     {formatParticipantAction(participant)}
-                  </span>
+                  </span> */}
                 </div>
-                {participant.instruction && (
+                {/* {participant.instruction && (
                   <p className="text-slate-600">{participant.instruction}</p>
-                )}
+                )} */}
               </div>
             ))}
           </div>

@@ -1,3 +1,10 @@
+export interface DiscussionParticipantPayload {
+  employeeId?: string;
+  name?: string;
+  phoneNumber?: string;
+  telegramId?: string;
+}
+
 export interface OpenDiscussionRequest {
   caseId: string | number;
   caseNumber: string;
@@ -11,19 +18,16 @@ export interface OpenDiscussionRequest {
   isUrgent?: boolean;
   status?: string;
 
-  functionalConsultant: {
-    employeeId?: string;
-    name?: string;
-  };
+  functionalConsultant: DiscussionParticipantPayload;
 
-  developer: {
+  developer: DiscussionParticipantPayload & {
     employeeId: string;
-    name?: string;
   };
 
-  reviewer?: {
-    employeeId?: string;
-    name?: string;
+  reviewer?: DiscussionParticipantPayload;
+
+  requestedBy?: DiscussionParticipantPayload & {
+    role?: string;
   };
 }
 
@@ -38,7 +42,7 @@ export type MembershipStatus =
 export interface ParticipantSyncResult {
   employeeId: string;
   name: string;
-  role: "DEVELOPER" | "FC" | "REVIEWER";
+  role: "DEVELOPER" | "FC" | "REVIEWER" | "REQUESTER";
   telegramIdMapped: boolean;
   membershipStatus: MembershipStatus;
   action:

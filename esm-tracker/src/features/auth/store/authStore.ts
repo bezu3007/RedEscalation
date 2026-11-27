@@ -7,7 +7,38 @@ import { UserRole } from "../types";
 import { authApi } from "../api/authApi";
 import { apiClient } from "@/shared/lib/apiClient";
 
+import { findTelegramMappingByPhone } from "@/shared/utils/tgMapper";
 import { determineUserRole } from "../utils/roleUtils";
+
+function enrichUserWithTelegram(user: User | null): User | null {
+  if (!user) {
+    return null;
+  }
+
+  const rawPhone =
+    user.phoneNumber ??
+    user.personConsigneeUnit?.phone1 ??
+    undefined;
+  const phoneNumber =
+    typeof rawPhone === "string"
+      ? rawPhone.trim() || undefined
+      : undefined;
+  const tgMatch = findTelegramMappingByPhone(phoneNumber);
+  const telegramId = user.telegramId || tgMatch?.telegramId;
+
+  if (
+    phoneNumber === user.phoneNumber &&
+    telegramId === user.telegramId
+  ) {
+    return user;
+  }
+
+  return {
+    ...user,
+    ...(phoneNumber ? { phoneNumber } : {}),
+    ...(telegramId ? { telegramId } : {}),
+  };
+}
 
 interface AuthState {
   user: User | null;
@@ -53,13 +84,14 @@ export const useAuthStore = create<AuthState>()(
       rememberMe: false,
 
       setUser: (user) => {
-        const role = user ? determineUserRole(user) : null;
+        const enrichedUser = enrichUserWithTelegram(user);
+        const role = enrichedUser ? determineUserRole(enrichedUser) : null;
 
         set({
-          user,
+          user: enrichedUser,
           userRole: role,
-          isAuthenticated: !!user,
-          _cachedUser: user,
+          isAuthenticated: !!enrichedUser,
+          _cachedUser: enrichedUser,
         });
       },
 
@@ -173,7 +205,7 @@ export const useAuthStore = create<AuthState>()(
           const state = get();
 
           if (state._cachedUser) {
-            return state._cachedUser;
+            return enrichUserWithTelegram(state._cachedUser);
           }
 
           try {
@@ -181,7 +213,8 @@ export const useAuthStore = create<AuthState>()(
               localStorage.getItem("ems-user");
 
             if (storedUser) {
-              const user = JSON.parse(storedUser);
+              const user = enrichUserWithTelegram(JSON.parse(storedUser));
+              if (!user) return null;
 
               const role =
                 determineUserRole(user);

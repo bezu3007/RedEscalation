@@ -34,8 +34,8 @@ export const useDiscussionStore = create<DiscussionUIState>((set) => ({
           ? "Existing Discussion Reused"
           : "Telegram Discussion Created",
         message: response.existing
-          ? `Case ${response.caseNumber} already has an active Telegram topic (Thread #${response.messageThreadId}).`
-          : `Created Telegram topic for case ${response.caseNumber} (Thread #${response.messageThreadId}).`,
+          ? `Case ${response.caseNumber} already has an active Telegram topic`
+          : `Created Telegram topic for case ${response.caseNumber}`,
         response,
         telegramTarget,
       },

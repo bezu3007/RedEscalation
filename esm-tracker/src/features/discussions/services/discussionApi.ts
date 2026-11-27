@@ -1,5 +1,6 @@
-import type { CaseItem } from "@/features/cases/types";
+import type { CaseItem, Consignee, VoucherInitResult } from "@/features/cases/types";
 import { getPlainTextFromHtml } from "@/features/cases/utils/htmlUtils";
+import { findTelegramMappingByPhone } from "@/shared/utils/tgMapper";
 import type {
   CloseDiscussionRequest,
   CloseDiscussionResponse,
@@ -30,8 +31,31 @@ function toOptionalTrimmedString(value: unknown): string | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
+export interface OpenDiscussionContext {
+  voucherInit?: VoucherInitResult;
+  requestedBy?: {
+    employeeId?: string | number | null;
+    name?: string | null;
+    role?: string | null;
+    phoneNumber?: string | null;
+    telegramId?: string | null;
+  };
+}
+
+function findConsigneePhone(
+  list: Consignee[] | undefined,
+  employeeId: string | undefined
+): string | undefined {
+  if (!list || !employeeId) {
+    return undefined;
+  }
+  const match = list.find((item) => String(item.id).trim() === employeeId);
+  return toOptionalTrimmedString(match?.phoneNo);
+}
+
 export function mapCaseItemToOpenDiscussionRequest(
-  caseItem: CaseItem
+  caseItem: CaseItem,
+  context?: OpenDiscussionContext
 ): OpenDiscussionRequest {
   if (caseItem.id === null || caseItem.id === undefined) {
     throw new Error("Cannot open a discussion because this case has no Case ID.");
@@ -58,6 +82,20 @@ export function mapCaseItemToOpenDiscussionRequest(
   const reviewerId = toOptionalTrimmedString(caseItem.reviewerId);
   const reviewerName = toOptionalTrimmedString(caseItem.reviewer);
 
+  const devPhone = findConsigneePhone(context?.voucherInit?.developers, developerId);
+  const devTg = findTelegramMappingByPhone(devPhone)?.telegramId;
+
+  const fcPhone = findConsigneePhone(
+    context?.voucherInit?.functionalConsultants,
+    fcId
+  );
+  const fcTg = findTelegramMappingByPhone(fcPhone)?.telegramId;
+
+  const reviewerPhone =
+    findConsigneePhone(context?.voucherInit?.functionalConsultants, reviewerId) ??
+    findConsigneePhone(context?.voucherInit?.developers, reviewerId);
+  const reviewerTg = findTelegramMappingByPhone(reviewerPhone)?.telegramId;
+
   const payload: OpenDiscussionRequest = {
     caseId: caseItem.id,
     caseNumber,
@@ -73,10 +111,14 @@ export function mapCaseItemToOpenDiscussionRequest(
     functionalConsultant: {
       employeeId: fcId,
       name: fcName,
+      phoneNumber: fcPhone,
+      telegramId: fcTg,
     },
     developer: {
       employeeId: developerId,
       name: toOptionalTrimmedString(caseItem.developer),
+      phoneNumber: devPhone,
+      telegramId: devTg,
     },
   };
 
@@ -84,7 +126,29 @@ export function mapCaseItemToOpenDiscussionRequest(
     payload.reviewer = {
       employeeId: reviewerId,
       name: reviewerName,
+      phoneNumber: reviewerPhone,
+      telegramId: reviewerTg,
     };
+  }
+
+  if (context?.requestedBy) {
+    const reqPhone = toOptionalTrimmedString(context.requestedBy.phoneNumber);
+    const reqTg =
+      toOptionalTrimmedString(context.requestedBy.telegramId) ??
+      findTelegramMappingByPhone(reqPhone)?.telegramId;
+    const reqEmpId = toOptionalTrimmedString(context.requestedBy.employeeId);
+    const reqName = toOptionalTrimmedString(context.requestedBy.name);
+    const reqRole = toOptionalTrimmedString(context.requestedBy.role);
+
+    if (reqEmpId || reqName || reqPhone || reqTg) {
+      payload.requestedBy = {
+        employeeId: reqEmpId,
+        name: reqName,
+        role: reqRole,
+        phoneNumber: reqPhone,
+        telegramId: reqTg,
+      };
+    }
   }
 
   return payload;
@@ -137,9 +201,10 @@ async function postBotEndpoint<TResponse extends { success: boolean }>(
 }
 
 export async function openCaseDiscussion(
-  caseItem: CaseItem
+  caseItem: CaseItem,
+  context?: OpenDiscussionContext
 ): Promise<OpenDiscussionResponse> {
-  const payload = mapCaseItemToOpenDiscussionRequest(caseItem);
+  const payload = mapCaseItemToOpenDiscussionRequest(caseItem, context);
   return postBotEndpoint<OpenDiscussionResponse>("/discussions/open", payload);
 }
 

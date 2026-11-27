@@ -20,6 +20,12 @@ export interface User {
   forcePasswordChange?: boolean;
   passwordConfig?: any;
   botLink?: string;
+  phoneNumber?: string;
+  telegramId?: string;
+  personConsigneeUnit?: {
+    phone1?: string | null;
+    [key: string]: unknown;
+  };
   // Add any other properties from your response
 }
 
