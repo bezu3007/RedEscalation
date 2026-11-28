@@ -6,8 +6,10 @@ import type {
   CloseDiscussionResponse,
   OpenDiscussionRequest,
   OpenDiscussionResponse,
+  TelegramDirectoryResponse,
   UpdateDiscussionRequest,
   UpdateDiscussionResponse,
+  UpsertTelegramMappingRequest,
 } from "../types/discussion.types";
 
 const BOT_API_BASE = (
@@ -200,6 +202,42 @@ async function postBotEndpoint<TResponse extends { success: boolean }>(
   return body;
 }
 
+async function getBotEndpoint<TResponse extends { success: boolean }>(
+  path: string
+): Promise<TResponse> {
+  let response: Response;
+  try {
+    response = await fetch(`${BOT_API_BASE}${path}`, {
+      method: "GET",
+    });
+  } catch {
+    throw new Error(
+      "Could not reach the Telegram discussion bot service. Verify the bot service is running."
+    );
+  }
+
+  let body: (TResponse & BotApiErrorPayload) | null = null;
+  try {
+    body = (await response.json()) as TResponse & BotApiErrorPayload;
+  } catch {
+    body = null;
+  }
+
+  if (!response.ok || !body?.success) {
+    const detailText = body?.details
+      ?.map((d) => d.message)
+      .filter(Boolean)
+      .join(" ");
+    const message =
+      detailText ||
+      body?.message ||
+      `Telegram bot API request failed (HTTP ${response.status}).`;
+    throw new Error(message);
+  }
+
+  return body;
+}
+
 export async function openCaseDiscussion(
   caseItem: CaseItem,
   context?: OpenDiscussionContext
@@ -218,6 +256,27 @@ export async function closeCaseDiscussion(
   payload: CloseDiscussionRequest
 ): Promise<CloseDiscussionResponse> {
   return postBotEndpoint<CloseDiscussionResponse>("/discussions/close", payload);
+}
+
+export async function fetchTelegramDirectory(): Promise<TelegramDirectoryResponse> {
+  return getBotEndpoint<TelegramDirectoryResponse>("/employees");
+}
+
+export async function upsertTelegramMapping(
+  payload: UpsertTelegramMappingRequest
+): Promise<TelegramDirectoryResponse> {
+  return postBotEndpoint<TelegramDirectoryResponse>(
+    "/employees/upsert",
+    payload
+  );
+}
+
+export async function deleteTelegramMapping(
+  phoneNumber: string
+): Promise<TelegramDirectoryResponse> {
+  return postBotEndpoint<TelegramDirectoryResponse>("/employees/delete", {
+    phoneNumber,
+  });
 }
 
 export async function syncCaseDiscussionOnUpdate(params: {

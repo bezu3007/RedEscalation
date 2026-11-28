@@ -1,9 +1,7 @@
 // shared/lib/apiClient.ts
 import axios from "axios";
 
-const preferredBase = import.meta.env.PROD
-  ? "https://api-red.redcloud.com.et/api"
-  : "/api";
+const preferredBase = "/api";
 
 // Resolve the runtime API base URL. Preserve absolute URLs so requests can
 // target the intended backend host/port, while keeping relative values

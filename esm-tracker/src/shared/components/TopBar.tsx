@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/features/auth/store/authStore";
+import { UserRole } from "@/features/auth/types";
+import { TelegramUsersDialog } from "@/features/discussions/components/TelegramUsersDialog";
 import logo from "@/assets/logo.jpg";
 
 import { Button } from "@/shared/components/ui/button";
@@ -17,6 +20,7 @@ import {
   LogOut,
   LayoutGrid,
   BarChart3,
+  Send,
 } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
@@ -35,8 +39,11 @@ const NAV = [
 ];
 
 export function TopBar() {
-  const { user, signOut } = useAuthStore();
+  const { user, userRole, signOut } = useAuthStore();
   const { pathname } = useLocation();
+  const [tgDialogOpen, setTgDialogOpen] = useState(false);
+
+  const isAdmin = userRole === UserRole.ADMIN;
 
   const initials =
     user?.fullName
@@ -84,6 +91,19 @@ export function TopBar() {
 
         {/* RIGHT */}
         <div className="flex items-center gap-3">
+          {isAdmin && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setTgDialogOpen(true)}
+              className="rounded-xl gap-2 px-3 text-xs font-medium h-9 border-sky-200 text-sky-700 hover:bg-sky-50 hover:text-sky-800"
+            >
+              <Send className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">Telegram Users</span>
+            </Button>
+          )}
+
           {/* NAV */}
           {/* <NotificationCenter /> */}
           <nav className="flex items-center gap-2 bg-muted p-1 rounded-xl">
@@ -158,6 +178,13 @@ export function TopBar() {
           </DropdownMenu>
         </div>
       </div>
+
+      {isAdmin && (
+        <TelegramUsersDialog
+          open={tgDialogOpen}
+          onOpenChange={setTgDialogOpen}
+        />
+      )}
     </header>
   );
 }

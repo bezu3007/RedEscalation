@@ -2,6 +2,14 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## Environment configuration
+
+Copy `.env.example` to `.env` and set `VITE_API_PROXY_TARGET` to your API server
+for local development. Set `VITE_API_BASE_URL` in the deployment environment if
+the production API is not available at the same origin under `/api`.
+
+Keep credentials in environment variables; do not commit `.env` files.
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)

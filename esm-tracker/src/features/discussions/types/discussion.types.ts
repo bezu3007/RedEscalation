@@ -113,3 +113,38 @@ export interface CloseDiscussionResponse {
   closedAt?: string | null;
   message: string;
 }
+
+export interface TelegramMapperEntry {
+  phoneNumber: string;
+  rawPhone: string;
+  name: string;
+  telegramId: string;
+  department: string | null;
+}
+
+export interface TelegramBotUserEntry {
+  telegramId: string;
+  username: string | null;
+  fullName: string;
+  startedAt: string;
+  lastSeenAt: string;
+  isMapped: boolean;
+  mappedName: string | null;
+  mappedPhone: string | null;
+}
+
+export interface TelegramDirectoryResponse {
+  success: boolean;
+  mapperLoaded: boolean;
+  botUsername: string | null;
+  botUrl: string | null;
+  mappings: TelegramMapperEntry[];
+  botUsers: TelegramBotUserEntry[];
+}
+
+export interface UpsertTelegramMappingRequest {
+  phoneNumber: string;
+  name: string;
+  telegramId: string;
+  department?: string | null;
+}
